@@ -6,7 +6,7 @@
   "start_url": "/albaran/",
   "scope": "/albaran/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#862133",
   "theme_color": "#862133",
   "icons": [
