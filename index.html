@@ -88,11 +88,14 @@ textarea{min-height:64px;resize:vertical}
 .plin .ln small{font-weight:500;color:var(--muted);font-size:15px}
 .plin .lt{font-family:var(--display);font-size:22px;font-weight:700;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--c)}
 .plin .lt small{display:block;font-size:14px;color:var(--muted)}
-.plin .pb{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;padding:10px 14px 12px}
+.plin .pb{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:start;padding:10px 14px 12px}
 .plin .pb .chk{width:56px;height:48px}
 .plin .nbtn{width:48px;height:48px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);font-size:20px;cursor:pointer;color:var(--muted)}
 .plin .nbtn.on{border-color:var(--warn);color:var(--warn);background:#fff7e8}
 .plin .pn{padding:0 14px 12px}
+.plin .pdif:empty{display:none}
+.plin .pb>div:last-child{padding-top:18px}
+.plin .pdif{display:block;color:var(--warn);font-weight:700;font-size:13px;margin-top:3px}
 .plin .pn input{width:100%}
 .plin.ok{border-color:var(--ok)}
 .plin.ok .ln::after{content:" ✓";color:var(--ok)}
@@ -320,7 +323,7 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "19 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "20 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -680,9 +683,9 @@ function vPreparar(app){
   const filas=P.lineas.map((l,i)=>{const pr=prod(l.c)||{b:1,g:"X"},g=grupoDe(l.c);
     return `<div class="plin ${l.ok?"ok":""}" style="${estiloG(g)}">
       <div class="ph"><div class="ln"><span class="dot" style="--c:var(${colorG(g)})"></span>${esc(l.c)} <small>${esc(l.n||pr.n||"")}</small></div>
-        <div class="lt">${l.extra?`<small>añadido</small>`:`${l.pz} pz`}${pr.b>1&&l.pz?`<small>${bandTxt(l.pz,pr.b)}</small>`:""}</div></div>
+        ${l.extra?`<div class="lt"><small>añadido</small></div>`:""}</div>
       <div class="pb">
-        <div><label class="l" for="s${i}">Piezas</label><input id="s${i}" class="num" inputmode="numeric" value="${l.pzS}" data-i="${i}" data-f="pzS"></div>
+        <div><label class="l" for="s${i}">Piezas${bandTxt(l.pz,pr.b)?` · ${bandTxt(l.pz,pr.b)}`:""}</label><input id="s${i}" class="num" inputmode="numeric" value="${l.pzS}" data-i="${i}" data-f="pzS"><small class="pdif" id="d${i}">${!l.extra&&num(l.pzS)!==num(l.pz)?`pedidas ${l.pz}`:""}</small></div>
         <div><label class="l" for="k${i}">Kg</label><input id="k${i}" class="num" inputmode="decimal" value="${esc(dec(l.kg))}" data-i="${i}" data-f="kg" placeholder="0,000"></div>
         <div style="display:flex;gap:6px">${l.extra?`<button class="x" data-del="${i}" aria-label="Quitar línea">×</button>`:""}<button class="chk ${l.ok?"on":""}" data-ok="${i}" aria-label="Marcar como hecho">✓</button><button class="nbtn ${l.obs?"on":""}" data-nota="${i}" aria-label="Añadir nota a esta línea" title="Nota">✎</button></div>
       </div>${l.obs||l._nota?`<div class="pn"><input id="o${i}" value="${esc(l.obs||"")}" data-i="${i}" data-f="obs" placeholder="Nota de esta línea (ej.: el gigante va el jueves)"></div>`:""}</div>`}).join("");
@@ -700,7 +703,7 @@ function vPreparar(app){
   const pend=()=>P.lineas.filter(l=>num(l.pzS)>0&&!(num(l.kg)>0)).length;
   const pintaBarra=()=>barra(`<div class="tot"><small>${pend()?`Faltan ${pend()} pesos`:"Todos pesados"}</small>${kgf(tot())} kg</div><button class="btn pri" id="bFin">Pedido preparado</button>`);
   pintaBarra();
-  app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;P.lineas[i][f]=f==="obs"?e.target.value:e.target.value;
+  app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;P.lineas[i][f]=f==="obs"?e.target.value:e.target.value;if(f==="pzS"){const l=P.lineas[i],d=$("#d"+i);if(d)d.textContent=!l.extra&&num(l.pzS)!==num(l.pz)?"pedidas "+l.pz:""}
     const t=$(".tot");if(t)t.innerHTML=`<small>${pend()?`Faltan ${pend()} pesos`:"Todos pesados"}</small>${kgf(tot())} kg`;LS.set("ped_prep_"+P.id,P)};
   app.onclick=e=>{const t=e.target;
     if(t.dataset.ok!=null){const l=P.lineas[t.dataset.ok];l.ok=!l.ok;render()}
