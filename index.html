@@ -214,6 +214,7 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 .tag{display:inline-block;border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700;white-space:nowrap}
 .tag.ok{background:#e1f2e7;color:var(--ok)}.tag.no{background:var(--gold-soft);color:#7a4a00}.tag.dif{background:#fdf0d8;color:#9c5c00}
 .nota{font-size:13px;color:var(--muted);margin:6px 0 12px}
+.b3{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:8px;width:100%}
 #imp{display:none}
 
 /* ================== IMPRESIÓN ================== */
@@ -759,16 +760,18 @@ function vPrecios(app){
   }
   app.innerHTML=`<div class="wrap">
     <p class="nota">Precio €/kg que ve la tienda y sale en el albarán. «Pz/bandeja» es cuántas piezas lleva una bandeja (1 si se pide suelto). Las <b>porciones</b> (3ª letra P, p. ej. MAP, OAP) salen solas en su grupo, después de las cabras. Con ↑ ↓ cambias el orden dentro de cada grupo; es el orden en que lo ven la tienda y quien prepara. Nada se guarda hasta pulsar «Guardar».</p>
-    ${h}
-    <button class="btn" id="bAddP" style="width:100%;margin-top:10px">+ Nuevo artículo</button></div>`;
-  barra(`<button class="btn" id="bDesh">Deshacer cambios</button><button class="btn pri" id="bGP">Guardar artículos y precios</button>`);
-  app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null||f==="g")return;P[i][f]=f==="c"?e.target.value.toUpperCase():e.target.value};
+    ${h}</div>`;
+  const cambios=JSON.stringify(P)!==JSON.stringify(S.productos);
+  barra(desk?`<span class="muted">${cambios?"<b style=\"color:var(--warn)\">Hay cambios sin guardar</b>":P.length+" artículos"}</span><div class="acc"><button class="btn" id="bAddP">+ Nuevo artículo</button><button class="btn" id="bDesh" ${cambios?"":"disabled"}>Deshacer cambios</button><button class="btn pri" id="bGP" ${cambios?"":"disabled"}>Guardar artículos y precios</button></div>`
+    :`<div class="b3"><button class="btn" id="bAddP">+ Nuevo</button><button class="btn" id="bDesh" ${cambios?"":"disabled"}>Deshacer</button><button class="btn pri" id="bGP" ${cambios?"":"disabled"}>Guardar</button></div>`);
+  const marcaCambios=()=>{const g=$("#bGP"),d=$("#bDesh");if(g){g.disabled=false;d.disabled=false;const m=$("#barraIn .muted");if(m)m.innerHTML='<b style="color:var(--warn)">Hay cambios sin guardar</b>'}};
+  app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null||f==="g")return;P[i][f]=f==="c"?e.target.value.toUpperCase():e.target.value;marcaCambios()};
   app.onchange=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;if(f==="g"){P[i].g=e.target.value;render()}else if(f==="c")render()};
   app.onclick=async e=>{const t=e.target.closest("button");if(!t)return;
     if(t.dataset.act!=null){P[t.dataset.act].activo=P[t.dataset.act].activo===false;render()}
     else if(t.dataset.mv!=null){const a=P[t.dataset.mv],b=vecino(a,+t.dataset.d);if(b){const ia=idx(a),ib=idx(b);P[ia]=b;P[ib]=a;render()}}
     else if(t.dataset.del!=null){const c=await confirmar("Borrar artículo","¿Borrar "+P[t.dataset.del].c+"? Si solo quieres que la tienda no lo vea, pulsa «Activo» para dejarlo «Oculto».");if(c.ok){P.splice(+t.dataset.del,1);render()}}};
-  $("#bAddP").onclick=()=>{P.push({c:"",n:"",g:"X",p:0,b:1,activo:true});render();const ins=app.querySelectorAll('[data-f="c"]');for(const x of ins)if(!x.value){x.focus();x.scrollIntoView({block:"center"});break}};
+  $("#bAddP").onclick=()=>{P.push({c:"",n:"",g:"X",p:0,b:1,activo:true});render();const ins=app.querySelectorAll('[data-f="c"]');for(const x of ins)if(!x.value){x.scrollIntoView({block:"center"});x.focus();break}};
   $("#bDesh").onclick=()=>{S.precEd=clone(S.productos);render()};
   $("#bGP").onclick=async()=>{
     const vacios=P.filter(p=>!String(p.c).trim());if(vacios.length)return toast("Hay un artículo sin código",true);
