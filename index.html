@@ -439,7 +439,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "36 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "37 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1515,9 +1515,9 @@ function vAvCuadre(app){
     </tbody><tfoot><tr><th>Total</th><td data-t="lleva"></td><td></td><td data-t="de"></td><td data-t="vend"></td></tr></tfoot></table></div>
     <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="alb">Siguiente: albaranes →</button></div>`}
   else if(S.av.fase==="alb"){const fs=avFilas(c,x=>x.vend||x.al!==null);
-    cuerpo=`<p class="nota">Compara con el resumen de albaranes del vendedor. Toca <b>✓</b> si coincide o escribe lo que dice el albarán.</p>
+    cuerpo=`<p class="nota"><b>Vendidos</b> = lo que llevaba − lo que trae (lo físico). En <b>Según albaranes</b> apunta lo que dice el listado de Bernardo para cada referencia: toca <b>✓</b> si coincide o escribe su número. Si no cuadra, sale la diferencia para buscar el fallo (albarán sin hacer o mal contado).</p>
     <div class="acc" style="align-items:center;margin-bottom:8px"><button class="btn sm" id="avTodoOk">Marcar todo como cuadrado</button><span style="flex:1"></span><span id="avRes"></span></div>
-    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Vendidos</th><th>Albarán</th><th>Cuadra</th></tr></thead><tbody>
+    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Vendidos</th><th>Según albaranes</th><th>Cuadra</th></tr></thead><tbody>
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c av-b" data-c="vend"></td>${avIn(i,k,"al",l.al)}<td><button class="av-tick" data-tick="${esc(k)}" data-c="tick"></button></td></tr>`}).join("")||`<tr><td colspan="4" class="vacio">Primero rellena la descarga.</td></tr>`}
     </tbody></table></div>
     <div class="acc av-pie"><button class="btn" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn pri" data-avf="carga">Siguiente: carga →</button></div>`}
