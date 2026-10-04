@@ -1,20 +1,16 @@
 /* =====================================================================
    CUADRE DE AUTOVENTA — archivo aparte dentro del mismo proyecto de
-   Apps Script que Codigo.gs (hoja PEDIDOS TIENDA). Solo lo usa ADMIN.
+   Apps Script que Código.gs (hoja PEDIDOS TIENDA). Solo lo usa ADMIN.
 
    INSTALACIÓN (una vez):
-   1. En el editor de Apps Script: + (Archivos) → Script → nombre «Autoventa»
-      y pega este archivo entero.
-   2. En Codigo.gs, dentro de doPost, cambia esta línea:
-          var f = ACCIONES[req.accion];
-      por esta:
-          var f = ACCIONES[req.accion] || ACCIONES_AV[req.accion];
-   3. Implementar → Gestionar implementaciones → editar (lápiz) →
+   1. Pega este archivo entero en Autoventa.gs (debajo de Código.gs en
+      la lista de archivos) y guarda. No hay que tocar Código.gs.
+   2. Implementar → Gestionar implementaciones → editar (lápiz) →
       Versión: «Nueva versión» → Implementar. La URL no cambia.
 
    La pestaña AUTOVENTA se crea sola la primera vez. Cada fila es un
-   cuadre (columna DATOS en JSON); la fila con ID «CONFIG» guarda las
-   referencias, vendedores y taras.
+   cuadre (columna DATOS en JSON); la fila con ID «CONFIG» guarda los
+   vendedores, los artículos de autoventa y las taras.
    ===================================================================== */
 
 var HOJA_AV = 'AUTOVENTA';
@@ -84,3 +80,8 @@ var ACCIONES_AV = {
     return {};
   }
 };
+
+// Se añaden estas acciones a las de Código.gs (que se carga antes que este archivo)
+if (typeof ACCIONES !== 'undefined') {
+  Object.keys(ACCIONES_AV).forEach(function (k) { ACCIONES[k] = ACCIONES_AV[k]; });
+}
