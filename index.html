@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Albarán Tienda</title>
+<meta name="theme-color" content="#1f3a5f">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+/* Móvil primero: una columna, botones grandes, totales siempre visibles abajo */
+:root{
+  --bg:#f3f5f8; --card:#ffffff; --fg:#17202b; --muted:#5d6b7c; --line:#d9dfe7;
+  --accent:#1f3a5f; --accent-fg:#fff; --mezcla:#1e6b45; --oveja:#1f3a8a; --do:#d9620b; --cabra:#9a8556; --otros:#5d6b7c;
+  --danger:#b3261e;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#11161d; --card:#1b222c; --fg:#e6ebf1; --muted:#9aa7b6; --line:#2c3643;
+  --accent:#7fa6d9; --accent-fg:#0d1520; --mezcla:#4fb37e; --oveja:#7f9cf0; --do:#f08b3e; --cabra:#c9b383; --otros:#9aa7b6;
+  --danger:#f2847c; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.4 var(--font);padding:12px 14px 120px}
+h1{font-size:18px;margin:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer}
+.btn.pri{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.del{color:var(--danger)}
+.btn:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.head{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+label{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+input{width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:16px}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.linea{display:grid;grid-template-columns:1fr auto;gap:6px 8px;padding:10px 0;border-top:1px solid var(--line)}
+.linea:first-child{border-top:0}
+.lname{font-weight:700}
+.lname small{font-weight:400;color:var(--muted)}
+.ltot{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.lin{grid-column:1/-1;display:grid;grid-template-columns:.8fr 1fr 1fr 1fr auto;gap:6px;align-items:end}
+.x{border:0;background:none;color:var(--danger);font-size:22px;padding:6px 8px;cursor:pointer}
+.chip{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.vacio{color:var(--muted);text-align:center;padding:18px 4px}
+.grupo{margin:10px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:6px}
+.prod{border:1px solid var(--line);border-left:5px solid var(--c);background:var(--card);color:var(--fg);border-radius:8px;padding:8px;text-align:left;font:inherit;cursor:pointer}
+.prod b{display:block}
+.prod span{font-size:12px;color:var(--muted)}
+.barra{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:center;gap:10px}
+.total{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.total small{display:block;font-size:12px;font-weight:400;color:var(--muted)}
+.acc{display:flex;gap:8px;flex-wrap:wrap}
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,96vw);max-height:90vh;background:var(--bg);color:var(--fg)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dhead{position:sticky;top:0;background:var(--bg);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+.dbody{padding:10px 14px 16px}
+.prow{display:grid;grid-template-columns:5.5em 1fr 5em 2em;gap:6px;margin-bottom:6px;align-items:center}
+.prow input{padding:7px 8px;font-size:15px}
+.hist{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
+#imp{display:none}
+
+/* ===== IMPRESIÓN: dos copias en A4 ===== */
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff;color:#000;padding:0;font:11pt/1.3 Arial,Helvetica,sans-serif}
+  #app,.barra,dialog{display:none!important}
+  #imp{display:block}
+  .copia{page-break-after:always;break-after:page}
+  .copia:last-child{page-break-after:auto;break-after:auto}
+  .ph{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px}
+  .ph .emp{font-size:10pt}
+  .ph .emp b{font-size:13pt}
+  .ph .tit{text-align:right}
+  .ph .tit b{font-size:18pt;letter-spacing:.05em}
+  .copytag{display:inline-block;border:1.5px solid #000;padding:2px 8px;font-weight:700;margin-top:4px}
+  .meta{display:flex;gap:30px;margin:6px 0 10px;font-size:11pt}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid #000;padding:4px 6px}
+  th{background:#e6e6e6;font-size:9.5pt;text-transform:uppercase}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr.sep td{background:#f2f2f2;font-weight:700;font-size:9.5pt}
+  tfoot td{font-weight:700;font-size:12pt}
+  .pie{display:flex;gap:12px;margin-top:14px}
+  .pie div{flex:1;border:1px solid #000;height:22mm;padding:4px 6px;font-size:9pt}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="top">
+    <h1>Albarán tienda</h1>
+    <div class="acc">
+      <button class="btn" id="bHist">Historial</button>
+      <button class="btn" id="bPrecios">Precios</button>
+    </div>
+  </div>
+
+  <div class="card head">
+    <div><label for="fNum">Nº</label><input id="fNum" class="num" inputmode="numeric"></div>
+    <div><label for="fFecha">Fecha</label><input id="fFecha" type="date"></div>
+    <div><label for="fCli">Cliente</label><input id="fCli"></div>
+  </div>
+
+  <div class="card">
+    <div id="lineas"></div>
+    <button class="btn pri" id="bAdd" style="width:100%;margin-top:8px">+ Añadir producto</button>
+  </div>
+
+  <div class="acc" style="justify-content:space-between">
+    <button class="btn del" id="bNuevo">Nuevo albarán</button>
+  </div>
+</div>
+
+<div class="barra">
+  <div class="total"><small id="tSub">0 líneas · 0,0 kg</small><span id="tTot">0,00 €</span></div>
+  <button class="btn pri" id="bImp">Imprimir 2 copias</button>
+</div>
+
+<!-- selector de producto -->
+<dialog id="dProd">
+  <div class="dhead"><b>Elegir producto</b><button class="btn" data-close>Cerrar</button></div>
+  <div class="dbody">
+    <input id="fBus" placeholder="Buscar código o nombre (ej. OCN)" autocomplete="off">
+    <div id="lProds"></div>
+  </div>
+</dialog>
+
+<!-- tabla de precios -->
+<dialog id="dPrecios">
+  <div class="dhead"><b>Precios €/kg</b><button class="btn" data-close>Hecho</button></div>
+  <div class="dbody">
+    <p style="margin:0 0 10px;color:var(--muted);font-size:13px">Código, nombre y precio. Los cambios se guardan en este móvil.</p>
+    <div id="lPrecios"></div>
+    <div class="acc" style="margin-top:10px">
+      <button class="btn" id="bAddP">+ Producto</button>
+      <button class="btn del" id="bReset">Restaurar precios iniciales</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- historial -->
+<dialog id="dHist">
+  <div class="dhead"><b>Últimos albaranes</b><button class="btn" data-close>Cerrar</button></div>
+  <div class="dbody" id="lHist"></div>
+</dialog>
+
+<div id="imp"></div>
+
+<script>
+/* ---------- precios iniciales (sacados de los albaranes del 2/10/2026) ----------
+   g = grupo: M mezcla, O oveja, D D.O., C cabra, X otros                         */
+const PRECIOS_INI = [
+  {c:"MTG",n:"Mezcla tierno 3 kg",p:8.65,g:"M"},
+  {c:"MSG",n:"Mezcla semi 3 kg",p:9.25,g:"M"},
+  {c:"MCG",n:"Mezcla curado 3 kg",p:11.05,g:"M"},
+  {c:"MCG TOSTADO",n:"Mezcla tostado 3 kg",p:13.20,g:"M"},
+  {c:"MAG",n:"Mezcla aceite 3 kg",p:13.20,g:"M"},
+  {c:"OTG",n:"Oveja tierno 3 kg",p:13.40,g:"O"},
+  {c:"OTM",n:"Oveja tierno 2 kg",p:13.40,g:"O"},
+  {c:"OTN",n:"Oveja tierno 1 kg",p:13.40,g:"O"},
+  {c:"OSG",n:"Oveja semi 3 kg",p:14.20,g:"O"},
+  {c:"OSN",n:"Oveja semi 1 kg",p:14.20,g:"O"},
+  {c:"OCG",n:"Oveja curado 3 kg",p:15.10,g:"O"},
+  {c:"OCN",n:"Oveja curado 1 kg",p:15.10,g:"O"},
+  {c:"OCP BRANDY",n:"Oveja brandy",p:16.35,g:"O"},
+  {c:"DCGA",n:"D.O. curado 3 kg",p:18.10,g:"D"},
+  {c:"DCP ARTESANO",n:"D.O. artesano",p:18.75,g:"D"},
+  {c:"CTN",n:"Cabra tierno 1 kg",p:11.80,g:"C"},
+  {c:"CSG",n:"Cabra semi",p:12.50,g:"C"},
+  {c:"OCG AURORA",n:"Aurora 3 kg",p:12.55,g:"X"},
+  {c:"OCM AURORA",n:"Aurora 2 kg",p:12.55,g:"X"},
+  {c:"OCP AURORA",n:"Aurora pequeño",p:12.55,g:"X"},
+  {c:"SIN SAL",n:"Sin sal",p:9.40,g:"X"}
+];
+const GRUPOS = {M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["D.O.","--do"],C:["Cabra","--cabra"],X:["Otros","--otros"]};
+
+/* ---------- almacenamiento local (tolerante a fallos) ---------- */
+const LS = {
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+let precios = LS.get("alb_precios", null) || PRECIOS_INI.map(x=>({...x}));
+let hist = LS.get("alb_hist", []);
+let alb = LS.get("alb_actual", null) || nuevoAlb();
+
+function hoy(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
+function nuevoAlb(){
+  const n = (LS.get("alb_ultimo",0)||0)+1;
+  return {num:n, fecha:hoy(), cli:"CASA", lineas:[]};
+}
+
+/* ---------- utilidades ---------- */
+const $=s=>document.querySelector(s);
+const num=v=>{const x=parseFloat(String(v).replace(/\s/g,"").replace(",","."));return isFinite(x)?x:0};
+const r2=x=>Math.round((x+Number.EPSILON)*100)/100;
+const eur=x=>x.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2});
+const kgf=x=>x.toLocaleString("es-ES",{minimumFractionDigits:1,maximumFractionDigits:3});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fechaES=f=>{const[a,m,d]=f.split("-");return `${+d}/${+m}/${a}`};
+const lineaTot=l=>r2(num(l.kg)*num(l.p));
+const guardar=()=>LS.set("alb_actual",alb);
+
+/* ---------- pintar albarán ---------- */
+function pintar(){
+  $("#fNum").value=alb.num; $("#fFecha").value=alb.fecha; $("#fCli").value=alb.cli;
+  const cont=$("#lineas");
+  if(!alb.lineas.length){cont.innerHTML='<div class="vacio">Sin productos todavía.<br>Pulsa «Añadir producto».</div>'}
+  else cont.innerHTML=alb.lineas.map((l,i)=>`
+    <div class="linea">
+      <div class="lname"><span class="chip" style="background:var(${(GRUPOS[l.g]||GRUPOS.X)[1]})"></span>${esc(l.c)} <small>${esc(l.n||"")}</small></div>
+      <div class="ltot" id="lt${i}">${eur(lineaTot(l))} €</div>
+      <div class="lin">
+        <div><label for="u${i}">Uds</label><input id="u${i}" class="num" inputmode="numeric" value="${esc(l.u)}" data-i="${i}" data-f="u"></div>
+        <div><label for="k${i}">Kg</label><input id="k${i}" class="num" inputmode="decimal" value="${esc(l.kg)}" data-i="${i}" data-f="kg"></div>
+        <div><label for="p${i}">€/kg</label><input id="p${i}" class="num" inputmode="decimal" value="${esc(l.p)}" data-i="${i}" data-f="p"></div>
+        <div><label for="d${i}">Día</label><input id="d${i}" class="num" value="${esc(l.d||"")}" placeholder="—" data-i="${i}" data-f="d"></div>
+        <button class="x" aria-label="Quitar línea" data-del="${i}">×</button>
+      </div>
+    </div>`).join("");
+  totales();
+}
+function totales(){
+  let t=0,kg=0;
+  alb.lineas.forEach((l,i)=>{const lt=lineaTot(l);t+=lt;kg+=num(l.kg);const e=$("#lt"+i);if(e)e.textContent=eur(lt)+" €"});
+  $("#tTot").textContent=eur(r2(t))+" €";
+  $("#tSub").textContent=`${alb.lineas.length} líneas · ${kgf(kg)} kg`;
+}
+$("#lineas").addEventListener("input",e=>{
+  const i=e.target.dataset.i,f=e.target.dataset.f; if(i==null)return;
+  alb.lineas[i][f]=e.target.value; guardar(); totales();
+});
+$("#lineas").addEventListener("click",e=>{
+  const d=e.target.dataset.del; if(d==null)return;
+  alb.lineas.splice(+d,1); guardar(); pintar();
+});
+["fNum","fFecha","fCli"].forEach(id=>$("#"+id).addEventListener("input",e=>{
+  alb[{fNum:"num",fFecha:"fecha",fCli:"cli"}[id]]=e.target.value; guardar();
+}));
+
+/* ---------- selector de producto ---------- */
+function pintarProds(q=""){
+  q=q.trim().toUpperCase();
+  const f=precios.filter(p=>!q||p.c.toUpperCase().includes(q)||(p.n||"").toUpperCase().includes(q));
+  let h="";
+  Object.keys(GRUPOS).forEach(g=>{
+    const ps=f.filter(p=>(p.g||"X")===g); if(!ps.length)return;
+    h+=`<div class="grupo">${GRUPOS[g][0]}</div><div class="prods">`+
+      ps.map(p=>`<button class="prod" style="--c:var(${GRUPOS[g][1]})" data-c="${esc(p.c)}"><b>${esc(p.c)}</b><span>${eur(p.p)} €</span></button>`).join("")+`</div>`;
+  });
+  $("#lProds").innerHTML=h||'<div class="vacio">Ningún producto coincide. Añádelo en «Precios».</div>';
+}
+$("#bAdd").onclick=()=>{$("#fBus").value="";pintarProds();$("#dProd").showModal()};
+$("#fBus").oninput=e=>pintarProds(e.target.value);
+$("#lProds").addEventListener("click",e=>{
+  const b=e.target.closest(".prod"); if(!b)return;
+  const p=precios.find(x=>x.c===b.dataset.c);
+  const ult=alb.lineas.length?alb.lineas[alb.lineas.length-1].d:"";
+  alb.lineas.push({c:p.c,n:p.n,g:p.g,p:String(p.p).replace(".",","),u:"",kg:"",d:ult||""});
+  guardar(); $("#dProd").close(); pintar();
+  const i=alb.lineas.length-1; const inp=$("#u"+i); inp&&inp.focus(); inp&&inp.scrollIntoView({block:"center"});
+});
+
+/* ---------- tabla de precios ---------- */
+function pintarPrecios(){
+  $("#lPrecios").innerHTML=precios.map((p,i)=>`
+    <div class="prow">
+      <input value="${esc(p.c)}" data-pi="${i}" data-pf="c" aria-label="Código">
+      <input value="${esc(p.n||"")}" data-pi="${i}" data-pf="n" aria-label="Nombre">
+      <input class="num" inputmode="decimal" value="${String(p.p).replace(".",",")}" data-pi="${i}" data-pf="p" aria-label="Precio">
+      <button class="x" data-pdel="${i}" aria-label="Borrar">×</button>
+    </div>`).join("");
+}
+$("#lPrecios").addEventListener("input",e=>{
+  const i=e.target.dataset.pi,f=e.target.dataset.pf; if(i==null)return;
+  precios[i][f]= f==="p"?num(e.target.value): (f==="c"?e.target.value.toUpperCase():e.target.value);
+  LS.set("alb_precios",precios);
+});
+$("#lPrecios").addEventListener("click",e=>{
+  const d=e.target.dataset.pdel; if(d==null)return;
+  precios.splice(+d,1); LS.set("alb_precios",precios); pintarPrecios();
+});
+$("#bPrecios").onclick=()=>{pintarPrecios();$("#dPrecios").showModal()};
+$("#bAddP").onclick=()=>{precios.push({c:"NUEVO",n:"",p:0,g:"X"});LS.set("alb_precios",precios);pintarPrecios();};
+let resetArmado=false;
+$("#bReset").onclick=e=>{
+  if(!resetArmado){resetArmado=true;e.target.textContent="Pulsa otra vez para confirmar";setTimeout(()=>{resetArmado=false;e.target.textContent="Restaurar precios iniciales"},3000);return}
+  precios=PRECIOS_INI.map(x=>({...x}));LS.set("alb_precios",precios);pintarPrecios();resetArmado=false;e.target.textContent="Restaurar precios iniciales";
+};
+
+/* ---------- nuevo / historial ---------- */
+function archivar(){
+  if(!alb.lineas.length)return;
+  hist=hist.filter(h=>String(h.num)!==String(alb.num));
+  hist.unshift(JSON.parse(JSON.stringify(alb))); hist=hist.slice(0,40);
+  LS.set("alb_hist",hist);
+  LS.set("alb_ultimo",Math.max(+alb.num||0,LS.get("alb_ultimo",0)||0));
+}
+let nuevoArmado=false;
+$("#bNuevo").onclick=e=>{
+  if(alb.lineas.length && !nuevoArmado){nuevoArmado=true;e.target.textContent="Pulsa otra vez: se guarda y empieza otro";setTimeout(()=>{nuevoArmado=false;e.target.textContent="Nuevo albarán"},3000);return}
+  archivar(); alb=nuevoAlb(); guardar(); pintar(); nuevoArmado=false; e.target.textContent="Nuevo albarán";
+};
+$("#bHist").onclick=()=>{
+  $("#lHist").innerHTML=hist.length?hist.map((h,i)=>{
+    const t=r2(h.lineas.reduce((s,l)=>s+lineaTot(l),0));
+    return `<div class="hist"><div><b>Nº ${esc(h.num)}</b> · ${fechaES(h.fecha)} · ${esc(h.cli)}<br><small style="color:var(--muted)">${h.lineas.length} líneas · ${eur(t)} €</small></div><button class="btn" data-h="${i}">Abrir</button></div>`}).join("")
+    :'<div class="vacio">Aún no hay albaranes guardados.</div>';
+  $("#dHist").showModal();
+};
+$("#lHist").addEventListener("click",e=>{
+  const i=e.target.dataset.h; if(i==null)return;
+  if(alb.lineas.length) archivar();
+  alb=JSON.parse(JSON.stringify(hist[i])); guardar(); $("#dHist").close(); pintar();
+});
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>b.closest("dialog").close());
+
+/* ---------- impresión ---------- */
+function htmlCopia(etiqueta){
+  let t=0,kg=0,diaAnt=null;
+  const varios=new Set(alb.lineas.map(l=>(l.d||"").trim())).size>1;
+  const filas=alb.lineas.map(l=>{
+    const lt=lineaTot(l);t+=lt;kg+=num(l.kg);
+    let sep="";const d=(l.d||"").trim();
+    if(varios&&d!==diaAnt){sep=`<tr class="sep"><td colspan="5">Día ${esc(d||"—")}</td></tr>`;diaAnt=d}
+    return sep+`<tr><td class="n">${esc(l.u)}</td><td>${esc(l.c)}</td><td class="n">${kgf(num(l.kg))}</td><td class="n">${eur(num(l.p))}</td><td class="n">${eur(lt)}</td></tr>`;
+  }).join("");
+  return `<section class="copia">
+    <div class="ph">
+      <div class="emp"><b>LÁCTEOS CUQUERELLA, S.L.</b><br>Quesos El Hidalgo · Manzanares</div>
+      <div class="tit"><b>ALBARÁN</b><br>Nº ${esc(alb.num)}<br><span class="copytag">COPIA ${etiqueta}</span></div>
+    </div>
+    <div class="meta"><div><b>Fecha:</b> ${fechaES(alb.fecha)}</div><div><b>Cliente:</b> ${esc(alb.cli)}</div></div>
+    <table>
+      <thead><tr><th style="width:12%">Cantidad</th><th>Concepto</th><th style="width:14%">Kg</th><th style="width:14%">Precio €/kg</th><th style="width:16%">Total €</th></tr></thead>
+      <tbody>${filas}</tbody>
+      <tfoot><tr><td colspan="2">TOTAL</td><td class="n">${kgf(kg)}</td><td></td><td class="n">${eur(r2(t))}</td></tr></tfoot>
+    </table>
+    <div class="pie"><div>Conforme cliente</div><div>Observaciones</div></div>
+  </section>`;
+}
+$("#bImp").onclick=()=>{
+  if(!alb.lineas.length)return;
+  $("#imp").innerHTML=htmlCopia("TIENDA")+htmlCopia("FACTURACIÓN");
+  archivar();
+  window.print();
+};
+
+pintar();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+</script>
+</body>
+</html>
