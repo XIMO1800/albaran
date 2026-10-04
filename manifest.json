@@ -1,8 +1,8 @@
 {
   "id": "/albaran/",
-  "name": "Albarán Tienda · El Hidalgo",
-  "short_name": "Albarán",
-  "description": "Albaranes de pedidos para la tienda",
+  "name": "Pedidos Tienda · El Hidalgo",
+  "short_name": "Pedidos",
+  "description": "Pedidos de la tienda, preparación y albaranes",
   "start_url": "/albaran/",
   "scope": "/albaran/",
   "display": "standalone",
@@ -10,8 +10,18 @@
   "background_color": "#f3f5f8",
   "theme_color": "#1f3a5f",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
   ],
   "lang": "es"
 }
