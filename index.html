@@ -427,7 +427,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "32 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "33 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -568,10 +568,11 @@ function vLogin(app){
   barra("");
   app.innerHTML=`<div class="login"><span class="logo"><img src="${LOGO}" alt="Quesos El Hidalgo"></span><h1>Pedidos tienda</h1><div class="sub">Tienda · Fábrica · Oficina</div><div class="ver">Versión ${VERSION}</div>
   <form id="fLog"><label class="pinbox" for="fPin"><div class="sub">Escribe tu PIN</div><div class="pindots" id="pDots"><i></i><i></i><i></i><i></i></div>
-  <input id="fPin" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="8" aria-label="PIN"></label>
+  <input id="fPin" type="text" name="ped-codigo" inputmode="numeric" pattern="[0-9]*" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" maxlength="8" aria-label="PIN"></label>
   <button class="btn pri" id="bEntrar">Entrar</button></form>
   ${S.api!==API_DEF?`<div class="srvaviso">Este aparato está usando otro servidor (…${esc(S.api.slice(-14,-5))}).<br><button class="btn" id="bSrv" type="button">Usar el servidor de la fábrica</button></div>`:""}</div>`;
   const i=$("#fPin"),b=$("#bEntrar");let enviando=false;
+  i.value=""; setTimeout(()=>{if(!enviando&&i.value.length>4){i.value="";puntos()}},300); // sin autorrelleno del navegador
   const puntos=()=>{const n=i.value.length;$("#pDots").innerHTML=Array.from({length:Math.max(4,n)},(_,k)=>`<i class="${k<n?"on":""}"></i>`).join("")};
   const entrar=async()=>{if(enviando)return;const pin=i.value.trim();if(!pin)return i.focus();
     enviando=true;b.disabled=true;b.textContent="Entrando…";S.pin=pin;
