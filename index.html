@@ -215,6 +215,14 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 .tag{display:inline-block;border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700;white-space:nowrap}
 .tag.ok{background:#e1f2e7;color:var(--ok)}.tag.no{background:var(--gold-soft);color:#7a4a00}.tag.dif{background:#fdf0d8;color:#9c5c00}
 .nota{font-size:13px;color:var(--muted);margin:6px 0 12px}
+.dcardx{cursor:pointer}
+.dhead2{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dhead2 b{font-family:var(--display);font-size:22px}
+.dline{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.dl1{flex:1;min-width:0}
+.dl1 small{color:var(--muted)}
+.dgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.dgrid .card{margin:0}
 .b3{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:8px;width:100%}
 #imp{display:none}
 
@@ -382,10 +390,10 @@ window.matchMedia("(min-width: 1000px)").addEventListener("change",()=>{if(S.use
 /* =================== cabecera y pestañas =================== */
 function tabsDeRol(){
   const n=e=>S.pedidos.filter(p=>p.estado===e).length;
-  if(S.rol==="TIENDA") return [["nuevo","Nuevo pedido"],["mios","Mis pedidos"]];
-  if(S.rol==="FABRICA") return [["preparar","Por preparar",n("ENVIADO")+n("PREPARANDO")],["hechos","Preparados"]];
-  if(esDesk()) return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["historial","Histórico"],["albaranes","Albaranes"],["exportar","Exportar"],["precios","Artículos y precios"],["nuevo","+ Pedido"]];
-  return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["albaranes","Albaranes"],["nuevo","+ Pedido"],["precios","Precios"]];
+  if(S.rol==="TIENDA") return [["nuevo","Nuevo pedido"],["mios","Mis pedidos"],["difs","Diferencias"]];
+  if(S.rol==="FABRICA") return [["preparar","Por preparar",n("ENVIADO")+n("PREPARANDO")],["hechos","Preparados"],["difs","Diferencias"]];
+  if(esDesk()) return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["historial","Histórico"],["difs","Diferencias"],["albaranes","Albaranes"],["exportar","Exportar"],["precios","Artículos y precios"],["nuevo","+ Pedido"]];
+  return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["albaranes","Albaranes"],["difs","Diferencias"],["nuevo","+ Pedido"],["precios","Precios"]];
 }
 function renderHeader(){
   const h=$("#hdr"); h.hidden=!S.user;
@@ -411,7 +419,7 @@ function render(){
   }
   ({nuevo:()=>{S.scr={t:"editar",ped:nuevoBorrador()};render()},mios:vListaTienda,preparar:vListaFab,hechos:vListaFabHechos,
     pedidos:esDesk()?vPedidosDesk:vListaOficina,albaranes:esDesk()?vAlbaranesDesk:vAlbaranes,precios:vPrecios,
-    historial:vHistorial,exportar:vExportar})[S.tab](app);
+    historial:vHistorial,exportar:vExportar,difs:vDiferencias})[S.tab](app);
 }
 
 /* =================== configuración y login =================== */
@@ -444,12 +452,22 @@ function vLogin(app){
 
 /* =================== tarjetas de pedido =================== */
 function totPz(p){return p.lineas.reduce((s,l)=>s+(l.pzS??l.pz),0)}
+// Fecha legible: «Hoy · Domingo 4 oct», «Ayer · …», «Jueves 2 oct»
+function fDiaPed(iso){const d=new Date(iso);if(isNaN(d))return"";const h=new Date();h.setHours(0,0,0,0);const x=new Date(d);x.setHours(0,0,0,0);
+  const dif=Math.round((h-x)/864e5),t=d.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"short"}).replace(",","").replace(".","");
+  return (dif===0?"Hoy · ":dif===1?"Ayer · ":"")+t.charAt(0).toUpperCase()+t.slice(1)}
+const fHora=iso=>{const d=new Date(iso);return isNaN(d)?"":d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})};
+const difsDe=p=>["ENVIADO","ANULADO"].includes(p.estado)?[]:p.lineas.filter(l=>l.extra||(l.pzS!=null&&+l.pzS!==+l.pz));
 function tarjeta(p,sel){
   const nl=p.lineas.length, pz=totPz(p);
+  if(S.rol==="TIENDA"){const nd=difsDe(p).length;
+    return `<div class="card ped" data-ver="${esc(p.id)}"><span></span>
+    <b>${fDiaPed(p.creado)}</b><span class="chip e-${p.estado}">${EST_TXT[p.estado]||p.estado}</span>
+    <div class="meta">${fHora(p.creado)} · Pedido ${esc(p.id)} · ${nl} producto${nl===1?"":"s"} · ${pz} pz${nd?` · <b style="color:var(--warn);font-size:inherit;display:inline">${nd} diferencia${nd>1?"s":""}</b>`:""}${p.obs?" · 📝":""}</div></div>`}
   return `<div class="card ped" data-ver="${esc(p.id)}">
     ${sel?`<input type="checkbox" class="selbox" data-sel="${esc(p.id)}" ${S.sel.has(p.id)?"checked":""} aria-label="Seleccionar pedido ${esc(p.id)}">`:`<span></span>`}
     <b>Pedido ${esc(p.id)}</b><span class="chip e-${p.estado}">${EST_TXT[p.estado]||p.estado}</span>
-    <div class="meta">${fCorta(p.creado)} · ${esc(p.creadoPor)} · ${nl} productos · ${pz} pz${p.albaran?` · Albarán ${esc(p.albaran)}`:""}${p.obs?" · 📝":""}</div>
+    <div class="meta">${fCorta(p.creado)} · ${esc(p.creadoPor)} · ${nl} producto${nl===1?"":"s"} · ${pz} pz${p.albaran?` · Albarán ${esc(p.albaran)}`:""}${p.obs?" · 📝":""}</div>
   </div>`;
 }
 function onLista(app){
@@ -462,6 +480,35 @@ function onLista(app){
 const ordenados=(est)=>S.pedidos.filter(p=>est.includes(p.estado)).sort((a,b)=>(+b.id)-(+a.id));
 
 /* =================== listas por rol =================== */
+/* =================== diferencias: lo pedido frente a lo enviado =================== */
+function vDiferencias(app){
+  barra("");
+  const desk=esDesk();
+  if(desk&&!S.H.data&&!S.H.cargando){cargarHist();return}
+  const fuente=desk?(S.H.data?S.H.data.pedidos:[]):S.pedidos;
+  const peds=fuente.filter(p=>difsDe(p).length).sort((a,b)=>String(b.creado).localeCompare(String(a.creado)));
+  let tNo=0,tFalta=0,tMas=0,tAdd=0;
+  const linea=l=>{const pz=+l.pz||0,sv=+l.pzS||0,pr=prod(l.c)||{};let tag,txt;
+    if(l.extra){tAdd++;tag=`<span class="tag" style="background:#e1ecf9;color:#1d5796">Añadido</span>`;txt=`${sv} pz · no estaba en el pedido`}
+    else if(sv===0){tNo++;tag=`<span class="tag" style="background:#fde4e4;color:#b3262d">No enviado</span>`;txt=`pedidas ${pz} · no se mandó ninguna`}
+    else if(sv<pz){tFalta+=pz-sv;tag=`<span class="tag dif">Faltan ${pz-sv}</span>`;txt=`pedidas ${pz} · enviadas ${sv}`}
+    else{tMas+=sv-pz;tag=`<span class="tag" style="background:#e1ecf9;color:#1d5796">${sv-pz} de más</span>`;txt=`pedidas ${pz} · enviadas ${sv}`}
+    return `<div class="dline"><span class="dot" style="${estiloG(grupoDe(l.c))}"></span><div class="dl1"><b>${esc(l.c)}</b> <small>${esc(l.n||pr.n||"")}</small><div class="muted" style="font-size:14px">${txt}${l.obs?` · ${esc(l.obs)}`:""}</div></div>${tag}</div>`};
+  const cards=peds.map(p=>`<div class="card dcardx" data-ver="${esc(p.id)}">
+      <div class="dhead2"><b>${fDiaPed(p.creado)}</b><span class="chip e-${p.estado}">${EST_TXT[p.estado]}</span></div>
+      <div class="muted" style="font-size:14px;margin-bottom:6px">Pedido ${esc(p.id)} · ${fHora(p.creado)}${p.albaran?` · albarán nº ${esc(p.albaran)}`:""}${p.actualizadoPor?` · preparado por ${esc(p.actualizadoPor)}`:""}</div>
+      ${ordenLineas(difsDe(p)).map(linea).join("")}
+      ${p.obsF?`<div class="obsbox" style="margin:8px 0 0"><b>Nota de fábrica:</b> ${esc(p.obsF)}</div>`:""}</div>`).join("");
+  app.innerHTML=`<div class="wrap">
+    ${desk?filtroFechas():`<p class="nota">Pedidos de los últimos días en los que lo enviado no coincide con lo pedido: artículos que faltaron, que no se mandaron, que fueron de más o que se añadieron.</p>`}
+    <div class="kpis"><div class="kpi"><span>Pedidos con diferencias</span><b>${peds.length}</b></div><div class="kpi kd"><span>No enviados</span><b>${tNo}</b></div><div class="kpi kd"><span>Piezas que faltaron</span><b>${tFalta}</b></div><div class="kpi"><span>Añadidos</span><b>${tAdd}</b></div>${tMas?`<div class="kpi"><span>Piezas de más</span><b>${tMas}</b></div>`:""}</div>
+    <div class="${desk?"dgrid":""}">${cards||`<div class="vacio">No hay diferencias: todo lo enviado coincide con lo pedido.</div>`}</div></div>`;
+  if(desk)enlazarFiltro(app);
+  app.onclick=e=>{const c=e.target.closest("[data-ver]");if(!c)return;
+    if(!S.pedidos.some(x=>x.id===c.dataset.ver)){const q=(S.H.data?S.H.data.pedidos:[]).find(x=>x.id===c.dataset.ver);if(q)S.pedidos.push(q)}
+    S.scr={t:"ver",id:c.dataset.ver};render();scrollTo(0,0)};
+}
+
 function vListaTienda(app){
   barra(`<span class="muted">${S.pedidos.length} pedidos recientes</span><button class="btn pri" id="bNuevo">+ Nuevo pedido</button>`);
   const act=ordenados(["ENVIADO","PREPARANDO","PREPARADO"]), cer=ordenados(["ALBARANADO","ANULADO"]);
@@ -576,7 +623,7 @@ function vVer(app){
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="justify-content:space-between;align-items:center;margin-bottom:10px">
       <button class="btn sm" id="bVolver">← Volver</button><span class="chip e-${E}">${EST_TXT[E]}</span></div>
-    <div class="card"><b style="font-size:18px">Pedido ${esc(p.id)}</b>
+    <div class="card">${R==="TIENDA"?`<b style="font-family:var(--display);font-size:24px">${fDiaPed(p.creado)}</b><div class="muted">Pedido ${esc(p.id)} · ${fHora(p.creado)}</div>`:`<b style="font-size:18px">Pedido ${esc(p.id)}</b>`}
       <div class="muted">Hecho ${fCorta(p.creado)} por ${esc(p.creadoPor)}${p.actualizadoPor&&p.actualizado!==p.creado?` · último cambio ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`:""}</div>
       ${p.albaran?`<div style="margin-top:4px">Albarán nº <b>${esc(p.albaran)}</b>${alb?` · ${kgf(alb.kg)} kg · ${eur(alb.total)} €`:""}</div>`:""}</div>
     ${p.obs?`<div class="obsbox"><b>Observaciones de la tienda:</b>\n${esc(p.obs)}</div>`:""}
@@ -810,7 +857,7 @@ function vPrecios(app){
 }
 
 /* =================== ESCRITORIO: marco tipo Recogida (barra lateral + título) =================== */
-const SIDE=[["pedidos","Pedidos","Nuevos, preparando y preparados"],["historial","Histórico","Lo pedido frente a lo servido"],["albaranes","Albaranes","Emitidos y reimpresión"],
+const SIDE=[["pedidos","Pedidos","Nuevos, preparando y preparados"],["historial","Histórico","Lo pedido frente a lo servido"],["difs","Diferencias","Solo pedidos con cambios"],["albaranes","Albaranes","Emitidos y reimpresión"],
   ["exportar","Exportar","CSV para el programa de gestión"],["precios","Artículos y precios","Catálogo, orden y precios"],["nuevo","Nuevo pedido","Meter un pedido a mano"]];
 function marcoDesk(){
   const sd=$("#side"), on=document.body.classList.contains("desk");
@@ -819,11 +866,11 @@ function marcoDesk(){
   sd.innerHTML=`<div class="side-t">Pedidos tienda<small>${esc(S.user)} · ${S.rol==="ADMIN"?"Administración":"Oficina"}</small></div>
     <nav class="snav">${SIDE.map(([k,t,sub])=>`<button data-side="${k}" class="${S.tab===k?"on":""}">${t}${badge[k]?`<span class="badge">${badge[k]}</span>`:""}<small>${sub}</small></button>`).join("")}</nav>
     <div style="flex:1"></div><button class="navb" id="sideAct">Actualizar datos</button><button class="navb" id="sideSalir">Salir</button>`;
-  sd.querySelectorAll("[data-side]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.side;S.scr=null;S.sel.clear();if(S.tab==="historial"||S.tab==="albaranes"||S.tab==="exportar")S.H.data=null;render();scrollTo(0,0)});
-  $("#sideAct").onclick=async()=>{if(["historial","albaranes","exportar"].includes(S.tab)&&!S.scr){cargarHist()}else{await cargar();toast("Datos actualizados")}};
+  sd.querySelectorAll("[data-side]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.side;S.scr=null;S.sel.clear();if(["historial","albaranes","exportar","difs"].includes(S.tab))S.H.data=null;render();scrollTo(0,0)});
+  $("#sideAct").onclick=async()=>{if(["historial","albaranes","exportar","difs"].includes(S.tab)&&!S.scr){cargarHist()}else{await cargar();toast("Datos actualizados")}};
   $("#sideSalir").onclick=async()=>{const c=await confirmar("Salir","¿Cerrar la sesión en este ordenador?");if(c.ok){S.pin="";S.user=null;LS.del("ped_pin");render()}};
   // título grande en la cabecera
-  const T={pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Exportar","Albaranes al programa de gestión"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"]};
+  const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Exportar","Albaranes al programa de gestión"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"]};
   let t=T[S.tab]||["Pedidos",""];
   if(S.scr){const sc=S.scr;
     if(sc.t==="ver")t=["Pedido "+sc.id,"Detalle"];else if(sc.t==="preparar")t=["Preparando pedido "+sc.ped.id,"Piezas servidas y pesos"];
