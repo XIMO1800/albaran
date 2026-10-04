@@ -240,6 +240,16 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
   .pie{display:flex;gap:12px;margin-top:14px}
   .pie div{flex:1;border:1px solid #000;height:22mm;padding:4px 6px;font-size:9pt}
   td.big{height:9mm}
+  .media{font-size:9pt;line-height:1.2;padding:0 1mm}
+  .media .mh{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.5px solid #000;padding-bottom:2mm;margin-bottom:2mm;font-size:8.5pt}
+  .media .mh b{font-size:12pt}
+  .media .mt{font-weight:700;font-size:10pt}
+  .media table th{font-size:7.5pt;padding:1.2mm 2mm}
+  .media table td{padding:.6mm 2mm;height:4.5mm}
+  .media .pn{font-size:7.5pt}
+  .media .mobs{border:1px solid #000;padding:1mm 2mm;margin:1.2mm 0;min-height:5mm;font-size:8.5pt;white-space:pre-wrap}
+  .media .mfirma{display:flex;justify-content:space-between;margin-top:2mm;font-size:8.5pt}
+  .media .corte{margin-top:2.5mm;color:#777;font-size:8pt;white-space:nowrap;overflow:hidden}
 }
 </style>
 </head>
@@ -991,16 +1001,17 @@ function imprimirAlbaran(a){
   setTimeout(()=>window.print(),100);
 }
 function imprimirHoja(p){
+  // Media hoja: ocupa la mitad superior del A4 (210 × 148 mm, en horizontal) con línea de corte
   const filas=ordenLineas(p.lineas).map(l=>{const pr=prod(l.c)||{b:1};
-    return `<tr><td><b>${esc(l.c)}</b> <span style="font-size:9pt">${esc(l.n)}</span></td><td class="n">${l.pz||""}${pr.b>1&&l.pz?` <span style="font-size:9pt">(${bandTxt(l.pz,pr.b)})</span>`:""}</td>
-      <td class="n big">${l.pzS!=null&&l.pzS!==l.pz?l.pzS:""}</td><td class="n big">${l.kg?kgf(num(l.kg)):""}</td><td class="big"></td></tr>`}).join("");
-  $("#imp").innerHTML=`<section class="copia">${cabecera("HOJA DE PREPARACIÓN","Pedido "+p.id)}
-    <div class="meta"><div><b>Pedido:</b> ${fCorta(p.creado)}</div><div><b>Tienda:</b> CASA</div></div>
-    ${p.obs?`<div class="pobs" style="margin-bottom:8px"><b>Observaciones de la tienda:</b> ${esc(p.obs)}</div>`:""}
-    <table><thead><tr><th>Producto</th><th style="width:16%">Pedido</th><th style="width:14%">Servido pz</th><th style="width:16%">Kg</th><th style="width:7%">✓</th></tr></thead>
-    <tbody>${filas}${'<tr><td class="big"></td><td></td><td></td><td></td><td></td></tr>'.repeat(4)}</tbody></table>
-    <div class="pobs"><b>Notas de fábrica:</b> ${esc(p.obsF||"")}</div>
-    <div class="pie"><div>Preparado por</div><div>Fecha</div></div></section>`;
+    return `<tr><td><b>${esc(l.c)}</b> <span class="pn">${esc(l.n||pr.n||"")}</span></td><td class="n">${l.pz||""}${pr.b>1&&l.pz>=pr.b?` <span class="pn">(${bandTxt(l.pz,pr.b)})</span>`:""}</td>
+      <td class="n">${l.pzS!=null&&l.pzS!==l.pz?l.pzS:""}</td><td class="n">${l.kg?kgf(num(l.kg)):""}</td><td></td></tr>`}).join("");
+  $("#imp").innerHTML=`<section class="copia media">
+    <div class="mh"><div><b>HOJA DE PREPARACIÓN · Pedido ${esc(p.id)}</b><br>${EMPRESA.s} · Tienda CASA · pedido ${fCorta(p.creado)}</div><div class="mt">${ordenLineas(p.lineas).length} artículos · ${p.lineas.reduce((x,l)=>x+(+l.pz||0),0)} pz</div></div>
+    ${p.obs?`<div class="mobs"><b>Tienda:</b> ${esc(p.obs)}</div>`:""}
+    <table><thead><tr><th>Producto</th><th style="width:17%">Pedido</th><th style="width:12%">Servido</th><th style="width:13%">Kg</th><th style="width:6%">✓</th></tr></thead><tbody>${filas}</tbody></table>
+    <div class="mobs"><b>Notas:</b> ${esc(p.obsF||"")}</div>
+    <div class="mfirma"><span>Preparado por: ____________________</span><span>Fecha: ____ / ____ / ______</span></div>
+    <div class="corte">✂ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</div></section>`;
   setTimeout(()=>window.print(),100);
 }
 
