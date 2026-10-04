@@ -202,7 +202,8 @@ table.t tr.cl:hover td{background:var(--brand-soft)}
 table.t tr.det>td{background:var(--surface2);padding:12px 16px}
 table.t tr.dif td{background:#fdf0d8}
 table.t tr.pr td{background:var(--t)}
-table.t tr.pr td:first-child{border-left:8px solid var(--c)}
+table.t tr.pr td.cc{white-space:nowrap}
+table.t tr.pr td.cc .dot{width:12px;height:12px;margin-right:8px}
 table.t input,table.t select{padding:6px 8px;font-size:14px}
 table.t tfoot td{font-weight:700;background:var(--surface2)}
 table.t.sub{background:#fff;border:1px solid var(--line)}
@@ -237,7 +238,8 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
   th,td{border:1px solid #000;padding:5px 6px}
   th{background:#862133;color:#fff;border-color:#862133;font-size:9.5pt;text-transform:uppercase}
   tfoot td{background:#f7e8eb}
-  td.cod{border-left:2.5mm solid var(--c)}
+  .pdot{display:inline-block;width:2.6mm;height:2.6mm;border-radius:50%;background:var(--c);margin-right:1.5mm;vertical-align:-.2mm}
+  .media .pn{padding-left:4.1mm}
   tr.ps td{background:var(--c);color:#fff;font-weight:700;font-size:7.5pt;letter-spacing:.06em;text-transform:uppercase;padding:.6mm 2mm;height:auto}
   tr.ps.s-C td{color:#3d2f10}
   tr.ps.s-P td{color:#2b1d00}
@@ -769,7 +771,7 @@ function vPrecios(app){
     for(const p of lista){const i=idx(p),k=seccion(p,P);
       if(k!==k0){h+=`<tr><td colspan="8" style="padding:0;border:0"><div class="grupo s-${k}" style="margin:0;border-radius:0">${seccTit(k)}</div></td></tr>`;k0=k}
       h+=`<tr class="pr" style="${estiloG(p.g)}"><td style="white-space:nowrap">${mov(p,i)}</td>
-        <td><input class="pcode" value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" style="width:9em"></td>
+        <td class="cc"><span class="dot"></span><input class="pcode" value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" style="width:9em"></td>
         <td><input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre"></td>
         <td>${selG(p,i)}</td>
         <td class="n"><input class="num" inputmode="decimal" value="${esc(dec(p.p))}" data-i="${i}" data-f="p" aria-label="Precio €/kg" style="width:6em"></td>
@@ -1004,7 +1006,7 @@ function imprimir(tam,margen){
 function imprimirAlbaran(a){
   const copia=tag=>{let ant=null;const varios=new Set(a.lineas.map(l=>l.pedido)).size>1;
     const filas=a.lineas.map(l=>{let s="";if(varios&&l.pedido!==ant){const p=S.pedidos.find(x=>x.id===l.pedido);s=`<tr class="sep"><td colspan="5">Pedido ${esc(l.pedido)}${p?" · "+fDiaCorto(p.creado):""}</td></tr>`;ant=l.pedido}
-      return s+`<tr><td class="n">${l.pz}</td><td class="cod" style="${estiloG(grupoDe(l.c))}"><b>${esc(l.c)}</b> <span style="font-size:9pt">${esc(l.n)}</span></td><td class="n">${kgf(l.kg)}</td><td class="n">${eur(l.p)}</td><td class="n">${eur(r2(l.kg*l.p))}</td></tr>`}).join("");
+      return s+`<tr><td class="n">${l.pz}</td><td style="${estiloG(grupoDe(l.c))}"><i class="pdot"></i><b>${esc(l.c)}</b> <span style="font-size:9pt">${esc(l.n)}</span></td><td class="n">${kgf(l.kg)}</td><td class="n">${eur(l.p)}</td><td class="n">${eur(r2(l.kg*l.p))}</td></tr>`}).join("");
     return `<section class="copia">${cabecera("ALBARÁN",a.num,tag)}
       <div class="meta"><div><b>Fecha:</b> ${fDia(a.fecha)}</div><div><b>Cliente:</b> ${esc(a.cliente)}</div><div><b>Pedidos:</b> ${esc(a.pedidos)}</div></div>
       <table><thead><tr><th style="width:10%">Piezas</th><th>Concepto</th><th style="width:13%">Kg</th><th style="width:14%">Precio €/kg</th><th style="width:15%">Total €</th></tr></thead>
@@ -1019,7 +1021,7 @@ function imprimirHoja(p){
   let k0=null;
   const filas=ordenLineas(p.lineas).map(l=>{const pr=prod(l.c)||{b:1,g:"X"},k=prod(l.c)?seccion(pr):"X";
     const cab=k!==k0?`<tr class="ps s-${k}" style="--c:var(${k==="P"?"--gold":k==="X"?"--otros":colorG(k)})"><td colspan="5">${seccTit(k)}</td></tr>`:"";k0=k;
-    return cab+`<tr><td class="cod" style="${estiloG(pr.g)}"><b>${esc(l.c)}</b><span class="pn">${esc(l.n||pr.n||"")}</span></td><td class="n">${l.pz||""}${pr.b>1&&l.pz>=pr.b?`<span class="pn">${bandTxt(l.pz,pr.b)}</span>`:""}</td>
+    return cab+`<tr><td style="${estiloG(pr.g)}"><i class="pdot"></i><b>${esc(l.c)}</b><span class="pn">${esc(l.n||pr.n||"")}</span></td><td class="n">${l.pz||""}${pr.b>1&&l.pz>=pr.b?`<span class="pn">${bandTxt(l.pz,pr.b)}</span>`:""}</td>
       <td class="n">${l.pzS!=null&&l.pzS!==l.pz?l.pzS:""}</td><td class="n">${l.kg?kgf(num(l.kg)):""}</td><td></td></tr>`}).join("");
   $("#imp").innerHTML=`<section class="copia media">
     <span class="tij">✂</span>
