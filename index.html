@@ -4,106 +4,115 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pedidos Tienda</title>
-<meta name="theme-color" content="#1f3a5f">
+<meta name="theme-color" content="#862133">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap">
 <style>
-/* Móvil primero: cabecera con pestañas, lista de tarjetas, barra de acción fija abajo */
+/* Misma línea que Recogida y TraceQueso: granate El Hidalgo, dorado, Barlow. Tema claro único (se usa en tienda y fábrica). */
 :root{
-  --bg:#f3f5f8; --card:#ffffff; --fg:#17202b; --muted:#5d6b7c; --line:#d9dfe7;
-  --accent:#1f3a5f; --accent-fg:#fff; --soft:#e6edf6;
-  --mezcla:#1e6b45; --oveja:#1f3a8a; --do:#d9620b; --cabra:#9a8556; --averia:#b3261e; --otros:#5d6b7c;
-  --danger:#b3261e; --ok:#1e7a46; --warn:#a86500;
-  --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+  --brand:#862133; --brand-deep:#6a1010; --brand-soft:#f7e8eb; --gold:#c4952b; --gold-soft:#fbf1dc;
+  --bg:#f2efee; --card:#ffffff; --surface2:#f7f4f3; --fg:#1d1618; --muted:#6a5f61; --line:#ddd4d5;
+  --accent:var(--brand); --accent-fg:#fff; --soft:var(--brand-soft);
+  /* colores de tarjetón, como en TraceQueso */
+  --mezcla:#1e5e3a; --oveja:#1d3a7a; --do:#e0620b; --cabra:#b8a271; --averia:#c0262d; --otros:#6a5f61;
+  --danger:#c0262d; --ok:#1e7443; --warn:#9c5c00;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --font:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
-@media (prefers-color-scheme: dark){:root{
-  --bg:#11161d; --card:#1b222c; --fg:#e6ebf1; --muted:#9aa7b6; --line:#2c3643;
-  --accent:#7fa6d9; --accent-fg:#0d1520; --soft:#22324a;
-  --mezcla:#4fb37e; --oveja:#7f9cf0; --do:#f08b3e; --cabra:#c9b383; --averia:#f2847c; --otros:#9aa7b6;
-  --danger:#f2847c; --ok:#5ccf8c; --warn:#f0b04a; color-scheme:dark}}
 *{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--fg);font:15px/1.4 var(--font);padding:0 0 110px}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--fg);font:16px/1.4 var(--font);padding:0 0 110px}
 button,input,select,textarea{font:inherit;color:inherit}
-.wrap{padding:10px 14px;max-width:760px;margin:0 auto}
-header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:calc(8px + env(safe-area-inset-top,0px)) 14px 0}
-.hrow{display:flex;justify-content:space-between;align-items:center;gap:8px;max-width:760px;margin:0 auto}
-.hrow h1{font-size:17px;margin:0}
-.who{font-size:12px;color:var(--muted);text-align:right}
-.who button{border:0;background:none;color:var(--accent);padding:0;font-size:12px;cursor:pointer;text-decoration:underline}
-nav{display:flex;gap:4px;overflow-x:auto;max-width:760px;margin:6px auto 0}
-nav button{border:0;background:none;padding:9px 12px;border-bottom:3px solid transparent;font-weight:600;color:var(--muted);white-space:nowrap;cursor:pointer}
-nav button.on{color:var(--fg);border-bottom-color:var(--accent)}
-.badge{display:inline-block;min-width:19px;padding:0 5px;border-radius:10px;background:var(--danger);color:#fff;font-size:12px;text-align:center;margin-left:4px}
-.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
-.btn.pri{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.wrap{padding:12px 16px;max-width:760px;margin:0 auto}
+header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;padding-top:env(safe-area-inset-top,0px);box-shadow:0 2px 0 var(--brand-deep)}
+.top-in{max-width:760px;margin:0 auto;padding-inline:16px}
+.brand{display:flex;align-items:center;gap:10px;padding-block:8px 6px;border-bottom:1px solid rgba(255,255,255,.18)}
+.logo{display:flex;align-items:center;background:#fff;border-radius:8px;padding:3px 8px;flex:none}
+.logo img{height:32px;width:auto;display:block}
+.app-name{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.85;white-space:nowrap}
+.who{margin-left:auto;font-size:12px;text-align:right;line-height:1.3}
+.who b{font-weight:700}
+.who button{border:0;background:rgba(255,255,255,.16);color:#fff;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer;margin-top:2px}
+nav{display:flex;gap:2px;overflow-x:auto}
+nav button{border:0;background:none;padding:10px 12px;border-bottom:3px solid transparent;font-weight:700;font-size:15px;color:rgba(255,255,255,.75);white-space:nowrap;cursor:pointer}
+nav button.on{color:#fff;border-bottom-color:var(--gold)}
+.badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:var(--gold);color:#2b1d00;font-size:12px;font-weight:700;text-align:center;margin-left:5px}
+.btn{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer;min-height:44px}
+.btn.pri{background:var(--brand);color:#fff;border-color:var(--brand);box-shadow:0 2px 0 var(--brand-deep)}
+.btn.pri:active{transform:translateY(1px);box-shadow:none}
 .btn.del{color:var(--danger)}
-.btn.sm{padding:6px 10px;font-size:13px}
+.btn.sm{padding:6px 10px;font-size:14px;min-height:36px}
 .btn:disabled{opacity:.5;cursor:default}
-.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,nav button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,nav button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
 .ped{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;cursor:pointer}
-.ped b{font-size:16px}
-.ped .meta{grid-column:2/4;color:var(--muted);font-size:13px}
-.chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
-.e-ENVIADO{background:#fde8c8;color:#7a4300}.e-PREPARANDO{background:#dce8fb;color:#16407a}
-.e-PREPARADO{background:#d5f2df;color:#135c33}.e-ALBARANADO{background:#e4e7ec;color:#38414d}.e-ANULADO{background:#f7d9d7;color:#8a1d16}
-.sec{margin:16px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
-label.l{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
-input,select,textarea{width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:16px}
+.ped b{font-family:var(--display);font-size:21px;font-weight:700}
+.ped .meta{grid-column:2/4;color:var(--muted);font-size:14px}
+.chip{display:inline-block;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+.e-ENVIADO{background:var(--gold-soft);color:#7a4a00}.e-PREPARANDO{background:#e1ecf9;color:#1d5796}
+.e-PREPARADO{background:#e1f2e7;color:#1e7443}.e-ALBARANADO{background:#ebe6e7;color:#4a4042}.e-ANULADO{background:#fde4e4;color:#b3262d}
+.sec{margin:18px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--brand);font-weight:700}
+label.l{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;font-weight:700}
+input,select,textarea{width:100%;min-width:0;padding:9px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);font-size:17px}
 textarea{min-height:64px;resize:vertical}
 .num{text-align:right;font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}
 .vacio{color:var(--muted);text-align:center;padding:24px 8px}
-.grupo{margin:14px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
-/* catálogo para pedir */
-.prod{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:9px 10px;margin-bottom:6px}
-.prod.has{background:var(--soft)}
-.prod .pn b{display:block}
-.prod .pn span{font-size:12px;color:var(--muted)}
+.grupo{margin:16px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--brand);font-weight:700}
+.prod{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:12px;padding:9px 10px;margin-bottom:6px}
+.prod.has{background:var(--brand-soft);border-color:#e6c9cf}
+.prod .pn b{display:block;font-family:var(--display);font-size:20px;font-weight:700;line-height:1.1}
+.prod .pn span{font-size:13px;color:var(--muted)}
 .step{display:flex;align-items:center;gap:4px}
-.step button{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:20px;font-weight:700;cursor:pointer}
-.step input{width:56px;text-align:center;padding:8px 4px}
-.band{grid-column:1/-1;display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
-.band button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 9px;font-size:13px;font-weight:600;cursor:pointer}
-/* líneas de preparación / albarán */
+.step button{width:42px;height:42px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);font-size:22px;font-weight:700;cursor:pointer;color:var(--brand)}
+.step input{width:58px;text-align:center;padding:8px 4px;font-family:var(--display);font-size:22px;font-weight:700}
+.band{grid-column:1/-1;display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.band button{border:1.5px solid var(--gold);background:var(--gold-soft);color:#6b4500;border-radius:8px;padding:5px 10px;font-size:14px;font-weight:700;cursor:pointer}
 .lin{display:grid;grid-template-columns:1fr auto;gap:6px 8px;padding:10px 0;border-top:1px solid var(--line)}
 .lin:first-child{border-top:0}
 .lin .ln{font-weight:700}
 .lin .ln small{font-weight:400;color:var(--muted)}
-.lin .lt{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.lin .lt{font-family:var(--display);font-size:19px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
 .lin .lf{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:end}
-.lin.ok{background:linear-gradient(90deg,transparent,transparent)}
 .lin.ok .ln::after{content:" ✓";color:var(--ok)}
-.chk{width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:20px;cursor:pointer;color:var(--muted)}
+.chk{width:44px;height:44px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);font-size:20px;cursor:pointer;color:var(--muted)}
 .chk.on{background:var(--ok);border-color:var(--ok);color:#fff}
-.x{border:0;background:none;color:var(--danger);font-size:22px;padding:6px 8px;cursor:pointer}
+.x{border:0;background:none;color:var(--danger);font-size:24px;padding:6px 8px;cursor:pointer}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle;background:var(--c)}
-.barra{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}
+.barra{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:3px solid var(--gold);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));box-shadow:0 -2px 12px rgba(0,0,0,.06)}
 .barra .in{max-width:760px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
-.tot{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
-.tot small{display:block;font-size:12px;font-weight:400;color:var(--muted)}
+.tot{font-family:var(--display);font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.tot small{display:block;font-family:var(--font);font-size:13px;font-weight:500;color:var(--muted)}
 .acc{display:flex;gap:8px;flex-wrap:wrap}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;z-index:20;background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;max-width:90vw;font-weight:600}
-.toast.err{background:var(--danger);color:#fff}
-.aviso{background:#fde8c8;color:#5a3200;border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:14px}
-.obsbox{background:var(--soft);border-radius:10px;padding:10px 12px;margin-bottom:10px;white-space:pre-wrap}
-dialog{border:0;border-radius:14px;padding:0;width:min(560px,96vw);max-height:88vh;background:var(--bg);color:var(--fg)}
-dialog::backdrop{background:rgba(0,0,0,.45)}
-.dh{position:sticky;top:0;background:var(--bg);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);gap:8px}
-.db{padding:10px 14px 16px}
-.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px}
-.pick button{border:1px solid var(--line);border-left:5px solid var(--c);background:var(--card);border-radius:8px;padding:8px;text-align:left;cursor:pointer}
-.pick button b{display:block}.pick button span{font-size:12px;color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;z-index:20;background:#1d1618;color:#fff;padding:11px 16px;border-radius:12px;max-width:90vw;font-weight:600}
+.toast.err{background:var(--danger)}
+.aviso{background:var(--gold-soft);color:#5a3a00;border:1px solid #ecd59f;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:15px}
+.obsbox{background:var(--brand-soft);border-left:5px solid var(--brand);border-radius:10px;padding:10px 12px;margin-bottom:10px;white-space:pre-wrap}
+dialog{border:0;border-radius:16px;padding:0;width:min(560px,96vw);max-height:88vh;background:var(--bg);color:var(--fg)}
+dialog::backdrop{background:rgba(29,22,24,.5)}
+.dh{position:sticky;top:0;background:var(--brand);color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dh .btn{background:rgba(255,255,255,.16);color:#fff;border-color:transparent}
+.db{padding:12px 14px 16px}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.pick button{border:1px solid var(--line);border-left:6px solid var(--c);background:var(--card);border-radius:10px;padding:8px;text-align:left;cursor:pointer}
+.pick button b{display:block;font-family:var(--display);font-size:18px}.pick button span{font-size:13px;color:var(--muted)}
 .prow{display:grid;grid-template-columns:1fr 1.4fr;gap:6px;padding:8px 0;border-top:1px solid var(--line)}
 .prow .r2{grid-column:1/-1;display:grid;grid-template-columns:1fr 5.5em 4.5em auto auto;gap:6px;align-items:center}
 .prow input,.prow select{padding:7px 8px;font-size:15px}
 .mini{font-size:11px;color:var(--muted);text-align:center}
-.login{max-width:340px;margin:12vh auto 0;padding:0 16px;text-align:center}
-.login h1{font-size:22px;margin:0 0 4px}
-.login input{text-align:center;font-size:28px;letter-spacing:.3em;margin:16px 0}
-.selbox{width:22px;height:22px;accent-color:var(--accent)}
+.login{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;background:var(--brand);color:#fff;text-align:center}
+.login .logo{padding:8px 16px;border-radius:12px;margin-bottom:14px}
+.login .logo img{height:56px}
+.login h1{font-family:var(--display);font-size:30px;margin:0;letter-spacing:.02em}
+.login .sub{color:rgba(255,255,255,.8);font-size:14px}
+.login form,.login .cfg{width:100%;max-width:320px}
+.login input{text-align:center;font-family:var(--display);font-size:34px;letter-spacing:.3em;margin:18px 0 12px;border:0}
+.login .btn{width:100%;background:var(--gold);color:#2b1d00;border:0;box-shadow:0 2px 0 #8d6a1d;font-size:18px}
+.selbox{width:24px;height:24px;accent-color:var(--brand)}
 #imp{display:none}
 
 /* ================== IMPRESIÓN ================== */
@@ -133,10 +142,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 </style>
 </head>
 <body>
-<header id="hdr" hidden>
-  <div class="hrow"><h1 id="hTit">Pedidos tienda</h1><div class="who" id="hWho"></div></div>
+<header id="hdr" hidden><div class="top-in">
+  <div class="brand"><span class="logo"><img src="data:image/jpeg;base64,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" alt="Quesos El Hidalgo"></span><span class="app-name">Pedidos tienda</span><div class="who" id="hWho"></div></div>
   <nav id="nav"></nav>
-</header>
+</div></header>
 <div id="app"></div>
 <div class="barra" id="barra" hidden><div class="in" id="barraIn"></div></div>
 
@@ -164,6 +173,7 @@ const EST_TXT = {ENVIADO:"Enviado",PREPARANDO:"Preparando",PREPARADO:"Preparado"
 
 /* =================== utilidades =================== */
 const $=s=>document.querySelector(s);
+const LOGO=document.querySelector(".logo img").src;
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
           set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},
           del(k){try{localStorage.removeItem(k)}catch(e){}}};
@@ -235,7 +245,7 @@ function tabsDeRol(){
 function renderHeader(){
   const h=$("#hdr"); h.hidden=!S.user;
   if(!S.user) return;
-  $("#hWho").innerHTML=`${esc(S.user)}${S.user!==S.rol?" · "+esc(S.rol):""}<br><button id="bSalir">Salir</button>${S.ult?` · ${S.ult.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}`:""}`;
+  $("#hWho").innerHTML=`<b>${esc(S.user)}</b>${S.user!==S.rol?" · "+esc(S.rol):""}${S.ult?` · ${S.ult.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}`:""}<br><button id="bSalir">Salir</button>`;
   const tabs=tabsDeRol(); if(!S.tab||!tabs.some(t=>t[0]===S.tab)) S.tab=tabs[0][0];
   $("#nav").innerHTML=tabs.map(t=>`<button data-tab="${t[0]}" class="${S.tab===t[0]&&(!S.scr||(t[0]==="nuevo"&&S.scr.t==="editar"&&!S.scr.ped.id))?"on":""}">${t[1]}${t[2]?`<span class="badge">${t[2]}</span>`:""}</button>`).join("");
 }
@@ -260,16 +270,16 @@ function render(){
 /* =================== configuración y login =================== */
 function vConfig(app){
   barra("");
-  app.innerHTML=`<div class="login"><h1>Pedidos tienda</h1><p class="muted">Pega la dirección del servidor (Apps Script de la hoja PEDIDOS TIENDA).</p>
-  <input id="fApi" placeholder="https://script.google.com/macros/s/…/exec" style="font-size:14px;letter-spacing:0;text-align:left">
-  <button class="btn pri" id="bApi" style="width:100%">Guardar</button></div>`;
+  app.innerHTML=`<div class="login"><span class="logo"><img src="${LOGO}" alt="Quesos El Hidalgo"></span><h1>Pedidos tienda</h1><p class="sub">Pega la dirección del servidor (Apps Script de la hoja PEDIDOS TIENDA).</p>
+  <div class="cfg"><input id="fApi" placeholder="https://script.google.com/macros/s/…/exec" style="font-size:14px;letter-spacing:0;text-align:left">
+  <button class="btn pri" id="bApi">Guardar</button></div></div>`;
   $("#bApi").onclick=()=>{const v=$("#fApi").value.trim();if(!/^https:\/\/script\.google\.com\//.test(v))return toast("Esa dirección no parece de Apps Script",true);S.api=v;LS.set("ped_api",v);render()};
 }
 function vLogin(app){
   barra("");
-  app.innerHTML=`<div class="login"><h1>Pedidos tienda</h1><div class="muted">Quesos El Hidalgo</div>
+  app.innerHTML=`<div class="login"><span class="logo"><img src="${LOGO}" alt="Quesos El Hidalgo"></span><h1>Pedidos tienda</h1><div class="sub">Tienda · Fábrica · Oficina</div>
   <form id="fLog"><input id="fPin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" aria-label="PIN">
-  <button class="btn pri" style="width:100%">Entrar</button></form></div>`;
+  <button class="btn pri">Entrar</button></form></div>`;
   const i=$("#fPin");i.focus();
   $("#fLog").onsubmit=async e=>{e.preventDefault();S.pin=i.value.trim();if(!S.pin)return;
     try{await api("login");LS.set("ped_pin",S.pin);S.tab=null;S.scr=null;await cargar()}catch(err){toast(err.message,true);S.pin="";i.value="";i.focus()}};

@@ -7,20 +7,20 @@
   "scope": "/albaran/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f3f5f8",
-  "theme_color": "#1f3a5f",
+  "background_color": "#862133",
+  "theme_color": "#862133",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ],
   "lang": "es"
