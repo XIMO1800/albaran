@@ -246,6 +246,31 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 .tag{display:inline-block;border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700;white-space:nowrap}
 .tag.ok{background:#e1f2e7;color:var(--ok)}.tag.no{background:var(--gold-soft);color:#7a4a00}.tag.dif{background:#fdf0d8;color:#9c5c00}
 .nota{font-size:13px;color:var(--muted);margin:6px 0 12px}
+.cmpc,body.desk .cmpc{padding:0;overflow:hidden}
+.cmpt{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer}
+.cmpc.ab .cmpt{border-bottom:1px solid var(--line);background:var(--surface2)}
+.ico{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font-weight:800;font-size:15px;color:#fff;flex:none}
+.ico.big{width:34px;height:34px;font-size:19px}
+.ico.si{background:var(--ok)}.ico.no{background:#c0392b}
+.cmpm{flex:1;min-width:0}.cmpm b{display:block;font-family:var(--display);font-size:20px;line-height:1.15}.cmpm small{color:var(--muted);font-size:13.5px}
+.cmpn{display:flex;gap:14px;text-align:center}.cmpn span{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}.cmpn b{display:block;font-size:17px;color:var(--fg);text-transform:none;letter-spacing:0}
+.cmpd{font-weight:800;font-size:14px;min-width:3.6em;text-align:center}.cmpd.si{color:var(--ok)}.cmpd.no{color:#c0392b}
+.flecha{color:var(--muted);font-size:18px}
+.cmp{padding:10px 14px 14px}
+.cmph,.cmpr{display:grid;grid-template-columns:1fr 4.2em 4.6em 30px;gap:8px;align-items:center}
+.cmph{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;padding-bottom:6px}
+.cmph span:nth-child(2),.cmph span:nth-child(3){text-align:center}
+.cmpr{padding:8px 0;border-top:1px solid var(--line)}
+.cmpr .n{text-align:center;font-size:17px}
+.cmpr.no{background:#fdeeee;margin:0 -14px;padding-inline:14px}.cmpr.mas{background:#fff6e5;margin:0 -14px;padding-inline:14px}
+.cmpa{min-width:0}.cmpa .dot{margin-right:6px}.cmpa small{color:var(--muted)}
+.cmpa em{display:block;font-style:normal;font-weight:800;font-size:13px;color:#c0392b}.cmpr.mas .cmpa em{color:#9a5b00}
+.cmpo{display:block;font-style:italic}
+.cmpr.mas .ico.no{background:#d68910}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:transparent;padding:8px 14px;font-weight:700;font-size:14px;cursor:pointer;color:var(--muted);font-family:var(--font)}
+.seg button.on{background:var(--brand);color:#fff}
+@media (max-width:520px){.cmpn{gap:8px}.cmpn b{font-size:15px}.cmpt{gap:9px;padding:11px 10px}.cmpm b{font-size:17px}.flecha{display:none}}
 .dcardx{cursor:pointer}
 .dhead2{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .dhead2 b{font-family:var(--display);font-size:22px}
@@ -332,7 +357,7 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "24 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "25 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -524,28 +549,43 @@ function vDiferencias(app){
   barra("");
   const desk=esDesk();
   if(desk&&!S.H.data&&!S.H.cargando){cargarHist();return}
+  if(!S.difAb)S.difAb=new Set();
   const fuente=desk?(S.H.data?S.H.data.pedidos:[]):S.pedidos;
-  const peds=fuente.filter(p=>difsDe(p).length).sort((a,b)=>String(b.creado).localeCompare(String(a.creado)));
-  let tNo=0,tFalta=0,tMas=0,tAdd=0;
-  const linea=l=>{const pz=+l.pz||0,sv=+l.pzS||0,pr=prod(l.c)||{};let tag,txt;
-    if(l.extra){tAdd++;tag=`<span class="tag" style="background:#e1ecf9;color:#1d5796">Añadido</span>`;txt=`${sv} pz · no estaba en el pedido`}
-    else if(sv===0){tNo++;tag=`<span class="tag" style="background:#fde4e4;color:#b3262d">No enviado</span>`;txt=`pedidas ${pz} · no se mandó ninguna`}
-    else if(sv<pz){tFalta+=pz-sv;tag=`<span class="tag dif">Faltan ${pz-sv}</span>`;txt=`pedidas ${pz} · enviadas ${sv}`}
-    else{tMas+=sv-pz;tag=`<span class="tag" style="background:#e1ecf9;color:#1d5796">${sv-pz} de más</span>`;txt=`pedidas ${pz} · enviadas ${sv}`}
-    return `<div class="dline"><span class="dot" style="${estiloG(grupoDe(l.c))}"></span><div class="dl1"><b>${esc(l.c)}</b> <small>${esc(l.n||pr.n||"")}</small><div class="muted" style="font-size:14px">${txt}${l.obs?` · ${esc(l.obs)}`:""}</div></div>${tag}</div>`};
-  const cards=peds.map(p=>`<div class="card dcardx" data-ver="${esc(p.id)}">
-      <div class="dhead2"><b>${fDiaPed(p.creado)}</b><span class="chip e-${p.estado}">${EST_TXT[p.estado]}</span></div>
-      <div class="muted" style="font-size:14px;margin-bottom:6px">Pedido ${esc(p.id)} · ${fHora(p.creado)}${p.albaran?` · albarán nº ${esc(p.albaran)}`:""}${p.actualizadoPor?` · preparado por ${esc(p.actualizadoPor)}`:""}</div>
-      ${ordenLineas(difsDe(p)).map(linea).join("")}
-      ${p.obsF?`<div class="obsbox" style="margin:8px 0 0"><b>Nota de fábrica:</b> ${esc(p.obsF)}</div>`:""}</div>`).join("");
-  app.innerHTML=`<div class="wrap">
-    ${desk?filtroFechas():`<p class="nota">Pedidos de los últimos días en los que lo enviado no coincide con lo pedido: artículos que faltaron, que no se mandaron, que fueron de más o que se añadieron.</p>`}
-    <div class="kpis"><div class="kpi"><span>Pedidos con diferencias</span><b>${peds.length}</b></div><div class="kpi kd"><span>No enviados</span><b>${tNo}</b></div><div class="kpi kd"><span>Piezas que faltaron</span><b>${tFalta}</b></div><div class="kpi"><span>Añadidos</span><b>${tAdd}</b></div>${tMas?`<div class="kpi"><span>Piezas de más</span><b>${tMas}</b></div>`:""}</div>
-    <div class="${desk?"dgrid":""}">${cards||`<div class="vacio">No hay diferencias: todo lo enviado coincide con lo pedido.</div>`}</div></div>`;
+  const todos=fuente.filter(p=>["PREPARADO","ALBARANADO"].includes(p.estado)).sort((a,b)=>String(b.creado).localeCompare(String(a.creado)));
+  const conDif=todos.filter(p=>difsDe(p).length);
+  const peds=S.difSolo?conDif:todos;
+  const sumPz=(p,f)=>p.lineas.reduce((x,l)=>x+(+(f(l))||0),0);
+  const estado=l=>{const pz=+l.pz||0,sv=+(l.pzS??l.pz)||0;
+    if(l.extra)return ["mas","Añadido"];
+    if(sv===pz)return ["ok",""];
+    if(sv===0)return ["no","No enviado"];
+    return sv<pz?["no",`Faltan ${pz-sv}`]:["mas",`${sv-pz} de más`]};
+  const detalle=p=>`<div class="cmp">
+      <div class="cmph"><span>Artículo</span><span>Pedido</span><span>Enviado</span><span></span></div>
+      ${ordenLineas(p.lineas).map(l=>{const [k,t]=estado(l),pr=prod(l.c)||{};
+        return `<div class="cmpr ${k}"><span class="cmpa"><i class="dot" style="${estiloG(grupoDe(l.c))}"></i><b>${esc(l.c)}</b> <small>${esc(l.n||pr.n||"")}</small>${t?`<em>${t}</em>`:""}${l.obs?`<small class="cmpo">${esc(l.obs)}</small>`:""}</span>
+          <span class="n">${l.extra?"—":l.pz}</span><span class="n"><b>${l.pzS??l.pz}</b></span><span class="ico ${k==="ok"?"si":"no"}">${k==="ok"?"✓":"✗"}</span></div>`}).join("")}
+      ${p.obsF?`<div class="obsbox" style="margin:10px 0 0"><b>Nota de fábrica:</b> ${esc(p.obsF)}</div>`:""}
+      <div class="acc" style="margin-top:10px"><button class="btn sm" data-verp="${esc(p.id)}">Ver pedido completo</button></div></div>`;
+  const fila=p=>{const nd=difsDe(p).length,ab=S.difAb.has(p.id);
+    return `<div class="card cmpc ${ab?"ab":""}"><div class="cmpt" data-ab="${esc(p.id)}">
+        <span class="ico big ${nd?"no":"si"}">${nd?"✗":"✓"}</span>
+        <div class="cmpm"><b>${fDiaPed(p.creado)}</b><small>Pedido ${esc(p.id)}${p.albaran?` · albarán ${esc(p.albaran)}`:""} · ${EST_TXT[p.estado]}</small></div>
+        <div class="cmpn"><span>Pedido<b>${sumPz(p,l=>l.extra?0:l.pz)} pz</b></span><span>Enviado<b>${sumPz(p,l=>l.pzS??l.pz)} pz</b></span></div>
+        <span class="cmpd ${nd?"no":"si"}">${nd?`${nd} dif.`:"OK"}</span><span class="flecha">${ab?"▴":"▾"}</span></div>
+      ${ab?detalle(p):""}</div>`};
+  app.innerHTML=`<div class="wrap" style="${desk?"max-width:1000px":""}">
+    ${desk?filtroFechas():`<p class="nota">Pedidos preparados y albaranados: lo pedido frente a lo enviado. Pulsa uno para ver todas sus líneas.</p>`}
+    <div class="kpis"><div class="kpi"><span>Pedidos</span><b>${todos.length}</b></div><div class="kpi"><span>Coinciden</span><b style="color:var(--ok)">${todos.length-conDif.length}</b></div><div class="kpi kd"><span>Con diferencias</span><b style="color:#b3262d">${conDif.length}</b></div></div>
+    <div class="seg" style="margin:4px 0 12px"><button class="${S.difSolo?"":"on"}" data-solo="0">Todos</button><button class="${S.difSolo?"on":""}" data-solo="1">Solo con diferencias</button></div>
+    ${peds.map(fila).join("")||`<div class="vacio">${S.difSolo&&todos.length?"Todo lo enviado coincide con lo pedido.":"Todavía no hay pedidos preparados en estas fechas."}</div>`}</div>`;
   if(desk)enlazarFiltro(app);
-  app.onclick=e=>{const c=e.target.closest("[data-ver]");if(!c)return;
-    if(!S.pedidos.some(x=>x.id===c.dataset.ver)){const q=(S.H.data?S.H.data.pedidos:[]).find(x=>x.id===c.dataset.ver);if(q)S.pedidos.push(q)}
-    S.scr={t:"ver",id:c.dataset.ver};render();scrollTo(0,0)};
+  app.onclick=e=>{
+    const so=e.target.closest("[data-solo]");if(so){S.difSolo=so.dataset.solo==="1";render();return}
+    const v=e.target.closest("[data-verp]");if(v){const id=v.dataset.verp;
+      if(!S.pedidos.some(x=>x.id===id)){const q=(S.H.data?S.H.data.pedidos:[]).find(x=>x.id===id);if(q)S.pedidos.push(q)}
+      S.scr={t:"ver",id};render();scrollTo(0,0);return}
+    const t=e.target.closest("[data-ab]");if(t){const id=t.dataset.ab;S.difAb.has(id)?S.difAb.delete(id):S.difAb.add(id);render()}};
 }
 
 function vListaTienda(app){
@@ -898,7 +938,7 @@ function vPrecios(app){
 }
 
 /* =================== ESCRITORIO: marco tipo Recogida (barra lateral + título) =================== */
-const SIDE=[["pedidos","Pedidos","Nuevos, preparando y preparados"],["historial","Histórico","Lo pedido frente a lo servido"],["difs","Diferencias","Solo pedidos con cambios"],["albaranes","Albaranes","Emitidos y reimpresión"],
+const SIDE=[["pedidos","Pedidos","Nuevos, preparando y preparados"],["historial","Histórico","Lo pedido frente a lo servido"],["difs","Diferencias","Pedido frente a lo enviado"],["albaranes","Albaranes","Emitidos y reimpresión"],
   ["exportar","Exportar","CSV para el programa de gestión"],["precios","Artículos y precios","Catálogo, orden y precios"],["nuevo","Nuevo pedido","Meter un pedido a mano"]];
 function marcoDesk(){
   const sd=$("#side"), on=document.body.classList.contains("desk");
