@@ -146,6 +146,8 @@ dialog::backdrop{background:rgba(29,22,24,.5)}
 .pindots i.on{background:var(--gold);border-color:var(--gold)}
 .login input#fPin{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;margin:0}
 .login .pinbox{position:relative;cursor:text}
+.srvaviso{margin-top:22px;max-width:320px;font-size:14px;color:rgba(255,255,255,.9)}
+.srvaviso .btn{margin-top:8px}
 .login .btn{width:100%;background:var(--gold);color:#2b1d00;border:0;box-shadow:0 2px 0 #8d6a1d;font-size:18px}
 .selbox{width:24px;height:24px;accent-color:var(--brand)}
 /* artículos y precios (móvil) */
@@ -425,7 +427,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "30 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "31 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -567,7 +569,8 @@ function vLogin(app){
   app.innerHTML=`<div class="login"><span class="logo"><img src="${LOGO}" alt="Quesos El Hidalgo"></span><h1>Pedidos tienda</h1><div class="sub">Tienda · Fábrica · Oficina</div><div class="ver">Versión ${VERSION}</div>
   <form id="fLog"><label class="pinbox" for="fPin"><div class="sub">Escribe tu PIN</div><div class="pindots" id="pDots"><i></i><i></i><i></i><i></i></div>
   <input id="fPin" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="8" aria-label="PIN"></label>
-  <button class="btn pri" id="bEntrar">Entrar</button></form></div>`;
+  <button class="btn pri" id="bEntrar">Entrar</button></form>
+  ${S.api!==API_DEF?`<div class="srvaviso">Este aparato está usando otro servidor (…${esc(S.api.slice(-14,-5))}).<br><button class="btn" id="bSrv" type="button">Usar el servidor de la fábrica</button></div>`:""}</div>`;
   const i=$("#fPin"),b=$("#bEntrar");let enviando=false;
   const puntos=()=>{const n=i.value.length;$("#pDots").innerHTML=Array.from({length:Math.max(4,n)},(_,k)=>`<i class="${k<n?"on":""}"></i>`).join("")};
   const entrar=async()=>{if(enviando)return;const pin=i.value.trim();if(!pin)return i.focus();
@@ -577,6 +580,7 @@ function vLogin(app){
       S.tab=null;S.scr=null;render()}
     catch(err){toast(err.message,true);S.pin="";S.user=null;i.value="";puntos();enviando=false;b.disabled=false;b.textContent="Entrar";i.focus()}};
   i.oninput=()=>{i.value=i.value.replace(/\D/g,"");puntos();if(i.value.length===4)entrar()};
+  const bs=$("#bSrv"); if(bs) bs.onclick=()=>{S.api=API_DEF;LS.del("ped_api");toast("Servidor de la fábrica puesto. Vuelve a escribir el PIN");render()};
   $("#fLog").onsubmit=e=>{e.preventDefault();entrar()};
   setTimeout(()=>i.focus(),50);
   if(S.pin){ b.disabled=true;b.textContent="Entrando…"; cargar().then(()=>{if(!S.user&&document.body.contains(b)){b.disabled=false;b.textContent="Entrar"}}); }
