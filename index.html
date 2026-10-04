@@ -106,13 +106,19 @@ dialog::backdrop{background:rgba(29,22,24,.5)}
 .prow .r2{grid-column:1/-1;display:grid;grid-template-columns:1fr 5.5em 4.5em auto auto;gap:6px;align-items:center}
 .prow input,.prow select{padding:7px 8px;font-size:15px}
 .mini{font-size:11px;color:var(--muted);text-align:center}
-.login{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;background:var(--brand);color:#fff;text-align:center}
+.login{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:12vh 16px 24px;background:var(--brand);color:#fff;text-align:center}
 .login .logo{padding:8px 16px;border-radius:12px;margin-bottom:14px}
 .login .logo img{height:56px}
 .login h1{font-family:var(--display);font-size:30px;margin:0;letter-spacing:.02em}
 .login .sub{color:rgba(255,255,255,.8);font-size:14px}
 .login form,.login .cfg{width:100%;max-width:320px}
-.login input{text-align:center;font-family:var(--display);font-size:34px;letter-spacing:.3em;margin:18px 0 12px;border:0}
+.login input{text-align:center;font-family:var(--display);font-size:34px;letter-spacing:.3em;margin:18px 0 12px;border:0;color:var(--fg);background:#fff}
+.login input::placeholder{color:#b9aeb0;letter-spacing:.1em;font-size:22px}
+.pindots{display:flex;justify-content:center;gap:16px;margin:22px 0 24px}
+.pindots i{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.75)}
+.pindots i.on{background:var(--gold);border-color:var(--gold)}
+.login input#fPin{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;margin:0}
+.login .pinbox{position:relative;cursor:text}
 .login .btn{width:100%;background:var(--gold);color:#2b1d00;border:0;box-shadow:0 2px 0 #8d6a1d;font-size:18px}
 .selbox{width:24px;height:24px;accent-color:var(--brand)}
 /* artículos y precios (móvil) */
@@ -340,12 +346,21 @@ function vConfig(app){
 function vLogin(app){
   barra("");
   app.innerHTML=`<div class="login"><span class="logo"><img src="${LOGO}" alt="Quesos El Hidalgo"></span><h1>Pedidos tienda</h1><div class="sub">Tienda · Fábrica · Oficina</div>
-  <form id="fLog"><input id="fPin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" aria-label="PIN">
-  <button class="btn pri">Entrar</button></form></div>`;
-  const i=$("#fPin");i.focus();
-  $("#fLog").onsubmit=async e=>{e.preventDefault();S.pin=i.value.trim();if(!S.pin)return;
-    try{await api("login");LS.set("ped_pin",S.pin);S.tab=null;S.scr=null;await cargar()}catch(err){toast(err.message,true);S.pin="";S.user=null;i.value="";i.focus()}};
-  if(S.pin){ cargar(); }
+  <form id="fLog"><label class="pinbox" for="fPin"><div class="sub">Escribe tu PIN</div><div class="pindots" id="pDots"><i></i><i></i><i></i><i></i></div>
+  <input id="fPin" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="8" aria-label="PIN"></label>
+  <button class="btn pri" id="bEntrar">Entrar</button></form></div>`;
+  const i=$("#fPin"),b=$("#bEntrar");let enviando=false;
+  const puntos=()=>{const n=i.value.length;$("#pDots").innerHTML=Array.from({length:Math.max(4,n)},(_,k)=>`<i class="${k<n?"on":""}"></i>`).join("")};
+  const entrar=async()=>{if(enviando)return;const pin=i.value.trim();if(!pin)return i.focus();
+    enviando=true;b.disabled=true;b.textContent="Entrando…";S.pin=pin;
+    try{const j=await api("datos");LS.set("ped_pin",pin);
+      S.user=j.usuario;S.rol=j.rol;S.productos=j.productos;S.pedidos=j.pedidos;S.albaranes=j.albaranes||[];S.ult=new Date();LS.set("ped_cache_prod",S.productos);
+      S.tab=null;S.scr=null;render()}
+    catch(err){toast(err.message,true);S.pin="";S.user=null;i.value="";puntos();enviando=false;b.disabled=false;b.textContent="Entrar";i.focus()}};
+  i.oninput=()=>{i.value=i.value.replace(/\D/g,"");puntos();if(i.value.length===4)entrar()};
+  $("#fLog").onsubmit=e=>{e.preventDefault();entrar()};
+  setTimeout(()=>i.focus(),50);
+  if(S.pin){ b.disabled=true;b.textContent="Entrando…"; cargar().then(()=>{if(!S.user&&document.body.contains(b)){b.disabled=false;b.textContent="Entrar"}}); }
 }
 
 /* =================== tarjetas de pedido =================== */
