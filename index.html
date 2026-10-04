@@ -94,6 +94,8 @@ textarea{min-height:64px;resize:vertical}
 .plin .nbtn.on{border-color:var(--warn);color:var(--warn);background:#fff7e8}
 .plin .pn{padding:0 14px 12px}
 .plin .pdif:empty{display:none}
+.plin .pb label.l{white-space:nowrap}
+.plin .pband{display:block;color:var(--muted);font-weight:700;font-size:13px;margin-top:3px}
 .plin .pb>div:last-child{padding-top:18px}
 .plin .pdif{display:block;color:var(--warn);font-weight:700;font-size:13px;margin-top:3px}
 .plin .pn input{width:100%}
@@ -323,7 +325,7 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "21 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "22 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -687,7 +689,7 @@ function vPreparar(app){
       <div class="ph"><div class="ln"><span class="dot" style="--c:var(${colorG(g)})"></span>${esc(l.c)} <small>${esc(l.n||pr.n||"")}</small></div>
         ${l.extra?`<div class="lt"><small>añadido</small></div>`:""}</div>
       <div class="pb">
-        <div><label class="l" for="s${i}">Piezas${bandTxt(l.pz,pr.b,pr.g)?` · ${bandTxt(l.pz,pr.b,pr.g)}`:""}</label><input id="s${i}" class="num" inputmode="numeric" value="${l.pzS}" data-i="${i}" data-f="pzS"><small class="pdif" id="d${i}">${!l.extra&&num(l.pzS)!==num(l.pz)?`pedidas ${l.pz}`:""}</small></div>
+        <div><label class="l" for="s${i}">Piezas</label><input id="s${i}" class="num" inputmode="numeric" value="${l.pzS}" data-i="${i}" data-f="pzS">${bandTxt(l.pz,pr.b,pr.g)?`<small class="pband">${bandTxt(l.pz,pr.b,pr.g)}</small>`:""}<small class="pdif" id="d${i}">${!l.extra&&num(l.pzS)!==num(l.pz)?`pedidas ${l.pz}`:""}</small></div>
         <div><label class="l" for="k${i}">Kg</label><input id="k${i}" class="num" inputmode="decimal" value="${esc(dec(l.kg))}" data-i="${i}" data-f="kg" placeholder="0,000"></div>
         <div style="display:flex;gap:6px">${l.extra?`<button class="x" data-del="${i}" aria-label="Quitar línea">×</button>`:""}<button class="chk ${l.ok?"on":""}" data-ok="${i}" aria-label="Marcar como hecho">✓</button><button class="nbtn ${l.obs?"on":""}" data-nota="${i}" aria-label="Añadir nota a esta línea" title="Nota">✎</button></div>
       </div>${l.obs||l._nota?`<div class="pn"><input id="o${i}" value="${esc(l.obs||"")}" data-i="${i}" data-f="obs" placeholder="Nota de esta línea (ej.: el gigante va el jueves)"></div>`:""}</div>`}).join("");
