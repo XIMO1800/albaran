@@ -93,7 +93,10 @@ textarea{min-height:64px;resize:vertical}
 .plin .nbtn{width:48px;height:48px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);font-size:20px;cursor:pointer;color:var(--muted)}
 .plin .nbtn.on{border-color:var(--warn);color:var(--warn);background:#fff7e8}
 .plin .pn{padding:0 14px 12px}
-.plin .pdif:empty{display:none}
+td.tsel select{min-width:10.5em}
+.plin .pdif:empty,.plin .pband:empty{display:none}
+.aprox{color:var(--warn);font-weight:700;text-transform:none;letter-spacing:0}
+.plin input.num::placeholder{color:#b3a8aa}
 .plin .pb label.l{white-space:nowrap}
 .plin .pband{display:block;color:var(--muted);font-weight:700;font-size:13px;margin-top:3px}
 .plin .pb>div:last-child{padding-top:18px}
@@ -146,7 +149,7 @@ dialog::backdrop{background:rgba(29,22,24,.5)}
 .pcard.off{opacity:.55}
 .pc1{display:grid;grid-template-columns:9.5em 1fr;gap:6px}
 .pcode{font-family:var(--display);font-weight:700!important;font-size:18px!important;text-transform:uppercase}
-.pc2{display:grid;grid-template-columns:1.4fr 1fr .8fr;gap:6px;align-items:end}
+.pc2{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:end}
 .pc2 label,.lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;flex-direction:column;gap:2px}
 .pc3{display:flex;gap:6px;align-items:center}
 .pc3 .x{margin-left:auto}
@@ -325,7 +328,7 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "22 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "23 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -396,6 +399,8 @@ const activos=()=>S.productos.filter(p=>p.activo!==false);
 const grupoDe=c=>(prod(c)||{}).g||"X";
 const base=g=>String(g||"X").charAt(0);
 const colorG=g=>(GRUPOS[base(g)]||GRUPOS.X)[1];
+const pmDe=c=>num((prod(c)||{}).pm);
+const kgEst=l=>Math.round(num(l.pzS??l.pz)*pmDe(l.c)*1000)/1000;
 const esPorc=g=>/^[MODC]P$/.test(g||"");
 const udB=(g,n)=>esPorc(g)?(n===1?"bolsa":"bolsas"):"band.";
 const bandTxt=(pz,b,g)=>b>1&&pz>=b?(pz%b===0?`${pz/b} ${udB(g,pz/b)}`:`${Math.floor(pz/b)} ${udB(g,Math.floor(pz/b))} + ${pz%b} pz`):"";
@@ -678,7 +683,7 @@ function vVer(app){
     if(E==="PREPARADO"){const c=await confirmar("Corregir preparación","El pedido vuelve a «Preparando» hasta que lo marques otra vez como preparado.");if(!c.ok)return;
       try{await api("reabrirPedido",{id:p.id});await cargar(true)}catch(err){return toast(err.message,true)}}
     const q=S.pedidos.find(x=>x.id===p.id)||p;
-    S.scr={t:"preparar",ped:clone({id:q.id,version:q.version,obsF:q.obsF||"",obs:q.obs,lineas:ordenLineas(q.lineas).map(l=>({...l,pzS:l.pzS??l.pz,kg:l.kg||""}))})};render();scrollTo(0,0)};
+    S.scr={t:"preparar",ped:clone({id:q.id,version:q.version,obsF:q.obsF||"",obs:q.obs,lineas:ordenLineas(q.lineas).map(l=>({...l,pzS:l.pzS??l.pz,kg:l.aprox?"":(l.kg||"")}))})};render();scrollTo(0,0)};
 }
 
 /* =================== preparar (fábrica) =================== */
@@ -690,7 +695,7 @@ function vPreparar(app){
         ${l.extra?`<div class="lt"><small>añadido</small></div>`:""}</div>
       <div class="pb">
         <div><label class="l" for="s${i}">Piezas</label><input id="s${i}" class="num" inputmode="numeric" value="${l.pzS}" data-i="${i}" data-f="pzS">${bandTxt(l.pz,pr.b,pr.g)?`<small class="pband">${bandTxt(l.pz,pr.b,pr.g)}</small>`:""}<small class="pdif" id="d${i}">${!l.extra&&num(l.pzS)!==num(l.pz)?`pedidas ${l.pz}`:""}</small></div>
-        <div><label class="l" for="k${i}">Kg</label><input id="k${i}" class="num" inputmode="decimal" value="${esc(dec(l.kg))}" data-i="${i}" data-f="kg" placeholder="0,000"></div>
+        <div><label class="l" for="k${i}">Kg</label><input id="k${i}" class="num" inputmode="decimal" value="${esc(dec(l.kg))}" data-i="${i}" data-f="kg" placeholder="${kgEst(l)?"≈ "+kgf(kgEst(l)):"0,000"}"><small class="pband" id="e${i}">${!(num(l.kg)>0)&&kgEst(l)?"aprox.":""}</small></div>
         <div style="display:flex;gap:6px">${l.extra?`<button class="x" data-del="${i}" aria-label="Quitar línea">×</button>`:""}<button class="chk ${l.ok?"on":""}" data-ok="${i}" aria-label="Marcar como hecho">✓</button><button class="nbtn ${l.obs?"on":""}" data-nota="${i}" aria-label="Añadir nota a esta línea" title="Nota">✎</button></div>
       </div>${l.obs||l._nota?`<div class="pn"><input id="o${i}" value="${esc(l.obs||"")}" data-i="${i}" data-f="obs" placeholder="Nota de esta línea (ej.: el gigante va el jueves)"></div>`:""}</div>`}).join("");
   app.innerHTML=`<div class="wrap">
@@ -703,12 +708,13 @@ function vPreparar(app){
     <textarea id="fObsF" placeholder="Ej.: no había OCG, se mandan 2 OCM. El gigante va el jueves. Avería: …">${esc(P.obsF)}</textarea>
     <div class="acc" style="margin-top:10px"><button class="btn" id="bGuardar">Guardar y seguir luego</button><button class="btn" id="bHoja">Imprimir hoja</button></div>
   </div>`;
-  const tot=()=>P.lineas.reduce((s,l)=>s+num(l.kg),0);
-  const pend=()=>P.lineas.filter(l=>num(l.pzS)>0&&!(num(l.kg)>0)).length;
-  const pintaBarra=()=>barra(`<div class="tot"><small>${pend()?`Faltan ${pend()} pesos`:"Todos pesados"}</small>${kgf(tot())} kg</div><button class="btn pri" id="bFin">Pedido preparado</button>`);
+  const kgL=l=>num(l.kg)>0?num(l.kg):(num(l.pzS)>0?kgEst(l):0);
+  const tot=()=>P.lineas.reduce((s,l)=>s+kgL(l),0), hayAprox=()=>P.lineas.some(l=>num(l.pzS)>0&&!(num(l.kg)>0));
+  const pend=()=>P.lineas.filter(l=>num(l.pzS)>0&&!(kgL(l)>0)).length;
+  const pintaBarra=()=>barra(`<div class="tot"><small>${pend()?`Faltan ${pend()} pesos`:hayAprox()?"Peso aproximado":"Todos pesados"}</small>${hayAprox()?"≈ ":""}${kgf(tot())} kg</div><button class="btn pri" id="bFin">Pedido preparado</button>`);
   pintaBarra();
   app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;P.lineas[i][f]=f==="obs"?e.target.value:e.target.value;if(f==="pzS"){const l=P.lineas[i],d=$("#d"+i);if(d)d.textContent=!l.extra&&num(l.pzS)!==num(l.pz)?"pedidas "+l.pz:""}
-    const t=$(".tot");if(t)t.innerHTML=`<small>${pend()?`Faltan ${pend()} pesos`:"Todos pesados"}</small>${kgf(tot())} kg`;LS.set("ped_prep_"+P.id,P)};
+    const t=$(".tot");if(t)t.innerHTML=`<small>${pend()?`Faltan ${pend()} pesos`:hayAprox()?"Peso aproximado":"Todos pesados"}</small>${hayAprox()?"≈ ":""}${kgf(tot())} kg`;{const l=P.lineas[i],k=$("#k"+i),e2=$("#e"+i);if(k)k.placeholder=kgEst(l)?"≈ "+kgf(kgEst(l)):"0,000";if(e2)e2.textContent=!(num(l.kg)>0)&&kgEst(l)?"aprox.":""}LS.set("ped_prep_"+P.id,P)};
   app.onclick=e=>{const t=e.target;
     if(t.dataset.ok!=null){const l=P.lineas[t.dataset.ok];l.ok=!l.ok;render()}
     if(t.dataset.nota!=null){const i=+t.dataset.nota,l=P.lineas[i];l._nota=!(l._nota||l.obs);if(!l._nota)l.obs="";render();if(l._nota){const o=$("#o"+i);o&&o.focus()}}
@@ -719,14 +725,14 @@ function vPreparar(app){
   $("#bHoja").onclick=()=>imprimirHoja({...P,creado:(S.pedidos.find(x=>x.id===P.id)||{}).creado});
   const enviar=async(estado)=>{
     S.busy=true;
-    try{const lineas=P.lineas.map(l=>({c:l.c,n:l.n,pz:l.pz,pzS:num(l.pzS),kg:num(l.kg),p:l.p,obs:l.obs||"",extra:!!l.extra,ok:!!l.ok}));
+    try{const lineas=P.lineas.map(l=>{const pes=num(l.kg)>0;return {c:l.c,n:l.n,pz:l.pz,pzS:num(l.pzS),kg:pes?num(l.kg):(num(l.pzS)>0?kgEst(l):0),aprox:!pes&&num(l.pzS)>0&&kgEst(l)>0,p:l.p,obs:l.obs||"",extra:!!l.extra,ok:!!l.ok}});
       await api("prepararPedido",{pedido:{id:P.id,version:P.version,obsF:P.obsF,estado,lineas}});
       LS.del("ped_prep_"+P.id);toast(estado==="PREPARADO"?"Pedido "+P.id+" preparado":"Guardado");S.scr=null;await cargar();
     }catch(err){toast(err.message,true);if(/Otra persona/.test(err.message)){S.scr=null;await cargar()}}
     finally{S.busy=false}};
   $("#bGuardar").onclick=()=>enviar("PREPARANDO");
   $("#bFin").onclick=async()=>{if(pend())return toast("Falta el peso de "+pend()+" línea(s). Pon 0 piezas si no se manda.",true);
-    const c=await confirmar("Pedido preparado",`${kgf(tot())} kg en total. Pasa a la oficina para el albarán.`);if(c.ok)enviar("PREPARADO")};
+    const c=await confirmar("Pedido preparado",`${hayAprox()?"≈ ":""}${kgf(tot())} kg en total${hayAprox()?" (con pesos aproximados)":""}. Pasa a la oficina para el albarán.`);if(c.ok)enviar("PREPARADO")};
 }
 
 /* =================== selector de producto =================== */
@@ -745,7 +751,7 @@ function borradorAlbaran(ids){
   const peds=ids.map(id=>S.pedidos.find(p=>p.id===id)).filter(Boolean).sort((a,b)=>(+a.id)-(+b.id));
   const lineas=[];
   for(const p of peds) for(const l of ordenLineas(p.lineas)){const pz=l.pzS??l.pz;if(!(pz>0||l.kg>0))continue;
-    const pr=prod(l.c);lineas.push({pedido:p.id,dia:fDiaCorto(p.creado),c:l.c,n:l.n,pz,kg:l.kg||"",p:pr?pr.p:l.p})}
+    const pr=prod(l.c);const ap=!!l.aprox||(!(num(l.kg)>0)&&pmDe(l.c)>0);lineas.push({pedido:p.id,dia:fDiaCorto(p.creado),c:l.c,n:l.n,pz,kg:num(l.kg)>0?l.kg:(ap?kgEst({c:l.c,pz}):""),aprox:ap,p:pr?pr.p:l.p})}
   return {pedidos:peds.map(p=>p.id),fecha:hoy(),cliente:"CASA",obs:peds.map(p=>p.obsF).filter(Boolean).join("\n"),lineas};
 }
 function vAlbaran(app){
@@ -754,7 +760,7 @@ function vAlbaran(app){
       <div class="ln"><span class="dot" style="--c:var(${colorG(grupoDe(l.c))})"></span>${esc(l.c)} <small>${esc(l.n)} · ped. ${esc(l.pedido)}</small></div>
       <div class="lt" id="lt${i}">${eur(r2(num(l.kg)*num(l.p)))} €</div>
       <div class="lf"><div><label class="l" for="ap${i}">Piezas</label><input id="ap${i}" class="num" inputmode="numeric" value="${l.pz}" data-i="${i}" data-f="pz"></div>
-        <div><label class="l" for="ak${i}">Kg</label><input id="ak${i}" class="num" inputmode="decimal" value="${esc(dec(l.kg))}" data-i="${i}" data-f="kg"></div>
+        <div><label class="l" for="ak${i}">Kg${l.aprox?` <span class="aprox" id="ax${i}">≈ aprox.</span>`:""}</label><input id="ak${i}" class="num" inputmode="decimal" value="${esc(dec(l.kg))}" data-i="${i}" data-f="kg"></div>
         <div><label class="l" for="ae${i}">€/kg</label><input id="ae${i}" class="num" inputmode="decimal" value="${esc(dec(l.p))}" data-i="${i}" data-f="p"></div>
         <button class="x" data-del="${i}" aria-label="Quitar línea">×</button></div></div>`).join("");
   app.innerHTML=`<div class="wrap">
@@ -769,7 +775,7 @@ function vAlbaran(app){
   const tot=()=>A.lineas.reduce((s,l)=>s+r2(num(l.kg)*num(l.p)),0), kg=()=>A.lineas.reduce((s,l)=>s+num(l.kg),0);
   const pb=()=>barra(`<div class="tot"><small>${A.lineas.length} líneas · ${kgf(kg())} kg</small>${eur(tot())} €</div><button class="btn pri" id="bEmit">Emitir e imprimir</button>`);
   pb();
-  app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;A.lineas[i][f]=e.target.value;
+  app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;A.lineas[i][f]=e.target.value;{const l=A.lineas[i];if(f==="kg"&&l.aprox){l.aprox=false;const x=$("#ax"+i);if(x)x.remove()}if(f==="pz"&&l.aprox){l.kg=kgEst({c:l.c,pz:l.pz});const k=$("#ak"+i);if(k)k.value=dec(l.kg)}}
     $("#lt"+i).textContent=eur(r2(num(A.lineas[i].kg)*num(A.lineas[i].p)))+" €";$(".tot").innerHTML=`<small>${A.lineas.length} líneas · ${kgf(kg())} kg</small>${eur(tot())} €`};
   app.onclick=e=>{if(e.target.dataset.del!=null){A.lineas.splice(+e.target.dataset.del,1);render()}};
   $("#aF").onchange=e=>A.fecha=e.target.value; $("#aC").oninput=e=>A.cliente=e.target.value; $("#aO").oninput=e=>A.obs=e.target.value;
@@ -846,26 +852,27 @@ function vPrecios(app){
   let h="",k0=null;
   if(desk){
     for(const p of lista){const i=idx(p),k=seccion(p,P);
-      if(k!==k0){h+=`<tr><td colspan="8" style="padding:0;border:0"><div class="grupo s-${k}" style="margin:0;border-radius:0">${seccTit(k)}</div></td></tr>`;k0=k}
+      if(k!==k0){h+=`<tr><td colspan="9" style="padding:0;border:0"><div class="grupo s-${k}" style="margin:0;border-radius:0">${seccTit(k)}</div></td></tr>`;k0=k}
       h+=`<tr class="pr" style="${estiloG(p.g)}"><td style="white-space:nowrap">${mov(p,i)}</td>
-        <td class="cc"><span class="dot"></span><input class="pcode" value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" style="width:9em"></td>
-        <td><input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre"></td>
-        <td>${selG(p,i)}</td>
-        <td class="n"><input class="num" inputmode="decimal" value="${esc(dec(p.p))}" data-i="${i}" data-f="p" aria-label="Precio €/kg" style="width:6em"></td>
-        <td class="n"><input class="num" inputmode="numeric" value="${p.b}" data-i="${i}" data-f="b" aria-label="Piezas por bandeja" style="width:4.5em"></td>
+        <td class="cc"><span class="dot"></span><input class="pcode" value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" style="width:7.5em"></td>
+        <td><input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre" style="width:100%;min-width:11em"></td>
+        <td class="tsel">${selG(p,i)}</td>
+        <td class="n"><input class="num" inputmode="decimal" value="${esc(dec(p.p))}" data-i="${i}" data-f="p" aria-label="Precio €/kg" style="width:5em"></td>
+        <td class="n"><input class="num" inputmode="numeric" value="${p.b}" data-i="${i}" data-f="b" aria-label="Piezas por bandeja" style="width:3.5em"></td>
+        <td class="n"><input class="num" inputmode="decimal" value="${p.pm?esc(dec(p.pm)):""}" data-i="${i}" data-f="pm" aria-label="Peso medio por pieza en kg" placeholder="—" style="width:4.5em"></td>
         <td>${tog(p,i)}</td><td><button class="x" data-del="${i}" aria-label="Borrar producto">×</button></td></tr>`}
-    h=`<div class="tblw"><table class="t"><thead><tr><th>Orden</th><th>Código</th><th>Nombre</th><th>Especie</th><th class="n">€/kg</th><th class="n">Pz/bandeja</th><th>Tienda</th><th></th></tr></thead><tbody>${h}</tbody></table></div>`;
+    h=`<div class="tblw"><table class="t"><thead><tr><th>Orden</th><th>Código</th><th>Nombre</th><th>Especie</th><th class="n">€/kg</th><th class="n">Pz/<br>bandeja</th><th class="n">Kg/pz<br>aprox.</th><th>Tienda</th><th></th></tr></thead><tbody>${h}</tbody></table></div>`;
   } else {
     for(const p of lista){const i=idx(p),k=seccion(p,P);
       if(k!==k0){h+=cabSecc(k);k0=k}
       h+=`<div class="pcard ${p.activo===false?"off":""}" style="${estiloG(p.g)}">
         <div class="pc1"><input class="pcode" value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" placeholder="Código"><input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre" placeholder="Nombre"></div>
-        <div class="pc2"><label>Especie ${selG(p,i)}</label><label>€/kg<input class="num" inputmode="decimal" value="${esc(dec(p.p))}" data-i="${i}" data-f="p"></label><label>Pz/band.<input class="num" inputmode="numeric" value="${p.b}" data-i="${i}" data-f="b"></label></div>
+        <div class="pc2"><label>Especie ${selG(p,i)}</label><label>€/kg<input class="num" inputmode="decimal" value="${esc(dec(p.p))}" data-i="${i}" data-f="p"></label><label>Pz/band.<input class="num" inputmode="numeric" value="${p.b}" data-i="${i}" data-f="b"></label><label>Kg/pz aprox.<input class="num" inputmode="decimal" value="${p.pm?esc(dec(p.pm)):""}" data-i="${i}" data-f="pm" placeholder="—"></label></div>
         <div class="pc3">${tog(p,i)}${mov(p,i)}<button class="x" data-del="${i}" aria-label="Borrar producto">×</button></div></div>`}
   }
   app.innerHTML=`<div class="wrap">
     ${S.precAviso?`<div class="aviso">He marcado como «Porción …» ${S.precAviso} artículo(s) cuyo código lleva P en la 3ª letra. Revísalos y pulsa «Guardar artículos y precios» para que quede fijado.</div>`:""}
-    <p class="nota">Precio €/kg que ve la tienda y sale en el albarán. «Pz/bandeja» es cuántas piezas lleva una bandeja, o cuántas cuñas lleva una bolsa en las porciones (1 si se pide suelto). Para que un artículo vaya al bloque de <b>porciones</b>, elige en «Especie» la opción «Porción mezcla», «Porción oveja», «Porción D.O.» o «Porción cabra»; mantiene el color de su especie. Con ↑ ↓ cambias el orden dentro de cada grupo; es el orden en que lo ven la tienda y quien prepara. Nada se guarda hasta pulsar «Guardar».</p>
+    <p class="nota">Precio €/kg que ve la tienda y sale en el albarán. «Pz/bandeja» es cuántas piezas lleva una bandeja, o cuántas cuñas lleva una bolsa en las porciones (1 si se pide suelto). «Kg/pz aprox.» es el peso medio de una pieza o cuña: si en fábrica no se pesa, el pedido y el albarán calculan los kilos con él. Para que un artículo vaya al bloque de <b>porciones</b>, elige en «Especie» la opción «Porción mezcla», «Porción oveja», «Porción D.O.» o «Porción cabra»; mantiene el color de su especie. Con ↑ ↓ cambias el orden dentro de cada grupo; es el orden en que lo ven la tienda y quien prepara. Nada se guarda hasta pulsar «Guardar».</p>
     ${h}</div>`;
   const cambios=JSON.stringify(P)!==JSON.stringify(S.productos);
   barra(desk?`<span class="muted">${cambios?"<b style=\"color:var(--warn)\">Hay cambios sin guardar</b>":P.length+" artículos"}</span><div class="acc"><button class="btn" id="bAddP">+ Nuevo artículo</button><button class="btn" id="bDesh" ${cambios?"":"disabled"}>Deshacer cambios</button><button class="btn pri" id="bGP" ${cambios?"":"disabled"}>Guardar artículos y precios</button></div>`
@@ -877,12 +884,12 @@ function vPrecios(app){
     if(t.dataset.act!=null){P[t.dataset.act].activo=P[t.dataset.act].activo===false;render()}
     else if(t.dataset.mv!=null){const a=P[t.dataset.mv],b=vecino(a,+t.dataset.d);if(b){const ia=idx(a),ib=idx(b);P[ia]=b;P[ib]=a;render()}}
     else if(t.dataset.del!=null){const c=await confirmar("Borrar artículo","¿Borrar "+P[t.dataset.del].c+"? Si solo quieres que la tienda no lo vea, pulsa «Activo» para dejarlo «Oculto».");if(c.ok){P.splice(+t.dataset.del,1);render()}}};
-  $("#bAddP").onclick=()=>{P.push({c:"",n:"",g:"X",p:0,b:1,activo:true});render();const ins=app.querySelectorAll('[data-f="c"]');for(const x of ins)if(!x.value){x.scrollIntoView({block:"center"});x.focus();break}};
+  $("#bAddP").onclick=()=>{P.push({c:"",n:"",g:"X",p:0,b:1,pm:0,activo:true});render();const ins=app.querySelectorAll('[data-f="c"]');for(const x of ins)if(!x.value){x.scrollIntoView({block:"center"});x.focus();break}};
   $("#bDesh").onclick=()=>{S.precEd=null;S.precAviso=0;render()};
   $("#bGP").onclick=async()=>{
     const vacios=P.filter(p=>!String(p.c).trim());if(vacios.length)return toast("Hay un artículo sin código",true);
     const c=await confirmar("Guardar artículos y precios","Los pedidos y albaranes nuevos usarán estos precios y este orden.");if(!c.ok)return;
-    try{const j=await api("guardarProductos",{productos:ordenProds(P).map(p=>({...p,p:num(p.p),b:num(p.b)}))});S.productos=j.productos;S.precEd=clone(j.productos);S.precAviso=0;toast("Guardado");render()}
+    try{const j=await api("guardarProductos",{productos:ordenProds(P).map(p=>({...p,p:num(p.p),b:num(p.b),pm:num(p.pm)}))});S.productos=j.productos;S.precEd=clone(j.productos);S.precAviso=0;toast("Guardado");render()}
     catch(err){toast(err.message,true)}};
 }
 
@@ -938,7 +945,7 @@ function detalleDesk(p){
   const E=p.estado, alb=p.albaran&&S.albaranes.find(a=>String(a.num)===p.albaran), nd=p.lineas.filter(esDif).length;
   const filas=ordenLineas(p.lineas).map(l=>{const d=(+servido(l)||0)-(+l.pz||0),pr=prod(l.c)||{b:1};
     return `<tr class="${E!=="ENVIADO"&&esDif(l)?"dif":""}"><td><span class="dot" style="${estiloG(grupoDe(l.c))}"></span><b>${esc(l.c)}</b></td><td>${esc(l.n||pr.n||"")}${l.extra?" <i>(añadido en fábrica)</i>":""}</td>
-      <td class="n">${l.extra?"—":l.pz}${pr.b>1&&l.pz>=pr.b?` <small class="muted">${bandTxt(l.pz,pr.b,pr.g)}</small>`:""}</td><td class="n">${E==="ENVIADO"?"—":servido(l)}</td><td class="n">${E==="ENVIADO"||!d?"":(d>0?"+":"")+d}</td><td class="n">${l.kg?kgf(num(l.kg)):""}</td><td>${esc(l.obs||"")}</td></tr>`}).join("");
+      <td class="n">${l.extra?"—":l.pz}${pr.b>1&&l.pz>=pr.b?` <small class="muted">${bandTxt(l.pz,pr.b,pr.g)}</small>`:""}</td><td class="n">${E==="ENVIADO"?"—":servido(l)}</td><td class="n">${E==="ENVIADO"||!d?"":(d>0?"+":"")+d}</td><td class="n">${l.kg?(l.aprox?"≈ ":"")+kgf(num(l.kg)):""}</td><td>${esc(l.obs||"")}</td></tr>`}).join("");
   const R=S.rol, puedeEditar=["ENVIADO","PREPARANDO"].includes(E), puedePrep=["ENVIADO","PREPARANDO","PREPARADO"].includes(E), puedeAnular=!["ALBARANADO","ANULADO"].includes(E);
   return `<div class="dcard"><div class="dhead"><h2>Pedido ${esc(p.id)}</h2><span class="chip e-${E}">${EST_TXT[E]}</span></div>
     <div class="muted">Hecho ${fCorta(p.creado)} por ${esc(p.creadoPor)}${p.actualizadoPor&&p.actualizado!==p.creado?` · último cambio ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`:""}${p.albaran?` · albarán nº <b>${esc(p.albaran)}</b>`:""}</div>
@@ -963,7 +970,7 @@ async function accionPedido(p,a){
     if(p.estado==="PREPARADO"){const c=await confirmar("Corregir preparación","El pedido vuelve a «Preparando» hasta que lo marques otra vez como preparado.");if(!c.ok)return;
       try{await api("reabrirPedido",{id:p.id});await cargar(true)}catch(err){return toast(err.message,true)}}
     const q=S.pedidos.find(x=>x.id===p.id)||p;
-    S.scr={t:"preparar",ped:clone({id:q.id,version:q.version,obsF:q.obsF||"",obs:q.obs,lineas:ordenLineas(q.lineas).map(l=>({...l,pzS:l.pzS??l.pz,kg:l.kg||""}))})};render();scrollTo(0,0)}
+    S.scr={t:"preparar",ped:clone({id:q.id,version:q.version,obsF:q.obsF||"",obs:q.obs,lineas:ordenLineas(q.lineas).map(l=>({...l,pzS:l.pzS??l.pz,kg:l.aprox?"":(l.kg||"")}))})};render();scrollTo(0,0)}
 }
 
 /* =================== ESCRITORIO: histórico =================== */
@@ -1006,7 +1013,7 @@ function vHistorial(app){
       ${p.obs?`<div class="obsbox"><b>Tienda:</b> ${esc(p.obs)}</div>`:""}${p.obsF?`<div class="obsbox"><b>Fábrica:</b> ${esc(p.obsF)}</div>`:""}
       <table class="t sub"><thead><tr><th>Código</th><th>Producto</th><th class="n">Pedido</th><th class="n">Servido</th><th class="n">Diferencia</th><th class="n">Kg</th><th>Nota</th></tr></thead><tbody>
       ${ordenLineas(p.lineas).map(l=>{const d=(+servido(l)||0)-(+l.pz||0);return `<tr class="${esDif(l)?"dif":""}"><td><span class="dot" style="${estiloG(grupoDe(l.c))}"></span><b>${esc(l.c)}</b></td><td>${esc(l.n||(prod(l.c)||{}).n||"")}${l.extra?" <i>(añadido en fábrica)</i>":""}</td>
-        <td class="n">${l.extra?"—":l.pz}</td><td class="n">${p.estado==="ENVIADO"?"—":servido(l)}</td><td class="n">${p.estado==="ENVIADO"||!d?"":(d>0?"+":"")+d}</td><td class="n">${l.kg?kgf(num(l.kg)):""}</td><td>${esc(l.obs||"")}</td></tr>`}).join("")}
+        <td class="n">${l.extra?"—":l.pz}</td><td class="n">${p.estado==="ENVIADO"?"—":servido(l)}</td><td class="n">${p.estado==="ENVIADO"||!d?"":(d>0?"+":"")+d}</td><td class="n">${l.kg?(l.aprox?"≈ ":"")+kgf(num(l.kg)):""}</td><td>${esc(l.obs||"")}</td></tr>`}).join("")}
       </tbody></table>
       <div class="acc" style="margin-top:8px"><button class="btn sm" data-hoja="${esc(p.id)}">Imprimir hoja de preparación</button>${S.pedidos.some(x=>x.id===p.id)?`<button class="btn sm" data-ir="${esc(p.id)}">Abrir pedido</button>`:""}${p.albaran?`<button class="btn sm" data-alb="${esc(p.albaran)}">Ver albarán ${esc(p.albaran)}</button>`:""}</div></td></tr>`}
     return r}).join("");
@@ -1099,7 +1106,7 @@ function imprimirHoja(p){
   const filas=ordenLineas(p.lineas).map(l=>{const pr=prod(l.c)||{b:1,g:"X"},k=prod(l.c)?seccion(pr):"X";
     const cab=k!==k0?`<tr class="ps s-${k}" style="--c:var(${k==="P"?"--gold":k==="X"?"--otros":colorG(k)})"><td colspan="5">${seccTit(k)}</td></tr>`:"";k0=k;
     return cab+`<tr><td style="${estiloG(pr.g)}"><i class="pdot"></i><b>${esc(l.c)}</b><span class="pn">${esc(l.n||pr.n||"")}</span></td><td class="n">${l.pz||""}${pr.b>1&&l.pz>=pr.b?`<span class="pn">${bandTxt(l.pz,pr.b,pr.g)}</span>`:""}</td>
-      <td class="n">${l.pzS!=null&&l.pzS!==l.pz?l.pzS:""}</td><td class="n">${l.kg?kgf(num(l.kg)):""}</td><td></td></tr>`}).join("");
+      <td class="n">${l.pzS!=null&&l.pzS!==l.pz?l.pzS:""}</td><td class="n">${l.kg?(l.aprox?"≈ ":"")+kgf(num(l.kg)):""}</td><td></td></tr>`}).join("");
   $("#imp").innerHTML=`<section class="copia media">
     <span class="tij">✂</span>
     <div class="mh"><div style="display:flex;align-items:center;gap:3mm"><img class="plogo" src="${LOGO}" alt="" style="height:10mm"><div><b>PREPARACIÓN · Pedido ${esc(p.id)}</b><br>${EMPRESA.s} · Tienda CASA</div></div><div class="mt"><span>Pedido ${fCorta(p.creado)}</span><span>${ordenLineas(p.lineas).length} art. · ${p.lineas.reduce((x,l)=>x+(+l.pz||0),0)} pz</span></div></div>
