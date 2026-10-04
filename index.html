@@ -81,6 +81,21 @@ textarea{min-height:64px;resize:vertical}
 .lin .lt{font-family:var(--display);font-size:19px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
 .lin .lf{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:end}
 .lin.ok .ln::after{content:" ✓";color:var(--ok)}
+.plist{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.plin{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.plin .ph{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 14px;background:var(--t);border-bottom:1px solid var(--line)}
+.plin .ln{font-weight:700;font-size:18px;line-height:1.2}
+.plin .ln small{font-weight:500;color:var(--muted);font-size:15px}
+.plin .lt{font-family:var(--display);font-size:22px;font-weight:700;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--c)}
+.plin .lt small{display:block;font-size:14px;color:var(--muted)}
+.plin .pb{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;padding:10px 14px 12px}
+.plin .pb .chk{width:56px;height:48px}
+.plin .nbtn{width:48px;height:48px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);font-size:20px;cursor:pointer;color:var(--muted)}
+.plin .nbtn.on{border-color:var(--warn);color:var(--warn);background:#fff7e8}
+.plin .pn{padding:0 14px 12px}
+.plin .pn input{width:100%}
+.plin.ok{border-color:var(--ok)}
+.plin.ok .ln::after{content:" ✓";color:var(--ok)}
 .chk{width:44px;height:44px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);font-size:20px;cursor:pointer;color:var(--muted)}
 .chk.on{background:var(--ok);border-color:var(--ok);color:#fff}
 .x{border:0;background:none;color:var(--danger);font-size:24px;padding:6px 8px;cursor:pointer}
@@ -305,7 +320,7 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "18 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "19 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -662,24 +677,23 @@ function vVer(app){
 /* =================== preparar (fábrica) =================== */
 function vPreparar(app){
   const P=S.scr.ped;
-  const filas=P.lineas.map((l,i)=>{const pr=prod(l.c)||{b:1,g:"X"};
-    return `<div class="lin ${l.ok?"ok":""}">
-      <div class="ln"><span class="dot" style="--c:var(${colorG(pr.g)})"></span>${esc(l.c)} <small>${esc(l.n)}</small></div>
-      <div class="lt">${l.extra?`<small class="muted">añadido</small>`:`Pedido: ${l.pz} pz`}${pr.b>1&&l.pz?`<br><small class="muted">${bandTxt(l.pz,pr.b)}</small>`:""}</div>
-      <div class="lf">
+  const filas=P.lineas.map((l,i)=>{const pr=prod(l.c)||{b:1,g:"X"},g=grupoDe(l.c);
+    return `<div class="plin ${l.ok?"ok":""}" style="${estiloG(g)}">
+      <div class="ph"><div class="ln"><span class="dot" style="--c:var(${colorG(g)})"></span>${esc(l.c)} <small>${esc(l.n||pr.n||"")}</small></div>
+        <div class="lt">${l.extra?`<small>añadido</small>`:`${l.pz} pz`}${pr.b>1&&l.pz?`<small>${bandTxt(l.pz,pr.b)}</small>`:""}</div></div>
+      <div class="pb">
         <div><label class="l" for="s${i}">Piezas</label><input id="s${i}" class="num" inputmode="numeric" value="${l.pzS}" data-i="${i}" data-f="pzS"></div>
         <div><label class="l" for="k${i}">Kg</label><input id="k${i}" class="num" inputmode="decimal" value="${esc(dec(l.kg))}" data-i="${i}" data-f="kg" placeholder="0,000"></div>
-        <div><label class="l" for="o${i}">Nota</label><input id="o${i}" value="${esc(l.obs||"")}" data-i="${i}" data-f="obs" placeholder="—"></div>
-        <div style="display:flex;gap:2px">${l.extra?`<button class="x" data-del="${i}" aria-label="Quitar línea">×</button>`:""}<button class="chk ${l.ok?"on":""}" data-ok="${i}" aria-label="Marcar como hecho">✓</button></div>
-      </div></div>`}).join("");
+        <div style="display:flex;gap:6px">${l.extra?`<button class="x" data-del="${i}" aria-label="Quitar línea">×</button>`:""}<button class="chk ${l.ok?"on":""}" data-ok="${i}" aria-label="Marcar como hecho">✓</button><button class="nbtn ${l.obs?"on":""}" data-nota="${i}" aria-label="Añadir nota a esta línea" title="Nota">✎</button></div>
+      </div>${l.obs||l._nota?`<div class="pn"><input id="o${i}" value="${esc(l.obs||"")}" data-i="${i}" data-f="obs" placeholder="Nota de esta línea (ej.: el gigante va el jueves)"></div>`:""}</div>`}).join("");
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="justify-content:space-between;align-items:center;margin-bottom:10px">
       <button class="btn sm" id="bVolver">← Volver sin guardar</button><b>Preparando pedido ${esc(P.id)}</b></div>
     ${P.obs?`<div class="obsbox"><b>Observaciones de la tienda:</b>\n${esc(P.obs)}</div>`:""}
-    <div class="card">${filas}</div>
+    <div class="plist">${filas}</div>
     <button class="btn" id="bAdd" style="width:100%">+ Añadir producto (avería, cambio…)</button>
-    <div class="sec">Notas de fábrica</div>
-    <textarea id="fObsF" placeholder="Ej.: no había OCG, se mandan 2 OCM. Avería: …">${esc(P.obsF)}</textarea>
+    <div class="sec">Observaciones generales del pedido</div>
+    <textarea id="fObsF" placeholder="Ej.: no había OCG, se mandan 2 OCM. El gigante va el jueves. Avería: …">${esc(P.obsF)}</textarea>
     <div class="acc" style="margin-top:10px"><button class="btn" id="bGuardar">Guardar y seguir luego</button><button class="btn" id="bHoja">Imprimir hoja</button></div>
   </div>`;
   const tot=()=>P.lineas.reduce((s,l)=>s+num(l.kg),0);
@@ -690,6 +704,7 @@ function vPreparar(app){
     const t=$(".tot");if(t)t.innerHTML=`<small>${pend()?`Faltan ${pend()} pesos`:"Todos pesados"}</small>${kgf(tot())} kg`;LS.set("ped_prep_"+P.id,P)};
   app.onclick=e=>{const t=e.target;
     if(t.dataset.ok!=null){const l=P.lineas[t.dataset.ok];l.ok=!l.ok;render()}
+    if(t.dataset.nota!=null){const i=+t.dataset.nota,l=P.lineas[i];l._nota=!(l._nota||l.obs);if(!l._nota)l.obs="";render();if(l._nota){const o=$("#o"+i);o&&o.focus()}}
     if(t.dataset.del!=null){P.lineas.splice(+t.dataset.del,1);render()}};
   $("#fObsF").oninput=e=>{P.obsF=e.target.value};
   $("#bVolver").onclick=async()=>{const c=await confirmar("Salir","Lo que no hayas guardado se pierde. ¿Salir?");if(c.ok){S.scr={t:"ver",id:P.id};render()}};
