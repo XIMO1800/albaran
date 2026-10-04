@@ -259,6 +259,7 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 .sumf button.on{border-color:var(--brand);box-shadow:inset 0 0 0 1.5px var(--brand);background:#fbf3f4}
 .cmpr.tot{border-top:2px solid var(--fg);font-size:16px}
 body.desk .sumf{max-width:640px}
+.mic{margin-top:6px}.mic.on{background:#c0392b;color:#fff;border-color:#c0392b}
 .cmpc,body.desk .cmpc{padding:0;overflow:hidden}
 .cmpt{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer}
 .cmpc.ab .cmpt{border-bottom:1px solid var(--line);background:var(--surface2)}
@@ -427,7 +428,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "33 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "34 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -603,8 +604,8 @@ function tarjeta(p,sel){
     <div class="meta">${fHora(p.creado)} · Pedido ${esc(p.id)} · ${nl} producto${nl===1?"":"s"} · ${pz} pz${nd?` · <b style="color:var(--warn);font-size:inherit;display:inline">${nd} diferencia${nd>1?"s":""}</b>`:""}${p.obs?" · 📝":""}</div></div>`}
   return `<div class="card ped" data-ver="${esc(p.id)}">
     ${sel?`<input type="checkbox" class="selbox" data-sel="${esc(p.id)}" ${S.sel.has(p.id)?"checked":""} aria-label="Seleccionar pedido ${esc(p.id)}">`:`<span></span>`}
-    <b>Pedido ${esc(p.id)}</b><span class="chip e-${p.estado}">${EST_TXT[p.estado]||p.estado}</span>
-    <div class="meta">${fCorta(p.creado)} · ${esc(p.creadoPor)} · ${nl} producto${nl===1?"":"s"} · ${pz} pz${p.albaran?` · Albarán ${esc(p.albaran)}`:""}${p.obs?" · 📝":""}</div>
+    <b>${fDiaPed(p.creado)}</b><span class="chip e-${p.estado}">${EST_TXT[p.estado]||p.estado}</span>
+    <div class="meta">${fHora(p.creado)} · Pedido ${esc(p.id)} · ${esc(p.creadoPor)} · ${nl} producto${nl===1?"":"s"} · ${pz} pz${p.albaran?` · Albarán ${esc(p.albaran)}`:""}${p.obs?" · 📝":""}</div>
   </div>`;
 }
 function onLista(app){
@@ -616,6 +617,22 @@ function onLista(app){
 }
 const ordenados=(est)=>S.pedidos.filter(p=>est.includes(p.estado)).sort((a,b)=>(+b.id)-(+a.id));
 
+
+/* =================== dictado por voz en las observaciones =================== */
+let dictando=null;
+document.addEventListener("click",e=>{const b=e.target.closest("[data-dictar]");if(!b)return;e.preventDefault();e.stopPropagation();
+  const ta=document.getElementById(b.dataset.dictar);if(!ta)return;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return toast("Este móvil no permite dictar aquí. Usa el micrófono del teclado 🎤",true);
+  if(dictando){dictando.stop();return}
+  const r=new SR();r.lang="es-ES";r.interimResults=false;r.continuous=false;
+  const base=ta.value;dictando=r;b.classList.add("on");b.textContent="● Escuchando… (pulsa para parar)";
+  r.onresult=ev=>{let t="";for(const x of ev.results)t+=x[0].transcript;t=t.trim();if(!t)return;
+    ta.value=(base&&!/\s$/.test(base)?base+" ":base)+t.charAt(0).toUpperCase()+t.slice(1);ta.dispatchEvent(new Event("input",{bubbles:true}))};
+  r.onerror=ev=>{if(ev.error==="not-allowed")toast("Da permiso al micrófono para poder dictar",true);else if(ev.error!=="no-speech"&&ev.error!=="aborted")toast("No se pudo dictar ("+ev.error+")",true)};
+  r.onend=()=>{dictando=null;b.classList.remove("on");b.textContent="🎤 Dictar"};
+  try{r.start()}catch(err){dictando=null;b.classList.remove("on");b.textContent="🎤 Dictar"}
+},true);
 /* =================== listas por rol =================== */
 /* =================== diferencias: lo pedido frente a lo enviado =================== */
 const pedDe=id=>S.pedidos.find(x=>x.id===id)||((S.H.data?S.H.data.pedidos:[]).find(x=>x.id===id));
@@ -741,7 +758,7 @@ function vEditar(app){
     </div>
     ${h||`<div class="vacio">Ningún producto coincide.</div>`}
     <div class="sec">Observaciones</div>
-    <textarea id="fObs" placeholder="Ej.: si no hay curado grande, mandad mediano. Averías: …">${esc(P.obs)}</textarea>
+    <textarea id="fObs" placeholder="Ej.: si no hay curado grande, mandad mediano. Averías: …">${esc(P.obs)}</textarea><button type="button" class="btn sm mic" data-dictar="fObs">🎤 Dictar</button>
   </div>`;
   const pz=P.lineas.reduce((s,l)=>s+l.pz,0);
   barra(`<div class="tot"><small>${P.lineas.length} productos</small>${pz} piezas</div><button class="btn pri" id="bEnv" ${P.lineas.length?"":"disabled"}>${editando?"Guardar cambios":"Enviar pedido"}</button>`);
@@ -836,7 +853,7 @@ function vPreparar(app){
     <div class="plist">${filas}</div>
     <button class="btn" id="bAdd" style="width:100%">+ Añadir producto (avería, cambio…)</button>
     <div class="sec">Observaciones generales del pedido</div>
-    <textarea id="fObsF" placeholder="Ej.: no había OCG, se mandan 2 OCM. El gigante va el jueves. Avería: …">${esc(P.obsF)}</textarea>
+    <textarea id="fObsF" placeholder="Ej.: no había OCG, se mandan 2 OCM. El gigante va el jueves. Avería: …">${esc(P.obsF)}</textarea><button type="button" class="btn sm mic" data-dictar="fObsF">🎤 Dictar</button>
     <div class="acc" style="margin-top:10px"><button class="btn" id="bGuardar">Guardar y seguir luego</button><button class="btn" id="bHoja">Imprimir hoja</button></div>
   </div>`;
   const kgL=l=>num(l.kg)>0?num(l.kg):(num(l.pzS)>0?kgEst(l):0);
@@ -901,7 +918,7 @@ function vAlbaran(app){
       <div><label class="l" for="aC">Cliente</label><input id="aC" value="${esc(A.cliente)}"></div></div>
     <div class="card">${filas||`<div class="vacio">Sin líneas.</div>`}</div>
     <button class="btn" id="bAdd" style="width:100%">+ Añadir línea</button>
-    <div class="sec">Observaciones del albarán</div><textarea id="aO">${esc(A.obs)}</textarea>
+    <div class="sec">Observaciones del albarán</div><textarea id="aO">${esc(A.obs)}</textarea><button type="button" class="btn sm mic" data-dictar="aO">🎤 Dictar</button>
     <p class="muted">El número se asigna al emitir. Después se imprimen dos copias: tienda y facturación.</p></div>`;
   const tot=()=>A.lineas.reduce((s,l)=>s+r2(num(l.kg)*num(l.p)),0), kg=()=>A.lineas.reduce((s,l)=>s+num(l.kg),0);
   const pb=()=>barra(`<div class="tot"><small>${A.lineas.length} líneas · ${kgf(kg())} kg</small>${eur(tot())} €</div><button class="btn pri" id="bEmit">Emitir e imprimir</button>`);
