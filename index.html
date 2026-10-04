@@ -171,7 +171,9 @@ html.desk{zoom:1.1}
 @media print{html.desk{zoom:1}}
 body.desk #side{display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;width:250px;background:var(--brand-deep);color:#fff;z-index:7;padding:18px 12px;gap:4px;overflow-y:auto}
 .side-t{font-family:var(--display);font-size:24px;font-weight:700;line-height:1.1;padding:4px 10px 14px;border-bottom:1px solid rgba(255,255,255,.15);margin-bottom:8px}
-.lgrp-s{font-size:11px;text-transform:uppercase;letter-spacing:.1em;opacity:.6;font-weight:700;padding:10px 12px 4px}
+.sgrp{background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:4px 4px 6px}
+.sgrp-av{margin-top:22px}
+.lgrp-s{font-family:var(--display);font-size:21px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);padding:8px 10px 6px;margin:0 4px 6px;border-bottom:2px solid rgba(196,149,43,.45)}
 .side-t small{display:block;font-family:var(--font);font-size:13.5px;font-weight:500;opacity:.9;margin-top:4px}
 .snav{display:flex;flex-direction:column;gap:2px}
 .snav button,.navb{display:block;width:100%;text-align:left;background:transparent;border:0;color:rgba(255,255,255,.82);padding:11px 12px;border-radius:10px;font-weight:600;font-size:15.5px;cursor:pointer;font-family:var(--font)}
@@ -423,7 +425,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "28 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "29 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1024,9 +1026,9 @@ function marcoDesk(){
   const sd=$("#side"), on=document.body.classList.contains("desk");
   if(!on){sd.innerHTML="";return}
   const n=e=>S.pedidos.filter(p=>p.estado===e).length, badge={pedidos:n("ENVIADO")+n("PREPARADO")};
-  sd.innerHTML=`<div class="side-t">Pedidos tienda<small>${esc(S.user)} · ${S.rol==="ADMIN"?"Administración":"Oficina"}</small></div>
-    <div class="lgrp-s">Tienda</div><nav class="snav">${SIDE.map(([k,t,sub])=>`<button data-side="${k}" class="${S.tab===k?"on":""}">${t}${badge[k]?`<span class="badge">${badge[k]}</span>`:""}<small>${sub}</small></button>`).join("")}</nav>
-    ${S.rol==="ADMIN"?`<div class="lgrp-s">Autoventa</div><nav class="snav"><button data-side="autoventa" class="${S.tab==="autoventa"?"on":""}">Cuadres de camiones<small>Cuadre, histórico y artículos</small></button></nav>`:""}
+  sd.innerHTML=`<div class="side-t">${S.rol==="ADMIN"?"Tienda y autoventa":"Pedidos tienda"}<small>${esc(S.user)} · ${S.rol==="ADMIN"?"Administración":"Oficina"}</small></div>
+    <div class="sgrp"><div class="lgrp-s">Tienda</div><nav class="snav">${SIDE.map(([k,t,sub])=>`<button data-side="${k}" class="${S.tab===k?"on":""}">${t}${badge[k]?`<span class="badge">${badge[k]}</span>`:""}<small>${sub}</small></button>`).join("")}</nav></div>
+    ${S.rol==="ADMIN"?`<div class="sgrp sgrp-av"><div class="lgrp-s">Autoventa</div><nav class="snav"><button data-side="autoventa" class="${S.tab==="autoventa"?"on":""}">Cuadres de camiones<small>Cuadre, histórico y artículos</small></button></nav></div>`:""}
     <div style="flex:1"></div><button class="navb" id="sideAct">Actualizar datos</button><button class="navb" id="sideSalir">Salir</button><div class="vers">Versión ${VERSION}</div>`;
   sd.querySelectorAll("[data-side]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.side;S.scr=null;S.sel.clear();if(["historial","albaranes","exportar","difs"].includes(S.tab))S.H.data=null;render();scrollTo(0,0)});
   $("#sideAct").onclick=async()=>{if(["historial","albaranes","exportar","difs"].includes(S.tab)&&!S.scr){cargarHist()}else{await cargar();toast("Datos actualizados")}};
