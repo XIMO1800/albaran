@@ -56,8 +56,9 @@ dialog{border:0;border-radius:14px;padding:0;width:min(560px,96vw);max-height:90
 dialog::backdrop{background:rgba(0,0,0,.45)}
 .dhead{position:sticky;top:0;background:var(--bg);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
 .dbody{padding:10px 14px 16px}
-.prow{display:grid;grid-template-columns:5.5em 1fr 5em 2em;gap:6px;margin-bottom:6px;align-items:center}
-.prow input{padding:7px 8px;font-size:15px}
+.prow{display:grid;grid-template-columns:1fr 1.4fr;gap:6px;padding:8px 0;border-top:1px solid var(--line)}
+.prow .r2{grid-column:1/-1;display:grid;grid-template-columns:1fr 6em auto;gap:6px;align-items:center}
+.prow input,.prow select{padding:7px 8px;font-size:15px;min-width:0;width:100%;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font-family:inherit}
 .hist{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
 #imp{display:none}
 
@@ -132,7 +133,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 <dialog id="dPrecios">
   <div class="dhead"><b>Precios €/kg</b><button class="btn" data-close>Hecho</button></div>
   <div class="dbody">
-    <p style="margin:0 0 10px;color:var(--muted);font-size:13px">Código, nombre y precio. Los cambios se guardan en este móvil.</p>
+    <p style="margin:0 0 10px;color:var(--muted);font-size:13px">Toca cualquier campo para cambiar código, nombre, grupo o precio €/kg. Se guarda solo en este móvil.</p>
     <div id="lPrecios"></div>
     <div class="acc" style="margin-top:10px">
       <button class="btn" id="bAddP">+ Producto</button>
@@ -170,12 +171,12 @@ const PRECIOS_INI = [
   {c:"DCP ARTESANO",n:"D.O. artesano",p:18.75,g:"D"},
   {c:"CTN",n:"Cabra tierno 1 kg",p:11.80,g:"C"},
   {c:"CSG",n:"Cabra semi",p:12.50,g:"C"},
-  {c:"OCG AURORA",n:"Aurora 3 kg",p:12.55,g:"X"},
-  {c:"OCM AURORA",n:"Aurora 2 kg",p:12.55,g:"X"},
-  {c:"OCP AURORA",n:"Aurora pequeño",p:12.55,g:"X"},
+  {c:"OCG AVERÍA",n:"Avería oveja 3 kg",p:12.55,g:"V"},
+  {c:"OCM AVERÍA",n:"Avería oveja 2 kg",p:12.55,g:"V"},
+  {c:"OCP AVERÍA",n:"Avería oveja pequeño",p:12.55,g:"V"},
   {c:"SIN SAL",n:"Sin sal",p:9.40,g:"X"}
 ];
-const GRUPOS = {M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["D.O.","--do"],C:["Cabra","--cabra"],X:["Otros","--otros"]};
+const GRUPOS = {M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--danger"],X:["Otros","--otros"]};
 
 /* ---------- almacenamiento local (tolerante a fallos) ---------- */
 const LS = {
@@ -183,8 +184,11 @@ const LS = {
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 };
 let precios = LS.get("alb_precios", null) || PRECIOS_INI.map(x=>({...x}));
+function sinAurora(o){ if(o&&/AURORA/i.test(o.c||"")){o.c=o.c.replace(/AURORA/ig,"AVERÍA");o.n=(o.n||"").replace(/Aurora/ig,"Avería oveja");o.g="V";} return o; }
+precios.forEach(sinAurora);
 let hist = LS.get("alb_hist", []);
 let alb = LS.get("alb_actual", null) || nuevoAlb();
+alb.lineas.forEach(sinAurora); hist.forEach(h=>h.lineas.forEach(sinAurora));
 
 function hoy(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
 function nuevoAlb(){
@@ -267,12 +271,16 @@ $("#lProds").addEventListener("click",e=>{
 function pintarPrecios(){
   $("#lPrecios").innerHTML=precios.map((p,i)=>`
     <div class="prow">
-      <input value="${esc(p.c)}" data-pi="${i}" data-pf="c" aria-label="Código">
-      <input value="${esc(p.n||"")}" data-pi="${i}" data-pf="n" aria-label="Nombre">
-      <input class="num" inputmode="decimal" value="${String(p.p).replace(".",",")}" data-pi="${i}" data-pf="p" aria-label="Precio">
-      <button class="x" data-pdel="${i}" aria-label="Borrar">×</button>
+      <input value="${esc(p.c)}" data-pi="${i}" data-pf="c" aria-label="Código" placeholder="Código">
+      <input value="${esc(p.n||"")}" data-pi="${i}" data-pf="n" aria-label="Nombre" placeholder="Nombre">
+      <div class="r2">
+        <select data-pi="${i}" data-pf="g" aria-label="Grupo">${Object.keys(GRUPOS).map(g=>`<option value="${g}"${(p.g||"X")===g?" selected":""}>${GRUPOS[g][0]}</option>`).join("")}</select>
+        <input class="num" inputmode="decimal" value="${String(p.p).replace(".",",")}" data-pi="${i}" data-pf="p" aria-label="Precio €/kg">
+        <button class="x" data-pdel="${i}" aria-label="Borrar">×</button>
+      </div>
     </div>`).join("");
 }
+$("#lPrecios").addEventListener("change",e=>{ if(e.target.dataset.pf==="g"){precios[e.target.dataset.pi].g=e.target.value;LS.set("alb_precios",precios);} });
 $("#lPrecios").addEventListener("input",e=>{
   const i=e.target.dataset.pi,f=e.target.dataset.pf; if(i==null)return;
   precios[i][f]= f==="p"?num(e.target.value): (f==="c"?e.target.value.toUpperCase():e.target.value);
