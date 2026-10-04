@@ -365,7 +365,7 @@ body.desk .sumf{max-width:640px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "26 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "27 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -636,10 +636,10 @@ function vListaOficina(app){
   for(const id of [...S.sel]) if(!prep.some(p=>p.id===id)) S.sel.delete(id);
   barra(prep.length?`<span class="muted">${S.sel.size} pedido(s) elegidos</span><button class="btn pri" id="bHacer" ${S.sel.size?"":"disabled"}>Hacer albarán</button>`:"");
   app.innerHTML=`<div class="wrap">
-    <div class="sec">Preparados · marca los que van en el albarán</div>${prep.map(p=>tarjeta(p,true)).join("")||`<div class="vacio">No hay pedidos preparados.</div>`}
-    <div class="sec">Nuevos</div>${ordenados(["ENVIADO"]).map(p=>tarjeta(p)).join("")||`<div class="vacio">Ninguno.</div>`}
-    <div class="sec">Preparándose</div>${ordenados(["PREPARANDO"]).map(p=>tarjeta(p)).join("")||`<div class="vacio">Ninguno.</div>`}
-    <div class="sec">Últimos cerrados</div>${ordenados(["ALBARANADO","ANULADO"]).slice(0,30).map(p=>tarjeta(p)).join("")||`<div class="vacio">Ninguno.</div>`}</div>`;
+    <div class="sec">1 · Nuevos</div>${ordenados(["ENVIADO"]).map(p=>tarjeta(p)).join("")||`<div class="vacio">Ninguno.</div>`}
+    <div class="sec">2 · Preparándose</div>${ordenados(["PREPARANDO"]).map(p=>tarjeta(p)).join("")||`<div class="vacio">Ninguno.</div>`}
+    <div class="sec">3 · Preparados · marca los que van en el albarán</div>${prep.map(p=>tarjeta(p,true)).join("")||`<div class="vacio">Ninguno.</div>`}
+    <div class="sec">4 · Cerrados · con albarán o anulados</div>${ordenados(["ALBARANADO","ANULADO"]).slice(0,30).map(p=>tarjeta(p)).join("")||`<div class="vacio">Ninguno.</div>`}</div>`;
   onLista(app);
   const b=$("#bHacer"); if(b) b.onclick=()=>{S.scr={t:"albaran",alb:borradorAlbaran([...S.sel])};render();scrollTo(0,0)};
 }
@@ -997,7 +997,7 @@ function vPedidosDesk(app){
   const grupo=(t,l,sel)=>`<div class="lgrp">${t}</div>${l.map(p=>item(p,sel)).join("")||`<div class="lvac">Ninguno</div>`}`;
   const p=S.pedidos.find(x=>x.id===S.dsel);
   app.innerHTML=`<div class="wrap"><div class="split">
-    <div class="lpanel">${grupo("Nuevos",ordenados(["ENVIADO"]))}${grupo("Preparándose",ordenados(["PREPARANDO"]))}${grupo("Preparados · marca los del albarán",prep,true)}${grupo("Cerrados recientes",ordenados(["ALBARANADO","ANULADO"]).slice(0,15))}
+    <div class="lpanel">${grupo("1 · Nuevos",ordenados(["ENVIADO"]))}${grupo("2 · Preparándose",ordenados(["PREPARANDO"]))}${grupo("3 · Preparados · marca los del albarán",prep,true)}${grupo("4 · Cerrados · con albarán o anulados",ordenados(["ALBARANADO","ANULADO"]).slice(0,15))}
       <div class="lnota">Datos de las ${S.ult?S.ult.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}):"—"} · el resto en «Histórico».</div></div>
     <div class="rpanel">${p?detalleDesk(p):`<div class="dcard vacio">No hay pedidos.</div>`}</div></div></div>`;
   barra(`<span class="muted">${S.sel.size?S.sel.size+" pedido(s) marcados para el albarán":"Marca a la izquierda los pedidos preparados que van en el albarán"}</span><button class="btn pri" id="bHacer" ${S.sel.size?"":"disabled"}>Hacer albarán</button>`);
