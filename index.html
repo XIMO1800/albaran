@@ -259,6 +259,12 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 .sumf button.on{border-color:var(--brand);box-shadow:inset 0 0 0 1.5px var(--brand);background:#fbf3f4}
 .cmpr.tot{border-top:2px solid var(--fg);font-size:16px}
 body.desk .sumf{max-width:640px}
+.obsT{display:flex;gap:12px;align-items:flex-start;background:#fff35c;border:3px solid #e2b900;border-radius:12px;padding:12px 14px;margin-bottom:12px;color:#1d1618;box-shadow:0 2px 0 #e2b900}
+.obsT .obsTi{font-size:30px;line-height:1}
+.obsT b{display:block;font-size:13px;letter-spacing:.06em}
+.obsT p{margin:3px 0 0;font-size:19px;font-weight:700;white-space:pre-wrap;line-height:1.3}
+.obsChip{grid-column:1/-1;margin-top:6px;background:#fff35c;border:2px solid #e2b900;border-radius:8px;padding:4px 10px;font-weight:800;font-size:14px;color:#1d1618;justify-self:start}
+#cObs{margin-top:10px}
 .mic{margin-top:6px}.mic.on{background:#c0392b;color:#fff;border-color:#c0392b}
 .cmpc,body.desk .cmpc{padding:0;overflow:hidden}
 .cmpt{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer}
@@ -337,6 +343,7 @@ body.desk .sumf{max-width:640px}
   .media td.n{font-size:10pt;font-weight:700}
   .media .pn{display:block;font-size:6.5pt;font-weight:400;line-height:1.05}
   .media .mobs{border:1px solid #000;padding:1mm 1.5mm;margin:1.2mm 0;min-height:5mm;font-size:8pt;white-space:pre-wrap}
+  .media .mobs.t{background:#fff35c;border:2px solid #000;font-size:10pt;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .media .mfirma{display:flex;justify-content:space-between;margin-top:2mm;font-size:8pt}
   .media .tij{position:absolute;right:-2.2mm;top:-1mm;font-size:9pt;color:#777;background:#fff}
 }
@@ -419,7 +426,7 @@ body.desk .av-wrap{max-width:1200px}
 
 <dialog id="dConf">
   <div class="dh"><b id="cTit">Confirmar</b></div>
-  <div class="db"><p id="cTxt"></p><textarea id="cMot" placeholder="Motivo (opcional)" hidden></textarea>
+  <div class="db"><p id="cTxt"></p><div id="cObs" hidden></div><textarea id="cMot" placeholder="Motivo (opcional)" hidden></textarea>
     <div class="acc" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-close>Cancelar</button><button class="btn pri" id="cOk">Aceptar</button></div></div>
 </dialog>
 
@@ -428,7 +435,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "34 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "35 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -455,7 +462,7 @@ const fDia=iso=>{if(!iso)return"";const d=new Date(iso.length===10?iso+"T12:00:0
 const fDiaCorto=iso=>{const d=new Date(iso);return isNaN(d)?"":d.getDate()+"/"+(d.getMonth()+1)};
 const clone=o=>JSON.parse(JSON.stringify(o));
 function toast(t,err){const d=document.createElement("div");d.className="toast"+(err?" err":"");d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),err?4500:2200)}
-function confirmar(tit,txt,motivo){return new Promise(res=>{$("#cTit").textContent=tit;$("#cTxt").textContent=txt;const m=$("#cMot");m.hidden=!motivo;m.value="";
+function confirmar(tit,txt,motivo,obs){return new Promise(res=>{$("#cTit").textContent=tit;$("#cTxt").textContent=txt;{const o=$("#cObs");o.hidden=!obs;o.innerHTML=obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>¿HAS TENIDO EN CUENTA LAS OBSERVACIONES?</b><p>${esc(obs)}</p></div></div>`:""}const m=$("#cMot");m.hidden=!motivo;m.value="";
   const d=$("#dConf");$("#cOk").onclick=()=>{d.close();res({ok:true,motivo:m.value})};d.onclose=()=>res({ok:false});d.showModal()})}
 document.addEventListener("click",e=>{const c=e.target.closest("[data-close]");if(c)c.closest("dialog").close()});
 
@@ -605,7 +612,7 @@ function tarjeta(p,sel){
   return `<div class="card ped" data-ver="${esc(p.id)}">
     ${sel?`<input type="checkbox" class="selbox" data-sel="${esc(p.id)}" ${S.sel.has(p.id)?"checked":""} aria-label="Seleccionar pedido ${esc(p.id)}">`:`<span></span>`}
     <b>${fDiaPed(p.creado)}</b><span class="chip e-${p.estado}">${EST_TXT[p.estado]||p.estado}</span>
-    <div class="meta">${fHora(p.creado)} · Pedido ${esc(p.id)} · ${esc(p.creadoPor)} · ${nl} producto${nl===1?"":"s"} · ${pz} pz${p.albaran?` · Albarán ${esc(p.albaran)}`:""}${p.obs?" · 📝":""}</div>
+    <div class="meta">${fHora(p.creado)} · Pedido ${esc(p.id)} · ${esc(p.creadoPor)} · ${nl} producto${nl===1?"":"s"} · ${pz} pz${p.albaran?` · Albarán ${esc(p.albaran)}`:""}</div>${p.obs&&["ENVIADO","PREPARANDO"].includes(p.estado)?`<div class="obsChip">⚠ Lleva observaciones de la tienda</div>`:""}
   </div>`;
 }
 function onLista(app){
@@ -686,7 +693,7 @@ function vCmp(app){
       <span class="cmpd ${nd?"no":"si"}">${nd?`${nd} dif.`:"Todo OK"}</span></div>
       <div class="cmp"><div class="cmph"><span>Artículo</span><span>Pedido</span><span>Enviado</span><span></span></div>${filas}
         <div class="cmpr tot"><span class="cmpa"><b>Total piezas</b></span><span class="n"><b>${sumPz(p,l=>l.extra?0:l.pz)}</b></span><span class="n"><b>${sumPz(p,l=>l.pzS??l.pz)}</b></span><span></span></div></div></div>
-    ${p.obs?`<div class="obsbox"><b>Tienda:</b> ${esc(p.obs)}</div>`:""}${p.obsF?`<div class="obsbox"><b>Nota de fábrica:</b> ${esc(p.obsF)}</div>`:""}
+    ${p.obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>OBSERVACIONES DE LA TIENDA</b><p>${esc(p.obs)}</p></div></div>`:""}${p.obsF?`<div class="obsbox"><b>Nota de fábrica:</b> ${esc(p.obsF)}</div>`:""}
     <div class="acc" style="margin-top:10px"><button class="btn" id="bVerP">Ver pedido completo</button></div></div>`;
   $("#bVolver").onclick=()=>{S.scr=null;render()};
   $("#bVerP").onclick=()=>{if(!S.pedidos.some(x=>x.id===p.id))S.pedidos.push(p);S.scr={t:"ver",id:p.id};render();scrollTo(0,0)};
@@ -809,7 +816,7 @@ function vVer(app){
     <div class="card">${R==="TIENDA"?`<b style="font-family:var(--display);font-size:24px">${fDiaPed(p.creado)}</b><div class="muted">Pedido ${esc(p.id)} · ${fHora(p.creado)}</div>`:`<b style="font-size:18px">Pedido ${esc(p.id)}</b>`}
       <div class="muted">Hecho ${fCorta(p.creado)} por ${esc(p.creadoPor)}${p.actualizadoPor&&p.actualizado!==p.creado?` · último cambio ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`:""}</div>
       ${p.albaran?`<div style="margin-top:4px">Albarán nº <b>${esc(p.albaran)}</b>${alb?` · ${kgf(alb.kg)} kg · ${eur(alb.total)} €`:""}</div>`:""}</div>
-    ${p.obs?`<div class="obsbox"><b>Observaciones de la tienda:</b>\n${esc(p.obs)}</div>`:""}
+    ${p.obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>OBSERVACIONES DE LA TIENDA</b><p>${esc(p.obs)}</p></div></div>`:""}
     ${p.obsF?`<div class="obsbox"><b>Notas de fábrica:</b>\n${esc(p.obsF)}</div>`:""}
     <div class="card">${filas}</div>
     <div class="acc">
@@ -849,7 +856,7 @@ function vPreparar(app){
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="justify-content:space-between;align-items:center;margin-bottom:10px">
       <button class="btn sm" id="bVolver">← Volver sin guardar</button><b>Preparando pedido ${esc(P.id)}</b></div>
-    ${P.obs?`<div class="obsbox"><b>Observaciones de la tienda:</b>\n${esc(P.obs)}</div>`:""}
+    ${P.obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>OBSERVACIONES DE LA TIENDA</b><p>${esc(P.obs)}</p></div></div>`:""}
     <div class="plist">${filas}</div>
     <button class="btn" id="bAdd" style="width:100%">+ Añadir producto (avería, cambio…)</button>
     <div class="sec">Observaciones generales del pedido</div>
@@ -880,7 +887,7 @@ function vPreparar(app){
     finally{S.busy=false}};
   $("#bGuardar").onclick=()=>enviar("PREPARANDO");
   $("#bFin").onclick=async()=>{if(pend())return toast("Falta el peso de "+pend()+" línea(s). Pon 0 piezas si no se manda.",true);
-    const c=await confirmar("Pedido preparado",`${hayAprox()?"≈ ":""}${kgf(tot())} kg en total${hayAprox()?" (con pesos aproximados)":""}. Pasa a la oficina para el albarán.`);if(c.ok)enviar("PREPARADO")};
+    const c=await confirmar("Pedido preparado",`${hayAprox()?"≈ ":""}${kgf(tot())} kg en total${hayAprox()?" (con pesos aproximados)":""}. Pasa a la oficina para el albarán.`,false,P.obs);if(c.ok)enviar("PREPARADO")};
 }
 
 /* =================== selector de producto =================== */
@@ -1099,7 +1106,7 @@ function detalleDesk(p){
   return `<div class="dcard"><div class="dhead"><h2>Pedido ${esc(p.id)}</h2><span class="chip e-${E}">${EST_TXT[E]}</span></div>
     <div class="muted">Hecho ${fCorta(p.creado)} por ${esc(p.creadoPor)}${p.actualizadoPor&&p.actualizado!==p.creado?` · último cambio ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`:""}${p.albaran?` · albarán nº <b>${esc(p.albaran)}</b>`:""}</div>
     <div class="kpis" style="margin-top:12px"><div class="kpi"><span>Artículos</span><b>${p.lineas.length}</b></div><div class="kpi"><span>Piezas pedidas</span><b>${pzPed(p)}</b></div><div class="kpi"><span>Piezas servidas</span><b>${E==="ENVIADO"?"—":pzSer(p)}</b></div><div class="kpi"><span>Kg</span><b>${kgPed(p)?kgf(kgPed(p)):"—"}</b></div>${alb?`<div class="kpi"><span>Importe</span><b>${eur(alb.total)} €</b></div>`:""}${nd&&E!=="ENVIADO"?`<div class="kpi kd"><span>Cambios</span><b>${nd}</b></div>`:""}</div>
-    ${p.obs?`<div class="obsbox"><b>Tienda:</b> ${esc(p.obs)}</div>`:""}${p.obsF?`<div class="obsbox"><b>Fábrica:</b> ${esc(p.obsF)}</div>`:""}
+    ${p.obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>OBSERVACIONES DE LA TIENDA</b><p>${esc(p.obs)}</p></div></div>`:""}${p.obsF?`<div class="obsbox"><b>Fábrica:</b> ${esc(p.obsF)}</div>`:""}
     <div class="tblw"><table class="t"><thead><tr><th>Código</th><th>Producto</th><th class="n">Pedido</th><th class="n">Servido</th><th class="n">Diferencia</th><th class="n">Kg</th><th>Nota</th></tr></thead><tbody>${filas}</tbody></table></div>
     <div class="acc" style="margin-top:12px">
       ${puedePrep?`<button class="btn pri" data-dact="prep">${E==="PREPARADO"?"Corregir preparación":E==="PREPARANDO"?"Seguir preparando":"Preparar pedido"}</button>`:""}
@@ -1159,7 +1166,7 @@ function vHistorial(app){
     let r=`<tr class="cl" data-ab="${esc(p.id)}"><td><b>${ab?"▾":"▸"} ${esc(p.id)}</b></td><td>${fCorta(p.creado)}</td><td>${esc(p.creadoPor)}</td><td><span class="chip e-${p.estado}">${EST_TXT[p.estado]||p.estado}</span></td>
       <td class="n">${p.lineas.length}</td><td class="n">${pz}</td><td class="n">${p.estado==="ENVIADO"?"—":sv}</td><td class="n">${kg?kgf(kg):"—"}</td><td>${nd?`<span class="tag dif">${nd} cambio${nd>1?"s":""}</span>`:""}</td><td>${p.albaran?`Nº ${esc(p.albaran)}`:""}</td></tr>`;
     if(ab){r+=`<tr class="det"><td colspan="10">
-      ${p.obs?`<div class="obsbox"><b>Tienda:</b> ${esc(p.obs)}</div>`:""}${p.obsF?`<div class="obsbox"><b>Fábrica:</b> ${esc(p.obsF)}</div>`:""}
+      ${p.obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>OBSERVACIONES DE LA TIENDA</b><p>${esc(p.obs)}</p></div></div>`:""}${p.obsF?`<div class="obsbox"><b>Fábrica:</b> ${esc(p.obsF)}</div>`:""}
       <table class="t sub"><thead><tr><th>Código</th><th>Producto</th><th class="n">Pedido</th><th class="n">Servido</th><th class="n">Diferencia</th><th class="n">Kg</th><th>Nota</th></tr></thead><tbody>
       ${ordenLineas(p.lineas).map(l=>{const d=(+servido(l)||0)-(+l.pz||0);return `<tr class="${esDif(l)?"dif":""}"><td><span class="dot" style="${estiloG(grupoDe(l.c))}"></span><b>${esc(l.c)}</b></td><td>${esc(l.n||(prod(l.c)||{}).n||"")}${l.extra?" <i>(añadido en fábrica)</i>":""}</td>
         <td class="n">${l.extra?"—":l.pz}</td><td class="n">${p.estado==="ENVIADO"?"—":servido(l)}</td><td class="n">${p.estado==="ENVIADO"||!d?"":(d>0?"+":"")+d}</td><td class="n">${l.kg?(l.aprox?"≈ ":"")+kgf(num(l.kg)):""}</td><td>${esc(l.obs||"")}</td></tr>`}).join("")}
@@ -1259,7 +1266,7 @@ function imprimirHoja(p){
   $("#imp").innerHTML=`<section class="copia media">
     <span class="tij">✂</span>
     <div class="mh"><div style="display:flex;align-items:center;gap:3mm"><img class="plogo" src="${LOGO}" alt="" style="height:10mm"><div><b>PREPARACIÓN · Pedido ${esc(p.id)}</b><br>${EMPRESA.s} · Tienda CASA</div></div><div class="mt"><span>Pedido ${fCorta(p.creado)}</span><span>${ordenLineas(p.lineas).length} art. · ${p.lineas.reduce((x,l)=>x+(+l.pz||0),0)} pz</span></div></div>
-    ${p.obs?`<div class="mobs"><b>Tienda:</b> ${esc(p.obs)}</div>`:""}
+    ${p.obs?`<div class="mobs t">⚠ OBSERVACIONES TIENDA: ${esc(p.obs)}</div>`:""}
     <table><thead><tr><th>Producto</th><th style="width:17mm">Pedido</th><th style="width:15mm">Servido</th><th style="width:16mm">Kg</th><th style="width:7mm">✓</th></tr></thead><tbody>${filas}</tbody></table>
     <div class="mobs"><b>Notas:</b> ${esc(p.obsF||"")}</div>
     <div class="mfirma"><span>Preparado por: ______________</span><span>Fecha: __/__/____</span></div></section>`;
