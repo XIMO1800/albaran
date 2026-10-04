@@ -171,6 +171,7 @@ html.desk{zoom:1.1}
 @media print{html.desk{zoom:1}}
 body.desk #side{display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;width:250px;background:var(--brand-deep);color:#fff;z-index:7;padding:18px 12px;gap:4px;overflow-y:auto}
 .side-t{font-family:var(--display);font-size:24px;font-weight:700;line-height:1.1;padding:4px 10px 14px;border-bottom:1px solid rgba(255,255,255,.15);margin-bottom:8px}
+.lgrp-s{font-size:11px;text-transform:uppercase;letter-spacing:.1em;opacity:.6;font-weight:700;padding:10px 12px 4px}
 .side-t small{display:block;font-family:var(--font);font-size:13.5px;font-weight:500;opacity:.9;margin-top:4px}
 .snav{display:flex;flex-direction:column;gap:2px}
 .snav button,.navb{display:block;width:100%;text-align:left;background:transparent;border:0;color:rgba(255,255,255,.82);padding:11px 12px;border-radius:10px;font-weight:600;font-size:15.5px;cursor:pointer;font-family:var(--font)}
@@ -337,6 +338,63 @@ body.desk .sumf{max-width:640px}
 .login .ver{margin:4px 0 14px;font-size:13px;font-weight:600;color:rgba(255,255,255,.75)}
 .verh{font-size:11px;opacity:.75;margin-right:4px}
 #side .vers{font-size:13.5px;font-weight:600;opacity:.9;text-align:center;margin-top:10px}
+
+/* ---------- Autoventa (cuadre de camiones) ---------- */
+.av-vends{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.av-vend{display:flex;flex-direction:column;gap:10px;margin:0;cursor:pointer}
+.av-vend.on{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.av-h{font-family:var(--display);font-size:22px;font-weight:700}
+.av-lleva{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px 18px}
+.av-lleva>div{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--line);min-width:0}
+.av-lleva>div small{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.av-num{margin-left:auto;font-family:var(--display);font-size:20px;font-variant-numeric:tabular-nums}
+.av-filtro{align-items:center;margin-bottom:8px}.av-filtro select{flex:1;min-width:160px}.av-filtro label{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);font-weight:600}.av-filtro input{width:auto}
+.av-click{cursor:pointer}.av-click:hover td{background:var(--surface2)}
+.av-hist .chip{margin:1px 0}.av-hist td{white-space:nowrap}.av-hist td:nth-child(5){white-space:normal}
+.av-art{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c);border-radius:12px;padding:6px 10px;margin-bottom:6px}
+.av-art.on{background:var(--t)}
+.av-cab{display:flex;align-items:center;gap:10px;margin:10px 0 8px;flex-wrap:wrap}
+.av-cab b{font-family:var(--display);font-size:28px;font-weight:700;color:var(--brand)}
+.av-cab input{width:auto;font-size:15px;padding:6px 8px}
+.av-fases{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px}
+.av-fases button{flex:1 0 auto;border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:9px 12px;font-family:var(--display);font-size:18px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
+.av-fases button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.av-tw{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+table.av-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.av-t thead th{background:var(--brand);color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;padding:8px 6px;text-align:center;position:sticky;top:0;white-space:nowrap}
+.av-t thead th:first-child{text-align:left;padding-left:12px}
+.av-t tbody th{text-align:left;font-weight:500;padding:4px 8px 4px 12px;font-size:15px;line-height:1.15;min-width:120px}
+.av-t tbody th b{font-weight:700}.av-t tbody th small{display:block;color:var(--muted);font-size:12.5px;margin-left:16px}
+.av-t td,.av-t tbody th{border-top:1px solid var(--line)}
+.av-t tfoot td,.av-t tfoot th{border-top:2px solid var(--brand);font-weight:700;text-align:center;padding:8px 6px}
+.av-t tfoot th{text-align:left;padding-left:12px}
+.av-c{text-align:center;padding:0 6px;font-size:17px;min-width:52px}
+.av-b{font-weight:700}
+input.av-n{width:100%;min-width:58px;height:46px;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;text-align:center;font-family:var(--display);font-size:22px;font-weight:700;color:var(--brand);padding:0 2px}
+input.av-n.soft{color:var(--fg);font-weight:600}
+input.av-n::placeholder{color:#cbbfc1;font-weight:400}
+input.av-n:focus{background:var(--gold-soft);outline:2px solid var(--gold);outline-offset:-2px}
+tr.av-nada th{color:var(--muted)}
+.av-tick{width:100%;height:46px;border:0;background:none;font-size:16px;font-weight:700;color:#cbbfc1;cursor:pointer}
+.av-ok{color:var(--ok)}.av-mal{color:var(--danger)}.av-neu{color:var(--muted)}
+.chip.av-ok{background:#e1f2e7}.chip.av-mal{background:#fde4e4}.chip.av-neu{background:#ebe6e7}
+.av-pie{margin-top:12px;align-items:center}
+.av-pesos{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px}
+.av-peso{margin:0}
+.av-g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.av-kv{display:grid;grid-template-columns:1fr auto;gap:3px 12px;align-items:baseline;margin-top:8px}
+.av-kv b{text-align:right;font-variant-numeric:tabular-nums}
+.av-tot{border-top:1px solid var(--line);padding-top:4px}
+.av-big{font-family:var(--display);font-size:24px;font-weight:700;display:block}
+.av-chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.av-w{display:inline-flex;align-items:stretch;border:1.5px solid var(--line);border-radius:9px;overflow:hidden;background:var(--card)}
+.av-w b{padding:6px 9px;color:var(--brand);font-variant-numeric:tabular-nums}
+.av-w button{border:0;border-left:1px solid var(--line);background:var(--surface2);padding:0 9px;font-size:13px;color:var(--muted);cursor:pointer}
+.av-w button.on{background:var(--gold-soft);color:#6b4500;font-weight:700}
+.av-papel summary{cursor:pointer;font-weight:700;color:var(--brand)}
+#avSt.av-pend{color:var(--warn);font-weight:700}
+@media (min-width:700px){.av-wrap{max-width:1100px}.av-t tbody th{font-size:16px}.av-c{font-size:19px}}
+body.desk .av-wrap{max-width:1200px}
 </style>
 </head>
 <body>
@@ -365,7 +423,7 @@ body.desk .sumf{max-width:640px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "27 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "28 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -424,7 +482,7 @@ async function cargar(silencioso){
     S.user=j.usuario;S.rol=j.rol;S.productos=j.productos;S.pedidos=j.pedidos;S.albaranes=j.albaranes||[];S.ult=new Date();
     LS.set("ped_cache_prod",S.productos);
     const escribiendo=document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
-    if(!silencioso||(!S.scr&&S.tab!=="precios"&&!escribiendo)) render(); else {renderHeader();marcoDesk();}
+    if(!silencioso||(!S.scr&&S.tab!=="precios"&&S.tab!=="autoventa"&&!escribiendo)) render(); else {renderHeader();marcoDesk();}
   }catch(e){ if(!silencioso) toast(e.message,true); if(!S.pin) render(); }
 }
 setInterval(()=>{ if(document.visibilityState==="visible" && S.pin && S.user && !S.busy) cargar(true); },30000);
@@ -464,8 +522,8 @@ function tabsDeRol(){
   const n=e=>S.pedidos.filter(p=>p.estado===e).length;
   if(S.rol==="TIENDA") return [["nuevo","Nuevo pedido"],["mios","Mis pedidos"],["difs","Diferencias"]];
   if(S.rol==="FABRICA") return [["preparar","Por preparar",n("ENVIADO")+n("PREPARANDO")],["hechos","Preparados"],["difs","Diferencias"]];
-  if(esDesk()) return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["historial","Histórico"],["difs","Diferencias"],["albaranes","Albaranes"],["exportar","Exportar"],["precios","Artículos y precios"],["nuevo","+ Pedido"]];
-  return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["albaranes","Albaranes"],["difs","Diferencias"],["nuevo","+ Pedido"],["precios","Precios"]];
+  if(esDesk()) return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["historial","Histórico"],["difs","Diferencias"],["albaranes","Albaranes"],["exportar","Exportar"],["precios","Artículos y precios"],["nuevo","+ Pedido"],...(S.rol==="ADMIN"?[["autoventa","Autoventa"]]:[])];
+  return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["albaranes","Albaranes"],["difs","Diferencias"],["nuevo","+ Pedido"],["precios","Precios"],...(S.rol==="ADMIN"?[["autoventa","Autoventa"]]:[])];
 }
 function renderHeader(){
   const h=$("#hdr"); h.hidden=!S.user;
@@ -482,7 +540,7 @@ function barra(html){const b=$("#barra");b.hidden=!html;$("#barraIn").innerHTML=
 function render(){
   document.body.classList.toggle("desk",!!S.user&&esDesk());document.documentElement.classList.toggle("desk",document.body.classList.contains("desk"));
   renderHeader(); marcoDesk();
-  const app=$("#app"); app.onclick=app.oninput=app.onchange=null; app.classList.toggle("scr",!!S.scr);
+  const app=$("#app"); app.onclick=app.oninput=app.onchange=app.onkeydown=app.onfocusin=null; app.classList.toggle("scr",!!S.scr);
   if(!S.api) return vConfig(app);
   if(!S.pin||!S.user) return vLogin(app);
   if(S.scr){
@@ -491,7 +549,7 @@ function render(){
   }
   ({nuevo:()=>{S.scr={t:"editar",ped:nuevoBorrador()};render()},mios:vListaTienda,preparar:vListaFab,hechos:vListaFabHechos,
     pedidos:esDesk()?vPedidosDesk:vListaOficina,albaranes:esDesk()?vAlbaranesDesk:vAlbaranes,precios:vPrecios,
-    historial:vHistorial,exportar:vExportar,difs:vDiferencias})[S.tab](app);
+    historial:vHistorial,exportar:vExportar,difs:vDiferencias,autoventa:vAutoventa})[S.tab](app);
 }
 
 /* =================== configuración y login =================== */
@@ -967,13 +1025,14 @@ function marcoDesk(){
   if(!on){sd.innerHTML="";return}
   const n=e=>S.pedidos.filter(p=>p.estado===e).length, badge={pedidos:n("ENVIADO")+n("PREPARADO")};
   sd.innerHTML=`<div class="side-t">Pedidos tienda<small>${esc(S.user)} · ${S.rol==="ADMIN"?"Administración":"Oficina"}</small></div>
-    <nav class="snav">${SIDE.map(([k,t,sub])=>`<button data-side="${k}" class="${S.tab===k?"on":""}">${t}${badge[k]?`<span class="badge">${badge[k]}</span>`:""}<small>${sub}</small></button>`).join("")}</nav>
+    <div class="lgrp-s">Tienda</div><nav class="snav">${SIDE.map(([k,t,sub])=>`<button data-side="${k}" class="${S.tab===k?"on":""}">${t}${badge[k]?`<span class="badge">${badge[k]}</span>`:""}<small>${sub}</small></button>`).join("")}</nav>
+    ${S.rol==="ADMIN"?`<div class="lgrp-s">Autoventa</div><nav class="snav"><button data-side="autoventa" class="${S.tab==="autoventa"?"on":""}">Cuadres de camiones<small>Cuadre, histórico y artículos</small></button></nav>`:""}
     <div style="flex:1"></div><button class="navb" id="sideAct">Actualizar datos</button><button class="navb" id="sideSalir">Salir</button><div class="vers">Versión ${VERSION}</div>`;
   sd.querySelectorAll("[data-side]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.side;S.scr=null;S.sel.clear();if(["historial","albaranes","exportar","difs"].includes(S.tab))S.H.data=null;render();scrollTo(0,0)});
   $("#sideAct").onclick=async()=>{if(["historial","albaranes","exportar","difs"].includes(S.tab)&&!S.scr){cargarHist()}else{await cargar();toast("Datos actualizados")}};
   $("#sideSalir").onclick=async()=>{const c=await confirmar("Salir","¿Cerrar la sesión en este ordenador?");if(c.ok){S.pin="";S.user=null;LS.del("ped_pin");render()}};
   // título grande en la cabecera
-  const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Exportar","Albaranes al programa de gestión"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"]};
+  const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Exportar","Albaranes al programa de gestión"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"],autoventa:["Autoventa","Cuadres de los camiones"]};
   let t=T[S.tab]||["Pedidos",""];
   if(S.scr){const sc=S.scr;
     if(sc.t==="ver")t=["Pedido "+sc.id,"Detalle"];else if(sc.t==="preparar")t=["Preparando pedido "+sc.ped.id,"Piezas servidas y pesos"];
@@ -1181,6 +1240,371 @@ function imprimirHoja(p){
     <div class="mobs"><b>Notas:</b> ${esc(p.obsF||"")}</div>
     <div class="mfirma"><span>Preparado por: ______________</span><span>Fecha: __/__/____</span></div></section>`;
   imprimir("A4 landscape","8mm");
+}
+
+
+/* =================== AUTOVENTA: cuadre físico de los camiones (solo ADMIN) =================== */
+// Lleva = lo que dejó el cuadre anterior (+ lo que cargó entre medias). Vendidos = Lleva − Descarga. Sale = Descarga + Carga.
+// Los artículos son los del catálogo común; en «Artículos de autoventa» se marca cuáles salen en la hoja del camión.
+// Aceite grande y minis se cuadran también por peso: se apunta cada caja o bandeja y se resta la tara si toca.
+const AV_PNOM={grande:"Aceite grande",mini:"Aceite minis"}, AV_TOL=100; // tolerancia de peso en gramos
+// Lo que llevaba Miguel Ángel al salir según la hoja en papel del viernes 2/10/2026 (ayuda para el «Lleva» del primer cuadre)
+const AV_PAPEL={vend:"Miguel Ángel",fecha:"2026-10-02",kg:{grande:53.2,mini:52.3},pz:[["ACEITE GRANDE",17],["ACEITE MEDIANO",8],["ACEITE MINI",55],["ACEITE CUÑA",72],["ACEITE TARRO 1 O.",19],["OVEJA CURADO 3K",17],["OVEJA CURADO 2K",23],["OVEJA CURADO 1K",18],["OVEJA SEMI 3K",19],["OVEJA SEMI 2K",10],["OVEJA SEMI 1K",47],["OVEJA SEMI CUÑA",76],["TIERNO 3K",3],["BARRA",24],["AMARILLO",9],["CURADO MEZCLA",5],["OVEJA TIERNO 3K",11],["OVEJA TIERNO 2K",10],["OVEJA TIERNO 1K",28],["OVEJA TIERNO CUÑA",61],["D.O. 3K",1],["OVEJA ACEITE 2K",8],["OVEJA ACEITE 1K",52]]};
+
+const avN=v=>v===null||v===undefined||v===""?null:(isFinite(+v)?+v:null);
+const avP=s=>{s=String(s??"").trim().replace(/\s/g,"").replace(",",".");if(s==="")return null;const n=Number(s);return isFinite(n)?n:null};
+const avR3=x=>Math.round((x+1e-9)*1000)/1000;
+const avF=x=>x===null||x===undefined||isNaN(x)?"":String(avR3(x)).replace(".",",");
+const avKg=x=>x===null||x===undefined||isNaN(x)?"—":x.toLocaleString("es-ES",{useGrouping:false,minimumFractionDigits:1,maximumFractionDigits:3});
+const avDia=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"short"})};
+const avDiaC=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"numeric",year:"2-digit"})};
+
+S.av={cargado:false,cargando:false,cuadres:LS.get("av_cache",{}),config:LS.get("av_cfg",null),pend:LS.get("av_pend",{}),
+  vend:LS.get("av_vend",""),cur:null,fase:"desc",todas:false,borrar:false,nuevoVend:false,arts:false,fv:"",fd:"",fh:""};
+function avCfg(){const c=S.av.config||(S.av.config={});c.vendedores=c.vendedores||["Miguel Ángel","Mary"];c.taras=c.taras||{grande:0,mini:2.6};
+  c.arts=c.arts||[];c.peso=c.peso||{grande:"",mini:""};return c}
+const avCuadre=()=>S.av.cur&&S.av.cuadres[S.av.cur];
+
+/* ---- cálculo ---- */
+const avLin=(c,k)=>(c&&c.lineas&&c.lineas[k])||{};
+function avCalc(l){
+  const lleva=(avN(l.ll)||0)+(avN(l.en)||0), de=avN(l.de), al=avN(l.al), ca=avN(l.ca)||0;
+  const vend=de===null?null:lleva-de, dif=vend===null||al===null?null:al-vend;
+  const base=de===null?(lleva===0?0:null):de;
+  return {lleva,de,vend,al,dif,ca,sale:base===null?null:base+ca,usada:lleva>0||de!==null||ca!==0||al!==null};
+}
+// referencias de la hoja: marcadas para autoventa (orden del catálogo) + las que ya tenga el cuadre
+function avRefs(c,todas){
+  const en=new Set(avCfg().arts), usa=Object.keys((c&&c.lineas)||{}).filter(k=>avCalc(c.lineas[k]).usada);
+  const l=ordenProds(S.productos).map(p=>p.c).filter(k=>todas||en.has(k)||usa.includes(k));
+  usa.forEach(k=>{if(!l.includes(k))l.push(k)}); return l;
+}
+const avPeso0=()=>({llevaKg:null,entre:[],desc:[],albKg:null,carga:[]});
+function avPeso(c,b){
+  const p=(c.pesos&&c.pesos[b])||avPeso0(), tara=avN(p.tara??avCfg().taras[b])||0;
+  const suma=arr=>{let br=0,t=0;(arr||[]).forEach(e=>{br+=avN(e.kg)||0;if(e.t)t+=tara});return {bruto:avR3(br),taras:avR3(t),neto:avR3(br-t),n:(arr||[]).length}};
+  const entreKg=avR3((p.entre||[]).reduce((a,e)=>a+(avN(e.kg)||0),0)), lleva=avN(p.llevaKg);
+  const total=lleva===null&&!entreKg?null:avR3((lleva||0)+entreKg);
+  const d=suma(p.desc), cg=suma(p.carga), vend=total===null||!d.n?null:avR3(total-d.neto), alb=avN(p.albKg);
+  return {p,tara,total,d,cg,vend,alb,difG:vend===null||alb===null?null:Math.round((alb-vend)*1000),sale:d.n||cg.n?avR3(d.neto+cg.neto):null};
+}
+function avTot(c){
+  const t={lleva:0,de:0,vend:0,ca:0,sale:0,pend:0,mal:0,ok:0,difs:[]};
+  avRefs(c).forEach(k=>{const x=avCalc(avLin(c,k));t.lleva+=x.lleva;if(x.de!==null)t.de+=x.de;if(x.vend!==null)t.vend+=x.vend;t.ca+=x.ca;if(x.sale!==null)t.sale+=x.sale;
+    if(x.vend){if(x.al===null)t.pend++;else if(x.dif===0)t.ok++;else{t.mal++;t.difs.push([k,x.dif])}}});
+  return t;
+}
+const avDifTxt=g=>g===null?"pendiente":g===0?"exacto":g>0?`sobran ${g} g`:`faltan ${-g} g`;
+const avDifCls=g=>g===null?"av-neu":Math.abs(g)<=AV_TOL?"av-ok":"av-mal";
+function avMal(c){return avTot(c).mal+["grande","mini"].filter(b=>{const g=avPeso(c,b).difG;return g!==null&&Math.abs(g)>AV_TOL}).length}
+
+/* ---- servidor y guardado (se guarda solo; si no hay cobertura se reintenta) ---- */
+async function avCargar(){
+  if(S.av.cargando)return; S.av.cargando=true;
+  try{
+    const j=await api("avDatos"), m={};
+    (j.cuadres||[]).forEach(x=>{m[x.id]=x.datos});
+    Object.keys(S.av.pend).forEach(id=>{ if(S.av.pend[id]==="borrar") delete m[id]; else if(S.av.cuadres[id]) m[id]=S.av.cuadres[id]; });
+    S.av.cuadres=m; if(j.config&&!S.av.pend.CONFIG)S.av.config=j.config; S.av.cargado=true;
+    LS.set("av_cache",m); LS.set("av_cfg",S.av.config);
+    avSubir();
+  }catch(e){toast(/desconocida/i.test(e.message)?"Falta instalar Autoventa.gs en el servidor":e.message,true)}
+  S.av.cargando=false;
+  if(S.tab==="autoventa"&&!(document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName))) render();
+}
+let avT=null, avSubiendo=false;
+function avTocar(id){
+  id=id||S.av.cur; if(!id)return;
+  if(S.av.pend[id]!=="borrar") S.av.pend[id]=1;
+  LS.set("av_pend",S.av.pend); LS.set("av_cache",S.av.cuadres); LS.set("av_cfg",S.av.config);
+  avEstado("Guardando…"); clearTimeout(avT); avT=setTimeout(avSubir,900);
+}
+async function avSubir(){
+  if(avSubiendo){clearTimeout(avT);avT=setTimeout(avSubir,700);return}
+  const ids=Object.keys(S.av.pend); if(!ids.length){avEstado("Guardado en la hoja");return}
+  avSubiendo=true;
+  try{
+    for(const id of ids){
+      const marca=S.av.pend[id], body=marca==="borrar"?null:id==="CONFIG"?clone(avCfg()):S.av.cuadres[id]?clone(S.av.cuadres[id]):null;
+      if(marca==="borrar") await api("avBorrar",{id}); else if(body) await api("avGuardar",{id,datos:body});
+      if(S.av.pend[id]===marca) delete S.av.pend[id];
+    }
+    LS.set("av_pend",S.av.pend); avEstado(Object.keys(S.av.pend).length?"Guardando…":"Guardado en la hoja");
+  }catch(e){avEstado("Sin conexión · se guardará al volver la cobertura")}
+  avSubiendo=false;
+  if(Object.keys(S.av.pend).length){clearTimeout(avT);avT=setTimeout(avSubir,15000)}
+}
+function avEstado(t){const e=$("#avSt");if(e){e.textContent=t;e.classList.toggle("av-pend",!/Guardado/.test(t))}}
+function avGuardarCfg(){avTocar("CONFIG")}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&Object.keys(S.av.pend).length&&S.pin)avSubir()});
+window.addEventListener("online",()=>{if(Object.keys(S.av.pend).length&&S.pin)avSubir()});
+
+/* ---- cuadres ---- */
+const avLista=v=>Object.entries(S.av.cuadres).filter(([,c])=>!v||c.vendedor===v).sort((a,b)=>(b[1].fecha||"").localeCompare(a[1].fecha||"")||(b[1].creado||0)-(a[1].creado||0));
+const avUltCerrado=v=>avLista(v).find(([,c])=>c.estado==="cerrado");
+const avAbierto=v=>avLista(v).find(([,c])=>c.estado!=="cerrado");
+function avNuevo(v){
+  const ant=avUltCerrado(v), c={vendedor:v,fecha:hoy(),estado:"abierto",creado:Date.now(),lineas:{},pesos:{grande:avPeso0(),mini:avPeso0()},bandejas:{},nota:""};
+  if(ant){const a=ant[1];
+    avRefs(a).forEach(k=>{const x=avCalc(avLin(a,k));if(x.sale)c.lineas[k]={ll:x.sale}});
+    ["grande","mini"].forEach(b=>{const w=avPeso(a,b);c.pesos[b].llevaKg=w.sale;if(w.p.tara!=null)c.pesos[b].tara=w.p.tara});
+    const bj=a.bandejas||{},tb=(avN(bj.desc)||0)+(avN(bj.carga)||0);if(tb)c.bandejas.lleva=tb;}
+  else c.primero=true;
+  const id="c"+Date.now().toString(36);
+  S.av.cuadres[id]=c; avAbrir(id); avTocar(id);
+}
+function avAbrir(id){const c=S.av.cuadres[id];S.av.cur=id;S.av.fase=c&&c.estado==="cerrado"?"hoja":"desc";S.av.todas=false;S.av.borrar=false;S.av.arts=false;render();scrollTo(0,0)}
+function avRefTxt(k){const p=prod(k);return `<span class="dot" style="${p?estiloG(p.g):"--c:var(--otros)"}"></span><b>${esc(k)}</b>${p&&p.n?`<small>${esc(p.n)}</small>`:""}`}
+
+/* ---- pantalla principal: vendedores + histórico ---- */
+function vAutoventa(app){
+  if(!S.av.cargado&&!S.av.cargando) avCargar();
+  if(S.av.arts) return vAvArts(app);
+  if(avCuadre()) return vAvCuadre(app);
+  S.av.cur=null; barra("");
+  const cf=avCfg(), vs=cf.vendedores; if(!vs.includes(S.av.vend)) S.av.vend=vs[0];
+  const v=S.av.vend, desk=esDesk();
+  const tarjVend=x=>{const ab=avAbierto(x),uc=avUltCerrado(x);
+    return `<div class="card av-vend ${x===v?"on":""}" data-avvend="${esc(x)}"><div class="acc" style="align-items:center"><b class="av-h">${esc(x)}</b><span style="flex:1"></span>
+      ${ab?`<span class="chip e-PREPARANDO">Cuadre abierto</span>`:uc?`<span class="muted" style="font-size:14px">Último: ${avDiaC(uc[1].fecha)}</span>`:`<span class="muted" style="font-size:14px">Sin cuadres</span>`}</div>
+      ${ab?`<button class="btn pri" data-avabrir="${ab[0]}">Seguir con el cuadre del ${avDia(ab[1].fecha)}</button>`:`<button class="btn pri" data-avnuevo="${esc(x)}">Empezar cuadre de hoy</button>`}</div>`};
+  let carga="";const uc=avUltCerrado(v);
+  if(uc){const c=uc[1],it=avRefs(c).map(k=>[k,avCalc(avLin(c,k)).sale]).filter(([,n])=>n),g=avPeso(c,"grande"),m=avPeso(c,"mini");
+    carga=`<div class="sec">${esc(v)} lleva en el camión · tras el cuadre del ${avDia(c.fecha)}</div>
+    <div class="card av-lleva">${it.map(([k,n])=>`<div>${avRefTxt(k)}<b class="av-num">${n}</b></div>`).join("")}</div>
+    <div class="acc" style="gap:16px;margin:-2px 0 6px;font-weight:600"><span>Total ${it.reduce((a,[,n])=>a+n,0)} piezas</span><span>Aceite grande ${avKg(g.sale)} kg</span><span>Minis ${avKg(m.sale)} kg</span></div>`}
+  // histórico con filtros
+  const fv=S.av.fv, fd=S.av.fd, fh=S.av.fh;
+  const hist=avLista(fv||null).filter(([,c])=>(!fd||c.fecha>=fd)&&(!fh||c.fecha<=fh));
+  const filaH=([id,c])=>{const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini"),mal=avMal(c);
+    const est=c.estado!=="cerrado"?`<span class="chip e-PREPARANDO">Abierto</span>`:mal?`<span class="chip e-ANULADO">${mal} sin cuadrar</span>`:`<span class="chip e-PREPARADO">Cuadrado</span>`;
+    return desk?`<tr data-avabrir="${id}" class="av-click"><td>${avDiaC(c.fecha)}</td><td>${esc(c.vendedor)}</td><td class="n">${t.lleva}</td><td class="n"><b>${t.vend}</b></td>
+      <td>${t.difs.map(([k,d])=>`<span class="chip av-mal">${esc(k)} ${d>0?"+":""}${d}</span>`).join(" ")||(t.pend?`<span class="muted">${t.pend} sin comprobar</span>`:"")}</td>
+      <td class="n ${avDifCls(g.difG)}">${g.difG===null?"":avDifTxt(g.difG)}</td><td class="n ${avDifCls(m.difG)}">${m.difG===null?"":avDifTxt(m.difG)}</td><td class="n">${c.estado!=="cerrado"&&!t.de?"—":t.sale}</td><td>${est}</td></tr>`
+    :`<div class="card ped" data-avabrir="${id}"><span></span><b>${avDiaC(c.fecha)} · ${esc(c.vendedor)}</b><span>${est}</span>
+      <div class="meta">${t.vend} vendidas${t.difs.length?" · dif. en "+t.difs.map(([k,d])=>k+" "+(d>0?"+":"")+d).join(", "):""} · sale con ${t.sale}</div></div>`};
+  app.innerHTML=`<div class="wrap">
+    <div class="av-vends">${vs.map(tarjVend).join("")}</div>
+    <div class="acc" style="margin:4px 0 10px">${S.av.nuevoVend?`<input id="avNV" placeholder="Nombre del vendedor" style="flex:1;max-width:320px"><button class="btn pri" id="avNVok">Añadir</button><button class="btn" id="avNVno">Cancelar</button>`
+      :`<button class="btn sm" id="avNVsi">+ Vendedor</button><button class="btn sm" id="avArts">Artículos de autoventa${cf.arts.length?" ("+cf.arts.length+")":""}</button>`}</div>
+    ${S.av.cargado&&!cf.arts.length?`<div class="aviso">Antes del primer cuadre, entra en <b>Artículos de autoventa</b> y marca los que llevan los camiones. Si falta alguno (tarros, barra, lonchas…), créalo en «Artículos y precios» y déjalo «Oculto» para que la tienda no lo vea.</div>`:""}
+    ${!S.av.cargado?`<div class="muted" style="text-align:center;padding:8px">Leyendo cuadres de la hoja…</div>`:""}
+    ${carga}
+    <div class="sec">Histórico de cuadres</div>
+    <div class="acc av-filtro"><select id="avFv"><option value="">Todos los vendedores</option>${vs.map(x=>`<option ${x===fv?"selected":""}>${esc(x)}</option>`).join("")}</select>
+      <label>Desde <input type="date" id="avFd" value="${fd}"></label><label>Hasta <input type="date" id="avFh" value="${fh}"></label></div>
+    ${desk?`<div class="tblw"><table class="t av-hist"><thead><tr><th>Fecha</th><th>Vendedor</th><th class="n">Llevaba</th><th class="n">Vendidas</th><th>Diferencias con albaranes</th><th class="n">Aceite grande</th><th class="n">Minis</th><th class="n">Sale con</th><th>Estado</th></tr></thead>
+      <tbody>${hist.map(filaH).join("")||`<tr><td colspan="9" class="vacio">No hay cuadres con estos filtros.</td></tr>`}</tbody></table></div>`
+      :hist.map(filaH).join("")||`<div class="vacio">No hay cuadres con estos filtros.</div>`}
+  </div>`;
+  app.onclick=e=>{const b=e.target.closest("[data-avabrir],[data-avnuevo],[data-avvend],button");if(!b)return;
+    if(b.dataset.avabrir)return avAbrir(b.dataset.avabrir);
+    if(b.dataset.avnuevo){S.av.vend=b.dataset.avnuevo;LS.set("av_vend",S.av.vend);return avNuevo(S.av.vend)}
+    if(b.dataset.avvend){S.av.vend=b.dataset.avvend;LS.set("av_vend",S.av.vend);render();return}
+    if(b.id==="avArts"){S.av.arts=true;render();scrollTo(0,0);return}
+    if(b.id==="avNVsi"){S.av.nuevoVend=true;render();setTimeout(()=>{const i=$("#avNV");if(i)i.focus()},30);return}
+    if(b.id==="avNVno"){S.av.nuevoVend=false;render();return}
+    if(b.id==="avNVok"){const n=$("#avNV").value.trim();if(!n)return;if(!cf.vendedores.includes(n))cf.vendedores.push(n);S.av.vend=n;S.av.nuevoVend=false;avGuardarCfg();render();return}
+  };
+  app.onchange=e=>{const id=e.target.id;if(id==="avFv")S.av.fv=e.target.value;else if(id==="avFd")S.av.fd=e.target.value;else if(id==="avFh")S.av.fh=e.target.value;else return;render()};
+}
+
+/* ---- artículos que van en la hoja de autoventa ---- */
+function vAvArts(app){
+  const cf=avCfg(), en=new Set(cf.arts); let h="",k0=null;
+  for(const p of ordenProds(S.productos)){const k=seccion(p);if(k!==k0){h+=cabSecc(k);k0=k}
+    h+=`<div class="av-art ${en.has(p.c)?"on":""}" style="${estiloG(p.g)}"><button class="chk ${en.has(p.c)?"on":""}" data-art="${esc(p.c)}" aria-label="Llevar ${esc(p.c)} en autoventa">${en.has(p.c)?"✓":""}</button>
+      <div><b>${esc(p.c)}</b> <span class="muted">${esc(p.n)}</span>${p.activo===false?` <span class="chip av-neu">solo autoventa</span>`:""}</div></div>`}
+  const opt=b=>`<select id="avPeso-${b}"><option value="">— ninguno —</option>${ordenProds(S.productos).filter(p=>en.has(p.c)).map(p=>`<option value="${esc(p.c)}" ${cf.peso[b]===p.c?"selected":""}>${esc(p.c)} · ${esc(p.n)}</option>`).join("")}</select>`;
+  app.innerHTML=`<div class="wrap">
+    <div class="acc" style="justify-content:space-between;align-items:center"><button class="btn sm" id="avArtV">← Autoventa</button><span class="muted" id="avSt"></span></div>
+    <p class="nota">Marca los artículos que llevan los camiones; salen en la hoja del cuadre en el orden del catálogo. Si falta alguno, créalo en «Artículos y precios» y ponlo «Oculto»: la tienda no lo verá pero aquí sí. Los precios no se usan en el cuadre.</p>
+    <div class="card"><div class="sec" style="margin-top:0">Se cuadran también por peso</div>
+      <div class="av-g2"><div><label class="l" for="avPeso-grande">Aceite grande</label>${opt("grande")}</div><div><label class="l" for="avPeso-mini">Minis de aceite (bandejas)</label>${opt("mini")}</div></div>
+      <div class="av-g2" style="margin-top:8px"><div><label class="l" for="avTaraG">Tara caja aceite grande (kg)</label><input id="avTaraG" class="num" inputmode="decimal" value="${avF(cf.taras.grande)}"></div>
+        <div><label class="l" for="avTaraM">Tara bandeja minis (kg)</label><input id="avTaraM" class="num" inputmode="decimal" value="${avF(cf.taras.mini)}"></div></div></div>
+    ${h||`<div class="vacio">No hay artículos en el catálogo.</div>`}</div>`;
+  barra(`<span class="muted">${cf.arts.length} artículos en la hoja de autoventa</span>`);
+  app.onclick=e=>{const b=e.target.closest("button");if(!b)return;
+    if(b.id==="avArtV"){S.av.arts=false;render();scrollTo(0,0);return}
+    if(b.dataset.art){const c=b.dataset.art,i=cf.arts.indexOf(c);if(i<0)cf.arts.push(c);else cf.arts.splice(i,1);avGuardarCfg();const y=scrollY;render();scrollTo(0,y)}};
+  app.onchange=e=>{const id=e.target.id;
+    if(id==="avPeso-grande"||id==="avPeso-mini"){cf.peso[id.slice(7)]=e.target.value;avGuardarCfg();return}
+    if(id==="avTaraG"||id==="avTaraM"){cf.taras[id==="avTaraG"?"grande":"mini"]=avP(e.target.value)||0;avGuardarCfg()}};
+}
+
+/* ---- el cuadre ---- */
+function avFilas(c,filtro){return avRefs(c,S.av.todas).filter(k=>S.av.todas||!filtro||filtro(avCalc(avLin(c,k))))}
+function avIn(i,k,f,v,cls){return `<td><input class="av-n ${cls||""}" inputmode="decimal" autocomplete="off" id="av${f}${i}" data-k="${esc(k)}" data-f="${f}" value="${avF(avN(v))}" placeholder="·" aria-label="${f}"></td>`}
+const avBtnTodas=()=>`<button class="btn sm" id="avTodas">${S.av.todas?"Solo los de autoventa":"Ver todo el catálogo"}</button>`;
+function avAyudaPapel(c){
+  if(!c.primero||c.vendedor!==AV_PAPEL.vend)return"";
+  return `<details class="card av-papel"><summary>Lo que llevaba según la hoja en papel del ${avDia(AV_PAPEL.fecha)}</summary>
+    <div class="av-lleva" style="margin-top:8px">${AV_PAPEL.pz.map(([n,v])=>`<div><span>${esc(n)}</span><b class="av-num">${v}</b></div>`).join("")}</div>
+    <p class="muted" style="margin:6px 0 0">Aceite grande ${avKg(AV_PAPEL.kg.grande)} kg · minis ${avKg(AV_PAPEL.kg.mini)} kg. Pásalo a la columna «Lleva» de cada artículo; a partir del siguiente cuadre se rellena solo.</p></details>`;
+}
+function vAvCuadre(app){
+  const c=avCuadre(), id=S.av.cur, cerr=c.estado==="cerrado", cf=avCfg();
+  const F=[["desc","1 · Descarga"],["alb","2 · Albaranes"],["carga","3 · Carga"],["pesos","4 · Pesos"],["hoja","Hoja y cierre"]];
+  let cuerpo="";
+  if(S.av.fase==="desc"){const fs=avFilas(c);
+    cuerpo=`${avAyudaPapel(c)}<p class="nota">Cuenta lo que trae y apúntalo en <b>Descarga</b>. <b>Lleva</b> viene del cuadre anterior; en <b>+Cargó</b> lo que se llevó entre cuadres. Con Intro pasas al siguiente.</p>
+    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Lleva</th><th>+Cargó</th><th>Descarga</th><th>Vendidos</th></tr></thead><tbody>
+    ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th>${avIn(i,k,"ll",l.ll,"soft")}${avIn(i,k,"en",l.en,"soft")}${avIn(i,k,"de",l.de)}<td class="av-c av-b" data-c="vend"></td></tr>`}).join("")||`<tr><td colspan="5" class="vacio">No hay artículos. Márcalos en «Artículos de autoventa» o pulsa «Ver todo el catálogo».</td></tr>`}
+    </tbody><tfoot><tr><th>Total</th><td data-t="lleva"></td><td></td><td data-t="de"></td><td data-t="vend"></td></tr></tfoot></table></div>
+    <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="alb">Siguiente: albaranes →</button></div>`}
+  else if(S.av.fase==="alb"){const fs=avFilas(c,x=>x.vend||x.al!==null);
+    cuerpo=`<p class="nota">Compara con el resumen de albaranes del vendedor. Toca <b>✓</b> si coincide o escribe lo que dice el albarán.</p>
+    <div class="acc" style="align-items:center;margin-bottom:8px"><button class="btn sm" id="avTodoOk">Marcar todo como cuadrado</button><span style="flex:1"></span><span id="avRes"></span></div>
+    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Vendidos</th><th>Albarán</th><th>Cuadra</th></tr></thead><tbody>
+    ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c av-b" data-c="vend"></td>${avIn(i,k,"al",l.al)}<td><button class="av-tick" data-tick="${esc(k)}" data-c="tick"></button></td></tr>`}).join("")||`<tr><td colspan="4" class="vacio">Primero rellena la descarga.</td></tr>`}
+    </tbody></table></div>
+    <div class="acc av-pie"><button class="btn" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn pri" data-avf="carga">Siguiente: carga →</button></div>`}
+  else if(S.av.fase==="carga"){const fs=avFilas(c);
+    cuerpo=`<p class="nota">Lo que carga hoy. <b>Sale con</b> es lo que lleva el próximo día de ruta y será el «Lleva» del siguiente cuadre.</p>
+    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Trae</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>
+    ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted" data-c="de"></td>${avIn(i,k,"ca",l.ca)}<td class="av-c av-b" data-c="sale"></td></tr>`}).join("")}
+    </tbody><tfoot><tr><th>Total</th><td data-t="de"></td><td data-t="ca"></td><td data-t="sale"></td></tr></tfoot></table></div>
+    <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="pesos">Siguiente: pesos →</button></div>`}
+  else if(S.av.fase==="pesos"){const bj=c.bandejas||{},tb=(avN(bj.desc)||0)+(avN(bj.carga)||0);
+    cuerpo=`<div class="av-pesos">${avBloquePeso(c,"grande")}${avBloquePeso(c,"mini")}</div><div class="card"><div class="sec" style="margin-top:0">Bandejas</div>
+      <div class="av-g2"><div><label class="l" for="avBjD">Descarga</label><input id="avBjD" class="num" data-bj="desc" inputmode="numeric" value="${avF(avN(bj.desc))}"></div>
+      <div><label class="l" for="avBjC">Carga</label><input id="avBjC" class="num" data-bj="carga" inputmode="numeric" value="${avF(avN(bj.carga))}"></div></div>
+      <div class="av-kv" style="margin-top:8px"><span>Total en el camión</span><b id="avBjT">${tb||"—"}</b></div></div>
+      <div class="acc av-pie"><button class="btn" data-avf="carga">← Carga</button><span style="flex:1"></span><button class="btn pri" data-avf="hoja">Siguiente: hoja →</button></div>`}
+  else cuerpo=avHoja(c);
+  app.innerHTML=`<div class="wrap av-wrap">
+    <div class="acc" style="justify-content:space-between;align-items:center"><button class="btn sm" id="avVolver">← Autoventa</button><span class="muted" id="avSt" style="font-size:13px">${Object.keys(S.av.pend).length?"Pendiente de guardar":"Guardado en la hoja"}</span></div>
+    <div class="av-cab"><b>${esc(c.vendedor)}</b><input type="date" id="avFecha" value="${c.fecha||""}" aria-label="Fecha del cuadre">${cerr?`<span class="chip e-PREPARADO">Cerrado</span>`:`<span class="chip e-PREPARANDO">Abierto</span>`}</div>
+    <div class="av-fases">${F.map(([k,t])=>`<button data-avf="${k}" class="${S.av.fase===k?"on":""}">${t}</button>`).join("")}</div>
+    ${cuerpo}</div>`;
+  avRefrescar();
+
+  app.onclick=e=>{const b=e.target.closest("button");if(!b)return;
+    if(b.id==="avVolver"){avSubir();S.av.cur=null;render();scrollTo(0,0);return}
+    if(b.dataset.avf){S.av.fase=b.dataset.avf;S.av.borrar=false;render();scrollTo(0,0);return}
+    if(b.id==="avTodas"){S.av.todas=!S.av.todas;render();return}
+    if(b.dataset.tick){const k=b.dataset.tick,l=c.lineas[k]||(c.lineas[k]={}),x=avCalc(l);if(x.vend===null)return;
+      l.al=(x.al===null||x.dif!==0)?x.vend:null;const i=b.closest("tr").querySelector('input[data-f="al"]');if(i)i.value=avF(l.al);avRefrescar();avTocar();return}
+    if(b.id==="avTodoOk"){avRefs(c).forEach(k=>{const l=c.lineas[k];if(!l)return;const x=avCalc(l);if(x.vend!==null&&x.al===null)l.al=x.vend});avTocar();render();return}
+    if(b.dataset.addp)return avAddPeso(b.dataset.addp);
+    if(b.dataset.tog){const[bk,ls,i]=b.dataset.tog.split("|"),e2=c.pesos[bk][ls][+i];e2.t=!e2.t;avTocar();avRepintar();return}
+    if(b.dataset.quita){const[bk,ls,i]=b.dataset.quita.split("|");c.pesos[bk][ls].splice(+i,1);avTocar();avRepintar();return}
+    if(b.dataset.entre){const bk=b.dataset.entre,pz=avP($("#avEp-"+bk).value),kg=avP($("#avEk-"+bk).value);if(kg===null)return;const p=c.pesos[bk]||(c.pesos[bk]=avPeso0());(p.entre||(p.entre=[])).push({pz,kg});avTocar();avRepintar();return}
+    if(b.id==="avCerrar"){c.estado="cerrado";delete c.primero;avTocar();avSubir();S.av.cur=null;toast("Cuadre cerrado");render();scrollTo(0,0);return}
+    if(b.id==="avReabrir"){c.estado="abierto";S.av.fase="desc";avTocar();render();return}
+    if(b.id==="avBorrar"){S.av.borrar=true;render();return}
+    if(b.id==="avNoBorrar"){S.av.borrar=false;render();return}
+    if(b.id==="avSiBorrar"){delete S.av.cuadres[id];S.av.pend[id]="borrar";avTocar(id);S.av.cur=null;render();return}
+    if(b.id==="avImprimir")return avImprimir(c);
+    if(b.id==="avCopiar")return avCopiar(c);
+  };
+  app.oninput=e=>{const el=e.target;
+    if(el.dataset.f&&el.closest("tr[data-row]")){const k=el.dataset.k,l=c.lineas[k]||(c.lineas[k]={});l[el.dataset.f]=avP(el.value);avRefrescar();avTocar();return}
+    if(el.dataset.pk){const[bk,f]=el.dataset.pk.split("|");(c.pesos[bk]||(c.pesos[bk]=avPeso0()))[f]=avP(el.value);avTocar();avPesoVivo(bk);return}
+    if(el.dataset.tara){(c.pesos[el.dataset.tara]||(c.pesos[el.dataset.tara]=avPeso0())).tara=avP(el.value);avTocar();return}
+    if(el.dataset.bj){(c.bandejas||(c.bandejas={}))[el.dataset.bj]=avP(el.value);const t=(avN(c.bandejas.desc)||0)+(avN(c.bandejas.carga)||0);$("#avBjT").textContent=t||"—";avTocar();return}
+    if(el.id==="avNota"){c.nota=el.value;avTocar();return}
+  };
+  app.onchange=e=>{const el=e.target;
+    if(el.id==="avFecha"){c.fecha=el.value;avTocar();return}
+    if(el.dataset.tara)setTimeout(avRepintar,0); // la tara cambia todos los netos
+  };
+  app.onkeydown=e=>{if(e.key!=="Enter")return;const el=e.target;
+    if(el.dataset.addp){e.preventDefault();avAddPeso(el.dataset.addp);return}
+    if(el.dataset.f){e.preventDefault();const all=[...app.querySelectorAll(`input.av-n[data-f="${el.dataset.f}"]`)],nx=all[all.indexOf(el)+1];if(nx){nx.focus();nx.select()}else el.blur()}
+  };
+  app.onfocusin=e=>{if(e.target.matches("input.av-n,input.num"))setTimeout(()=>{try{e.target.select()}catch(x){}},0)};
+}
+function avBarra(){
+  const c=avCuadre();if(!c||S.tab!=="autoventa")return;
+  const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini");
+  barra(`<div class="tot"><small>${t.vend} vendidas · ${t.mal?t.mal+" con diferencia":t.pend?t.pend+" sin comprobar":"todo cuadra"}</small>Sale con ${t.sale} pz</div>
+    <div style="text-align:right;font-size:14px;line-height:1.35;font-weight:600"><span class="${avDifCls(g.difG)}">Grande: ${avDifTxt(g.difG)}</span><br><span class="${avDifCls(m.difG)}">Minis: ${avDifTxt(m.difG)}</span></div>`);
+}
+function avRepintar(){const y=scrollY,a=document.activeElement&&document.activeElement.id;render();scrollTo(0,y);if(a){const el=document.getElementById(a);if(el)el.focus({preventScroll:true})}}
+function avAddPeso(key){
+  const c=avCuadre(),[bk,ls]=key.split("|"),el=$(`#avAdd-${bk}-${ls}`),v=avP(el.value);if(v===null){el.focus();return}
+  const p=c.pesos[bk]||(c.pesos[bk]=avPeso0()),tara=avN(p.tara??avCfg().taras[bk])||0;
+  (p[ls]||(p[ls]=[])).push({kg:v,t:tara>0});avTocar();
+  const y=scrollY;render();scrollTo(0,y);const n=$(`#avAdd-${bk}-${ls}`);if(n)n.focus({preventScroll:true});
+}
+function avBloquePeso(c,b){
+  const w=avPeso(c,b),p=w.p,code=avCfg().peso[b],lx=avCalc(avLin(c,code));
+  const chips=ls=>`<div class="av-chips">${(p[ls]||[]).map((e,i)=>`<span class="av-w"><b>${avKg(avN(e.kg))}</b><button data-tog="${b}|${ls}|${i}" class="${e.t?"on":""}">${e.t?"−tara":"sin tara"}</button><button data-quita="${b}|${ls}|${i}" aria-label="Quitar peso">×</button></span>`).join("")}</div>`;
+  const add=ls=>`<div class="acc"><input id="avAdd-${b}-${ls}" class="num" inputmode="decimal" placeholder="Peso y Intro" data-addp="${b}|${ls}" style="flex:1"><button class="btn" data-addp="${b}|${ls}">Añadir</button></div>`;
+  return `<div class="card av-peso">
+    <div class="acc" style="align-items:center"><b class="av-h">${AV_PNOM[b]}</b>${code?`<span class="muted">${esc(code)}</span>`:`<span class="muted">sin artículo asignado</span>`}<span style="flex:1"></span><label class="l" for="avTara-${b}" style="margin:0">Tara</label><input id="avTara-${b}" class="num" data-tara="${b}" inputmode="decimal" value="${avF(w.tara)}" style="width:72px"></div>
+    <div class="sec">Lleva</div>
+    <div class="av-g2"><div><span class="l">Piezas (de la hoja)</span><b class="av-big">${code?lx.lleva:"—"}</b></div>
+      <div><label class="l" for="avLl-${b}">Kilos</label><input id="avLl-${b}" class="num" data-pk="${b}|llevaKg" inputmode="decimal" value="${avF(avN(p.llevaKg))}"></div></div>
+    <span class="l" style="margin-top:8px">Cargado entre cuadres</span>
+    <div class="av-chips">${(p.entre||[]).map((e,i)=>`<span class="av-w"><b>${avN(e.pz)??"?"} pz · ${avKg(avN(e.kg))}</b><button data-quita="${b}|entre|${i}" aria-label="Quitar">×</button></span>`).join("")}</div>
+    <div class="acc"><input id="avEp-${b}" class="num" inputmode="numeric" placeholder="Piezas" style="width:90px"><input id="avEk-${b}" class="num" inputmode="decimal" placeholder="Kilos" style="flex:1"><button class="btn" data-entre="${b}">Añadir</button></div>
+    <div class="av-kv"><span>Total lleva</span><b id="avTL-${b}">${avKg(w.total)} kg</b></div>
+    <div class="sec">Descarga · peso de cada caja o bandeja</div>${chips("desc")}${add("desc")}
+    <div class="av-kv"><span class="muted">Bruto (${w.d.n})</span><b>${avKg(w.d.bruto)}</b><span class="muted">Taras</span><b>−${avKg(w.d.taras)}</b><span class="av-tot">Trae</span><b class="av-tot">${avKg(w.d.neto)} kg</b></div>
+    <div class="sec">Vendido</div>
+    <div class="av-g2"><div><span class="l">Según báscula</span><b class="av-big" id="avVe-${b}">${avKg(w.vend)} kg</b></div>
+      <div><label class="l" for="avAlb-${b}">Kilos en albaranes</label><input id="avAlb-${b}" class="num" data-pk="${b}|albKg" inputmode="decimal" value="${avF(avN(p.albKg))}"></div></div>
+    <div style="margin-top:6px"><span class="chip ${avDifCls(w.difG)}" id="avDif-${b}">${avDifTxt(w.difG)}</span></div>
+    <div class="sec">Carga hoy${code?` · ${lx.ca} piezas en la hoja`:""}</div>${chips("carga")}${add("carga")}
+    <div class="av-kv"><span class="muted">Bruto (${w.cg.n})</span><b>${avKg(w.cg.bruto)}</b><span class="muted">Taras</span><b>−${avKg(w.cg.taras)}</b><span>Cargado</span><b>${avKg(w.cg.neto)} kg</b>
+      <span class="av-tot">Sale con</span><b class="av-tot av-big">${avKg(w.sale)} kg</b></div></div>`;
+}
+function avPesoVivo(b){const w=avPeso(avCuadre(),b),d=$("#avDif-"+b),set=(id,t)=>{const e=$(id);if(e)e.textContent=t};if(d){d.className="chip "+avDifCls(w.difG);d.textContent=avDifTxt(w.difG)}
+  set("#avTL-"+b,avKg(w.total)+" kg");set("#avVe-"+b,avKg(w.vend)+" kg");avBarra()}
+function avHoja(c){
+  const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini"),cerr=c.estado==="cerrado";
+  const fs=avRefs(c).filter(k=>avCalc(avLin(c,k)).usada);
+  const tick=x=>!x.vend&&x.al===null?"":x.al===null?`<span class="muted">?</span>`:x.dif===0?`<span class="av-ok">✓</span>`:`<span class="av-mal">${x.dif>0?"+":""}${x.dif}</span>`;
+  return `<div class="acc" style="margin-bottom:8px"><span class="chip ${t.mal?"av-mal":"av-ok"}">${t.mal} con diferencia</span><span class="chip ${t.pend?"e-ENVIADO":"av-neu"}">${t.pend} sin comprobar</span>
+    <span class="chip ${avDifCls(g.difG)}">Grande: ${avDifTxt(g.difG)}</span><span class="chip ${avDifCls(m.difG)}">Minis: ${avDifTxt(m.difG)}</span></div>
+  <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Lleva</th><th>Desc.</th><th>Vend.</th><th>Alb.</th><th>Carga</th><th>Sale</th></tr></thead><tbody>
+  ${fs.map(k=>{const x=avCalc(avLin(c,k));return `<tr><th>${avRefTxt(k)}</th><td class="av-c muted">${x.lleva}</td><td class="av-c">${x.de??""}</td><td class="av-c av-b">${x.vend??""}</td><td class="av-c">${tick(x)}</td><td class="av-c">${x.ca||""}</td><td class="av-c av-b">${x.sale??""}</td></tr>`}).join("")}
+  </tbody><tfoot><tr><th>Total</th><td>${t.lleva}</td><td>${t.de}</td><td>${t.vend}</td><td></td><td>${t.ca}</td><td>${t.sale}</td></tr></tfoot></table></div>
+  <div class="sec">Pesos (kg)</div>
+  <div class="av-tw"><table class="av-t"><thead><tr><th></th><th>Lleva</th><th>Trae</th><th>Vendido</th><th>Albarán</th><th>Dif.</th><th>Sale</th></tr></thead><tbody>
+  ${[["Aceite grande",g],["Minis",m]].map(([n,w])=>`<tr><th>${n}</th><td class="av-c">${avKg(w.total)}</td><td class="av-c">${w.d.n?avKg(w.d.neto):"—"}</td><td class="av-c av-b">${avKg(w.vend)}</td><td class="av-c">${avKg(w.alb)}</td><td class="av-c ${avDifCls(w.difG)}">${w.difG===null?"":(w.difG>0?"+":"")+w.difG+" g"}</td><td class="av-c av-b">${avKg(w.sale)}</td></tr>`).join("")}
+  </tbody></table></div>
+  <div class="sec">Notas</div><textarea id="avNota" placeholder="Incidencias, devoluciones, fallos de cuadres anteriores…">${esc(c.nota||"")}</textarea>
+  <div class="acc" style="margin-top:12px"><button class="btn" id="avCopiar">Copiar resumen</button><button class="btn" id="avImprimir">Imprimir hoja</button><span style="flex:1"></span>
+    ${cerr?`<button class="btn" id="avReabrir">Reabrir para corregir</button>`:`<button class="btn pri" id="avCerrar">Cerrar cuadre</button>`}</div>
+  ${S.av.borrar?`<div class="card" style="margin-top:12px;border-color:var(--danger)"><b>¿Borrar este cuadre?</b> No se puede deshacer.<div class="acc" style="margin-top:8px"><button class="btn del" id="avSiBorrar">Borrar</button><button class="btn" id="avNoBorrar">Cancelar</button></div></div>`:`<div style="margin-top:12px"><button class="btn sm del" id="avBorrar">Borrar cuadre</button></div>`}`;
+}
+function avRefrescar(){
+  const c=avCuadre();if(!c)return;
+  document.querySelectorAll("#app tr[data-row]").forEach(tr=>{const x=avCalc(avLin(c,tr.dataset.row));
+    tr.querySelectorAll("[data-c]").forEach(el=>{const f=el.dataset.c;
+      if(f==="vend"){el.textContent=x.vend??"";el.classList.toggle("av-mal",x.vend!==null&&x.vend<0)}
+      if(f==="de")el.textContent=x.de??"—";
+      if(f==="sale")el.textContent=x.sale??"";
+      if(f==="tick"){if(x.vend===null){el.textContent="";el.className="av-tick"}else if(x.al===null){el.textContent="✓ ?";el.className="av-tick"}
+        else if(x.dif===0){el.textContent="✓";el.className="av-tick av-ok"}else{el.textContent=(x.dif>0?"+":"")+x.dif;el.className="av-tick av-mal"}}});
+    tr.classList.toggle("av-nada",!x.usada)});
+  const t=avTot(c);document.querySelectorAll("#app [data-t]").forEach(el=>el.textContent=t[el.dataset.t]);
+  const r=$("#avRes");if(r)r.innerHTML=`<span class="chip ${t.mal?"av-mal":t.pend?"e-ENVIADO":"av-ok"}">${t.ok} ✓ · ${t.mal} dif. · ${t.pend} pend.</span>`;
+  avBarra();
+}
+async function avCopiar(c){
+  const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini"),L=[`Cuadre ${c.vendedor} · ${avDia(c.fecha)}`,`Vendidas ${t.vend} piezas · ${t.mal} con diferencia · ${t.pend} sin comprobar`];
+  avRefs(c).forEach(k=>{const x=avCalc(avLin(c,k));if(x.al!==null&&x.dif!==0)L.push(`  ${k} ${avNom(k)}: vendidas ${x.vend} / albarán ${x.al}`)});
+  L.push(`Aceite grande: ${avKg(g.vend)} kg · albarán ${avKg(g.alb)} · ${avDifTxt(g.difG)}`,`Minis: ${avKg(m.vend)} kg · albarán ${avKg(m.alb)} · ${avDifTxt(m.difG)}`,`Sale con ${t.sale} piezas · grande ${avKg(g.sale)} kg · minis ${avKg(m.sale)} kg`);
+  if(c.nota)L.push("Nota: "+c.nota);
+  try{await navigator.clipboard.writeText(L.join("\n"));toast("Resumen copiado")}catch(e){toast("No se pudo copiar",true)}
+}
+const avNom=k=>{const p=prod(k);return p?p.n:""};
+function avImprimir(c){
+  const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini");
+  const filas=avRefs(c).filter(k=>avCalc(avLin(c,k)).usada).map(k=>{const x=avCalc(avLin(c,k)),d=x.al===null?"":x.dif===0?"✓":(x.dif>0?"+":"")+x.dif;
+    return `<tr><td><b>${esc(k)}</b> <span style="font-size:9pt">${esc(avNom(k))}</span></td><td class="n">${x.lleva}</td><td class="n">${x.de??""}</td><td class="n"><b>${x.vend??""}</b></td><td class="n">${d}</td><td class="n">${x.ca||""}</td><td class="n"><b>${x.sale??""}</b></td></tr>`}).join("");
+  const pes=(n,w)=>`<tr><td>${n}</td><td class="n">${avKg(w.total)}</td><td class="n">${w.d.n?avKg(w.d.neto):""}</td><td class="n"><b>${avKg(w.vend)}</b></td><td class="n">${avKg(w.alb)}</td><td class="n">${w.difG===null?"":(w.difG>0?"+":"")+w.difG+" g"}</td><td class="n"><b>${avKg(w.sale)}</b></td></tr>`;
+  $("#imp").innerHTML=`<section class="copia">${cabecera("CUADRE AUTOVENTA","",esc(c.vendedor)+" · "+fDia(c.fecha))}
+    <table><thead><tr><th>Artículo</th><th>Lleva</th><th>Descarga</th><th>Vendidos</th><th>Albarán</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>${filas}</tbody>
+    <tfoot><tr><td>TOTAL</td><td class="n">${t.lleva}</td><td class="n">${t.de}</td><td class="n">${t.vend}</td><td></td><td class="n">${t.ca}</td><td class="n">${t.sale}</td></tr></tfoot></table>
+    <table style="margin-top:4mm"><thead><tr><th>Peso (kg)</th><th>Lleva</th><th>Trae</th><th>Vendido</th><th>Albarán</th><th>Dif.</th><th>Sale con</th></tr></thead><tbody>${pes("Aceite grande",g)}${pes("Minis",m)}</tbody></table>
+    ${c.nota?`<div class="pobs"><b>Notas:</b> ${esc(c.nota)}</div>`:""}</section>`;
+  imprimir("A4 portrait","10mm");
 }
 
 /* =================== arranque =================== */
