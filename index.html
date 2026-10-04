@@ -246,6 +246,14 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 .tag{display:inline-block;border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700;white-space:nowrap}
 .tag.ok{background:#e1f2e7;color:var(--ok)}.tag.no{background:var(--gold-soft);color:#7a4a00}.tag.dif{background:#fdf0d8;color:#9c5c00}
 .nota{font-size:13px;color:var(--muted);margin:6px 0 12px}
+.sumf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sumf button{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:10px 6px;cursor:pointer;font-family:var(--font);text-align:center}
+.sumf b{display:block;font-family:var(--display);font-size:26px;line-height:1.1;color:var(--fg)}
+.sumf span{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.sumf .ok b{color:var(--ok)}.sumf .ko b{color:#c0392b}
+.sumf button.on{border-color:var(--brand);box-shadow:inset 0 0 0 1.5px var(--brand);background:#fbf3f4}
+.cmpr.tot{border-top:2px solid var(--fg);font-size:16px}
+body.desk .sumf{max-width:640px}
 .cmpc,body.desk .cmpc{padding:0;overflow:hidden}
 .cmpt{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer}
 .cmpc.ab .cmpt{border-bottom:1px solid var(--line);background:var(--surface2)}
@@ -357,7 +365,7 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "25 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "26 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -478,7 +486,7 @@ function render(){
   if(!S.api) return vConfig(app);
   if(!S.pin||!S.user) return vLogin(app);
   if(S.scr){
-    const f={editar:vEditar,preparar:vPreparar,ver:vVer,albaran:vAlbaran,verAlb:vVerAlb}[S.scr.t];
+    const f={editar:vEditar,preparar:vPreparar,ver:vVer,albaran:vAlbaran,verAlb:vVerAlb,cmp:vCmp}[S.scr.t];
     return f(app);
   }
   ({nuevo:()=>{S.scr={t:"editar",ped:nuevoBorrador()};render()},mios:vListaTienda,preparar:vListaFab,hechos:vListaFabHechos,
@@ -545,47 +553,61 @@ const ordenados=(est)=>S.pedidos.filter(p=>est.includes(p.estado)).sort((a,b)=>(
 
 /* =================== listas por rol =================== */
 /* =================== diferencias: lo pedido frente a lo enviado =================== */
+const pedDe=id=>S.pedidos.find(x=>x.id===id)||((S.H.data?S.H.data.pedidos:[]).find(x=>x.id===id));
+const sumPz=(p,f)=>p.lineas.reduce((x,l)=>x+(+(f(l))||0),0);
 function vDiferencias(app){
   barra("");
   const desk=esDesk();
   if(desk&&!S.H.data&&!S.H.cargando){cargarHist();return}
-  if(!S.difAb)S.difAb=new Set();
+  const F=S.difF||"todos";
   const fuente=desk?(S.H.data?S.H.data.pedidos:[]):S.pedidos;
   const todos=fuente.filter(p=>["PREPARADO","ALBARANADO"].includes(p.estado)).sort((a,b)=>String(b.creado).localeCompare(String(a.creado)));
-  const conDif=todos.filter(p=>difsDe(p).length);
-  const peds=S.difSolo?conDif:todos;
-  const sumPz=(p,f)=>p.lineas.reduce((x,l)=>x+(+(f(l))||0),0);
+  const conDif=todos.filter(p=>difsDe(p).length), ok=todos.length-conDif.length;
+  const peds=F==="dif"?conDif:F==="ok"?todos.filter(p=>!difsDe(p).length):todos;
+  const fila=p=>{const nd=difsDe(p).length;
+    return `<div class="card cmpc"><div class="cmpt" data-cmp="${esc(p.id)}">
+        <span class="ico big ${nd?"no":"si"}">${nd?"✗":"✓"}</span>
+        <div class="cmpm"><b>${fDiaPed(p.creado)}</b><small>Pedido ${esc(p.id)}${p.albaran?` · albarán ${esc(p.albaran)}`:""}</small></div>
+        <div class="cmpn"><span>Pedido<b>${sumPz(p,l=>l.extra?0:l.pz)}</b></span><span>Enviado<b>${sumPz(p,l=>l.pzS??l.pz)}</b></span></div>
+        <span class="cmpd ${nd?"no":"si"}">${nd?`${nd} dif.`:"OK"}</span><span class="flecha">›</span></div></div>`};
+  const vacio=!todos.length?"Todavía no hay pedidos preparados"+(desk?" en estas fechas.":". Cuando la fábrica prepare un pedido, aparecerá aquí comparado con lo que se pidió.")
+    :F==="dif"?"Ninguna diferencia: todo lo enviado coincide con lo pedido.":"Ningún pedido en este apartado.";
+  app.innerHTML=`<div class="wrap" style="${desk?"max-width:1000px":""}">
+    ${desk?filtroFechas():""}
+    <div class="sumf">
+      <button class="${F==="todos"?"on":""}" data-f="todos"><b>${todos.length}</b><span>Pedidos</span></button>
+      <button class="ok ${F==="ok"?"on":""}" data-f="ok"><b>✓ ${ok}</b><span>Coinciden</span></button>
+      <button class="ko ${F==="dif"?"on":""}" data-f="dif"><b>✗ ${conDif.length}</b><span>Diferencias</span></button></div>
+    <p class="nota" style="margin:6px 2px 12px">${todos.length?`De ${todos.length} pedido${todos.length>1?"s":""} preparado${todos.length>1?"s":""}, ${ok} coincide${ok===1?"":"n"} con lo pedido y ${conDif.length} ${conDif.length===1?"tiene":"tienen"} diferencias. Pulsa un pedido para ver lo pedido y lo enviado línea a línea.`:"Aquí se compara cada pedido con lo que se envió."}</p>
+    ${peds.map(fila).join("")||`<div class="vacio">${vacio}</div>`}</div>`;
+  if(desk)enlazarFiltro(app);
+  app.onclick=e=>{
+    const f=e.target.closest(".sumf [data-f]");if(f){S.difF=f.dataset.f;render();return}
+    const t=e.target.closest("[data-cmp]");if(t){S.scr={t:"cmp",id:t.dataset.cmp};render();scrollTo(0,0)}};
+}
+function vCmp(app){
+  const p=pedDe(S.scr.id);if(!p){S.scr=null;return render()}
+  barra("");
+  const nd=difsDe(p).length;
   const estado=l=>{const pz=+l.pz||0,sv=+(l.pzS??l.pz)||0;
-    if(l.extra)return ["mas","Añadido"];
+    if(l.extra)return ["mas","Añadido (no estaba en el pedido)"];
     if(sv===pz)return ["ok",""];
     if(sv===0)return ["no","No enviado"];
     return sv<pz?["no",`Faltan ${pz-sv}`]:["mas",`${sv-pz} de más`]};
-  const detalle=p=>`<div class="cmp">
-      <div class="cmph"><span>Artículo</span><span>Pedido</span><span>Enviado</span><span></span></div>
-      ${ordenLineas(p.lineas).map(l=>{const [k,t]=estado(l),pr=prod(l.c)||{};
-        return `<div class="cmpr ${k}"><span class="cmpa"><i class="dot" style="${estiloG(grupoDe(l.c))}"></i><b>${esc(l.c)}</b> <small>${esc(l.n||pr.n||"")}</small>${t?`<em>${t}</em>`:""}${l.obs?`<small class="cmpo">${esc(l.obs)}</small>`:""}</span>
-          <span class="n">${l.extra?"—":l.pz}</span><span class="n"><b>${l.pzS??l.pz}</b></span><span class="ico ${k==="ok"?"si":"no"}">${k==="ok"?"✓":"✗"}</span></div>`}).join("")}
-      ${p.obsF?`<div class="obsbox" style="margin:10px 0 0"><b>Nota de fábrica:</b> ${esc(p.obsF)}</div>`:""}
-      <div class="acc" style="margin-top:10px"><button class="btn sm" data-verp="${esc(p.id)}">Ver pedido completo</button></div></div>`;
-  const fila=p=>{const nd=difsDe(p).length,ab=S.difAb.has(p.id);
-    return `<div class="card cmpc ${ab?"ab":""}"><div class="cmpt" data-ab="${esc(p.id)}">
-        <span class="ico big ${nd?"no":"si"}">${nd?"✗":"✓"}</span>
-        <div class="cmpm"><b>${fDiaPed(p.creado)}</b><small>Pedido ${esc(p.id)}${p.albaran?` · albarán ${esc(p.albaran)}`:""} · ${EST_TXT[p.estado]}</small></div>
-        <div class="cmpn"><span>Pedido<b>${sumPz(p,l=>l.extra?0:l.pz)} pz</b></span><span>Enviado<b>${sumPz(p,l=>l.pzS??l.pz)} pz</b></span></div>
-        <span class="cmpd ${nd?"no":"si"}">${nd?`${nd} dif.`:"OK"}</span><span class="flecha">${ab?"▴":"▾"}</span></div>
-      ${ab?detalle(p):""}</div>`};
-  app.innerHTML=`<div class="wrap" style="${desk?"max-width:1000px":""}">
-    ${desk?filtroFechas():`<p class="nota">Pedidos preparados y albaranados: lo pedido frente a lo enviado. Pulsa uno para ver todas sus líneas.</p>`}
-    <div class="kpis"><div class="kpi"><span>Pedidos</span><b>${todos.length}</b></div><div class="kpi"><span>Coinciden</span><b style="color:var(--ok)">${todos.length-conDif.length}</b></div><div class="kpi kd"><span>Con diferencias</span><b style="color:#b3262d">${conDif.length}</b></div></div>
-    <div class="seg" style="margin:4px 0 12px"><button class="${S.difSolo?"":"on"}" data-solo="0">Todos</button><button class="${S.difSolo?"on":""}" data-solo="1">Solo con diferencias</button></div>
-    ${peds.map(fila).join("")||`<div class="vacio">${S.difSolo&&todos.length?"Todo lo enviado coincide con lo pedido.":"Todavía no hay pedidos preparados en estas fechas."}</div>`}</div>`;
-  if(desk)enlazarFiltro(app);
-  app.onclick=e=>{
-    const so=e.target.closest("[data-solo]");if(so){S.difSolo=so.dataset.solo==="1";render();return}
-    const v=e.target.closest("[data-verp]");if(v){const id=v.dataset.verp;
-      if(!S.pedidos.some(x=>x.id===id)){const q=(S.H.data?S.H.data.pedidos:[]).find(x=>x.id===id);if(q)S.pedidos.push(q)}
-      S.scr={t:"ver",id};render();scrollTo(0,0);return}
-    const t=e.target.closest("[data-ab]");if(t){const id=t.dataset.ab;S.difAb.has(id)?S.difAb.delete(id):S.difAb.add(id);render()}};
+  const filas=ordenLineas(p.lineas).map(l=>{const [k,t]=estado(l),pr=prod(l.c)||{};
+    return `<div class="cmpr ${k}"><span class="cmpa"><i class="dot" style="${estiloG(grupoDe(l.c))}"></i><b>${esc(l.c)}</b> <small>${esc(l.n||pr.n||"")}</small>${t?`<em>${t}</em>`:""}${l.obs?`<small class="cmpo">${esc(l.obs)}</small>`:""}</span>
+      <span class="n">${l.extra?"—":l.pz}</span><span class="n"><b>${l.pzS??l.pz}</b></span><span class="ico ${k==="ok"?"si":"no"}">${k==="ok"?"✓":"✗"}</span></div>`}).join("");
+  app.innerHTML=`<div class="wrap" style="max-width:900px">
+    <div class="acc" style="margin-bottom:10px"><button class="btn sm" id="bVolver">← Diferencias</button></div>
+    <div class="card cmpc"><div class="cmpt" style="cursor:default"><span class="ico big ${nd?"no":"si"}">${nd?"✗":"✓"}</span>
+      <div class="cmpm"><b>${fDiaPed(p.creado)}</b><small>Pedido ${esc(p.id)} · ${fHora(p.creado)}${p.albaran?` · albarán ${esc(p.albaran)}`:""}</small></div>
+      <span class="cmpd ${nd?"no":"si"}">${nd?`${nd} dif.`:"Todo OK"}</span></div>
+      <div class="cmp"><div class="cmph"><span>Artículo</span><span>Pedido</span><span>Enviado</span><span></span></div>${filas}
+        <div class="cmpr tot"><span class="cmpa"><b>Total piezas</b></span><span class="n"><b>${sumPz(p,l=>l.extra?0:l.pz)}</b></span><span class="n"><b>${sumPz(p,l=>l.pzS??l.pz)}</b></span><span></span></div></div></div>
+    ${p.obs?`<div class="obsbox"><b>Tienda:</b> ${esc(p.obs)}</div>`:""}${p.obsF?`<div class="obsbox"><b>Nota de fábrica:</b> ${esc(p.obsF)}</div>`:""}
+    <div class="acc" style="margin-top:10px"><button class="btn" id="bVerP">Ver pedido completo</button></div></div>`;
+  $("#bVolver").onclick=()=>{S.scr=null;render()};
+  $("#bVerP").onclick=()=>{if(!S.pedidos.some(x=>x.id===p.id))S.pedidos.push(p);S.scr={t:"ver",id:p.id};render();scrollTo(0,0)};
 }
 
 function vListaTienda(app){
@@ -956,7 +978,7 @@ function marcoDesk(){
   if(S.scr){const sc=S.scr;
     if(sc.t==="ver")t=["Pedido "+sc.id,"Detalle"];else if(sc.t==="preparar")t=["Preparando pedido "+sc.ped.id,"Piezas servidas y pesos"];
     else if(sc.t==="editar")t=sc.ped.id?["Modificar pedido "+sc.ped.id,""]:T.nuevo;else if(sc.t==="albaran")t=["Nuevo albarán","Pedidos "+sc.alb.pedidos.join(", ")];
-    else if(sc.t==="verAlb")t=["Albarán nº "+sc.num,""];}
+    else if(sc.t==="verAlb")t=["Albarán nº "+sc.num,""];else if(sc.t==="cmp")t=["Pedido "+sc.id,"Lo pedido frente a lo enviado"];}
   $("#hT").textContent=t[0];$("#hS").textContent=t[1]+(S.ult?(t[1]?" · ":"")+"actualizado "+S.ult.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}):"");
 }
 
