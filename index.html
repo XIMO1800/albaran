@@ -425,7 +425,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "29 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "30 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1262,8 +1262,8 @@ const avDia=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNa
 const avDiaC=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"numeric",year:"2-digit"})};
 
 S.av={cargado:false,cargando:false,cuadres:LS.get("av_cache",{}),config:LS.get("av_cfg",null),pend:LS.get("av_pend",{}),
-  vend:LS.get("av_vend",""),cur:null,fase:"desc",todas:false,borrar:false,nuevoVend:false,arts:false,fv:"",fd:"",fh:""};
-function avCfg(){const c=S.av.config||(S.av.config={});c.vendedores=c.vendedores||["Miguel Ángel","Mary"];c.taras=c.taras||{grande:0,mini:2.6};
+  vend:LS.get("av_vend",""),cur:null,fase:"desc",todas:false,borrar:false,nuevoVend:false,quitarV:null,arts:false,fv:"",fd:"",fh:""};
+function avCfg(){const c=S.av.config||(S.av.config={});c.vendedores=c.vendedores||["Miguel Ángel","Mere"];const iM=c.vendedores.indexOf("Mary");if(iM>=0&&!Object.values(S.av.cuadres).some(x=>x.vendedor==="Mary"))c.vendedores[iM]="Mere";c.taras=c.taras||{grande:0,mini:2.6};
   c.arts=c.arts||[];c.peso=c.peso||{grande:"",mini:""};return c}
 const avCuadre=()=>S.av.cur&&S.av.cuadres[S.av.cur];
 
@@ -1387,8 +1387,11 @@ function vAutoventa(app){
       <div class="meta">${t.vend} vendidas${t.difs.length?" · dif. en "+t.difs.map(([k,d])=>k+" "+(d>0?"+":"")+d).join(", "):""} · sale con ${t.sale}</div></div>`};
   app.innerHTML=`<div class="wrap">
     <div class="av-vends">${vs.map(tarjVend).join("")}</div>
-    <div class="acc" style="margin:4px 0 10px">${S.av.nuevoVend?`<input id="avNV" placeholder="Nombre del vendedor" style="flex:1;max-width:320px"><button class="btn pri" id="avNVok">Añadir</button><button class="btn" id="avNVno">Cancelar</button>`
-      :`<button class="btn sm" id="avNVsi">+ Vendedor</button><button class="btn sm" id="avArts">Artículos de autoventa${cf.arts.length?" ("+cf.arts.length+")":""}</button>`}</div>
+    <div class="acc" style="margin:4px 0 10px"><button class="btn sm" id="avNVsi">${S.av.nuevoVend?"Cerrar vendedores":"Vendedores"}</button><button class="btn sm" id="avArts">Artículos de autoventa${cf.arts.length?" ("+cf.arts.length+")":""}</button></div>
+    ${S.av.nuevoVend?`<div class="card"><div class="sec" style="margin-top:0">Vendedores</div>
+      <div class="av-chips">${vs.map(x=>`<span class="av-w"><b>${esc(x)}</b>${vs.length>1?`<button data-avquitav="${esc(x)}" aria-label="Quitar ${esc(x)}">×</button>`:""}</span>`).join("")}</div>
+      ${S.av.quitarV?`<div class="aviso" style="margin:6px 0">¿Quitar a <b>${esc(S.av.quitarV)}</b>? Sus cuadres anteriores se quedan en el histórico.<div class="acc" style="margin-top:8px"><button class="btn del" id="avQVsi">Quitar</button><button class="btn" id="avQVno">Cancelar</button></div></div>`:""}
+      <div class="acc"><input id="avNV" placeholder="Nombre del vendedor nuevo" style="flex:1;max-width:320px"><button class="btn pri" id="avNVok">Añadir</button></div></div>`:""}
     ${S.av.cargado&&!cf.arts.length?`<div class="aviso">Antes del primer cuadre, entra en <b>Artículos de autoventa</b> y marca los que llevan los camiones. Si falta alguno (tarros, barra, lonchas…), créalo en «Artículos y precios» y déjalo «Oculto» para que la tienda no lo vea.</div>`:""}
     ${!S.av.cargado?`<div class="muted" style="text-align:center;padding:8px">Leyendo cuadres de la hoja…</div>`:""}
     ${carga}
@@ -1404,9 +1407,11 @@ function vAutoventa(app){
     if(b.dataset.avnuevo){S.av.vend=b.dataset.avnuevo;LS.set("av_vend",S.av.vend);return avNuevo(S.av.vend)}
     if(b.dataset.avvend){S.av.vend=b.dataset.avvend;LS.set("av_vend",S.av.vend);render();return}
     if(b.id==="avArts"){S.av.arts=true;render();scrollTo(0,0);return}
-    if(b.id==="avNVsi"){S.av.nuevoVend=true;render();setTimeout(()=>{const i=$("#avNV");if(i)i.focus()},30);return}
-    if(b.id==="avNVno"){S.av.nuevoVend=false;render();return}
-    if(b.id==="avNVok"){const n=$("#avNV").value.trim();if(!n)return;if(!cf.vendedores.includes(n))cf.vendedores.push(n);S.av.vend=n;S.av.nuevoVend=false;avGuardarCfg();render();return}
+    if(b.id==="avNVsi"){S.av.nuevoVend=!S.av.nuevoVend;S.av.quitarV=null;render();return}
+    if(b.dataset.avquitav){S.av.quitarV=b.dataset.avquitav;render();return}
+    if(b.id==="avQVno"){S.av.quitarV=null;render();return}
+    if(b.id==="avQVsi"){const q=S.av.quitarV,i=cf.vendedores.indexOf(q);if(i>=0&&cf.vendedores.length>1)cf.vendedores.splice(i,1);S.av.quitarV=null;if(S.av.vend===q)S.av.vend=cf.vendedores[0];avGuardarCfg();toast(q+" quitado");render();return}
+    if(b.id==="avNVok"){const n=$("#avNV").value.trim();if(!n)return;if(!cf.vendedores.includes(n))cf.vendedores.push(n);S.av.vend=n;avGuardarCfg();toast(n+" añadido");render();return}
   };
   app.onchange=e=>{const id=e.target.id;if(id==="avFv")S.av.fv=e.target.value;else if(id==="avFd")S.av.fd=e.target.value;else if(id==="avFh")S.av.fh=e.target.value;else return;render()};
 }
