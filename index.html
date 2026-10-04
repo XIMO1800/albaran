@@ -20,6 +20,7 @@
   /* colores de tarjetón, como en TraceQueso */
   --mezcla:#1e5e3a; --oveja:#1d3a7a; --do:#e0620b; --cabra:#b8a271; --averia:#c0262d; --otros:#6a5f61;
   --danger:#c0262d; --ok:#1e7443; --warn:#9c5c00;
+  --mezcla-t:#e3efe7; --oveja-t:#e4e9f5; --do-t:#fdeedd; --cabra-t:#f6f0e1; --averia-t:#fbe4e4; --otros-t:#eeeae8;
   --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --font:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
@@ -62,9 +63,10 @@ textarea{min-height:64px;resize:vertical}
 .num{text-align:right;font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}
 .vacio{color:var(--muted);text-align:center;padding:24px 8px}
-.grupo{margin:16px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--brand);font-weight:700}
-.prod{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:12px;padding:9px 10px;margin-bottom:6px}
-.prod.has{background:var(--brand-soft);border-color:#e6c9cf}
+.grupo{margin:18px 0 8px;padding:7px 12px;border-radius:10px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:#fff;background:#5a4e50}
+.s-X{background:#5a4e50}.s-M{background:var(--mezcla)}.s-O{background:var(--oveja)}.s-D{background:var(--do)}.s-C{background:var(--cabra);color:#3d2f10}.s-P{background:var(--gold);color:#2b1d00}.s-V{background:var(--averia)}
+.prod{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;background:var(--t,var(--card));border:1px solid var(--line);border-left:8px solid var(--c);border-radius:12px;padding:9px 10px;margin-bottom:6px}
+.prod.has{box-shadow:inset 0 0 0 2px var(--c)}
 .prod .pn b{display:block;font-family:var(--display);font-size:20px;font-weight:700;line-height:1.1}
 .prod .pn span{font-size:13px;color:var(--muted)}
 .step{display:flex;align-items:center;gap:4px}
@@ -98,7 +100,7 @@ dialog::backdrop{background:rgba(29,22,24,.5)}
 .dh .btn{background:rgba(255,255,255,.16);color:#fff;border-color:transparent}
 .db{padding:12px 14px 16px}
 .pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
-.pick button{border:1px solid var(--line);border-left:6px solid var(--c);background:var(--card);border-radius:10px;padding:8px;text-align:left;cursor:pointer}
+.pick button{border:1px solid var(--line);border-left:8px solid var(--c);background:var(--t,var(--card));border-radius:10px;padding:8px;text-align:left;cursor:pointer}
 .pick button b{display:block;font-family:var(--display);font-size:18px}.pick button span{font-size:13px;color:var(--muted)}
 .prow{display:grid;grid-template-columns:1fr 1.4fr;gap:6px;padding:8px 0;border-top:1px solid var(--line)}
 .prow .r2{grid-column:1/-1;display:grid;grid-template-columns:1fr 5.5em 4.5em auto auto;gap:6px;align-items:center}
@@ -113,6 +115,50 @@ dialog::backdrop{background:rgba(29,22,24,.5)}
 .login input{text-align:center;font-family:var(--display);font-size:34px;letter-spacing:.3em;margin:18px 0 12px;border:0}
 .login .btn{width:100%;background:var(--gold);color:#2b1d00;border:0;box-shadow:0 2px 0 #8d6a1d;font-size:18px}
 .selbox{width:24px;height:24px;accent-color:var(--brand)}
+/* artículos y precios (móvil) */
+.pcard{background:var(--t,var(--card));border:1px solid var(--line);border-left:8px solid var(--c);border-radius:12px;padding:10px;margin-bottom:8px;display:grid;gap:8px}
+.pcard.off{opacity:.55}
+.pc1{display:grid;grid-template-columns:9.5em 1fr;gap:6px}
+.pcode{font-family:var(--display);font-weight:700!important;font-size:18px!important;text-transform:uppercase}
+.pc2{display:grid;grid-template-columns:1.4fr 1fr .8fr;gap:6px;align-items:end}
+.pc2 label,.lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;flex-direction:column;gap:2px}
+.pc3{display:flex;gap:6px;align-items:center}
+.pc3 .x{margin-left:auto}
+.mvb{width:40px;height:38px;border:1.5px solid var(--line);background:#fff;border-radius:8px;font-weight:700;cursor:pointer;color:var(--brand)}
+.mvb:disabled{opacity:.3}
+.tog{border-radius:99px;padding:6px 12px;font-weight:700;border:1.5px solid var(--ok);background:#e1f2e7;color:var(--ok);cursor:pointer;font-size:14px}
+.tog.off{border-color:var(--line);background:#fff;color:var(--muted)}
+/* escritorio */
+body.desk .wrap,body.desk .top-in,body.desk .barra .in{max-width:1280px}
+.kan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.kcol{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:140px;min-width:0}
+.khead{font-weight:700;color:var(--brand);text-transform:uppercase;font-size:13px;letter-spacing:.06em;margin:2px 4px 10px;display:flex;justify-content:space-between}
+.kgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kgrid .card{margin:0}
+.filtros{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:12px}
+.filtros input,.filtros select{width:auto;font-size:15px;padding:7px 9px}
+.tblw{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:12px}
+table.t{width:100%;border-collapse:collapse;font-size:14px}
+table.t th{background:var(--brand);color:#fff;text-align:left;padding:9px 10px;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+table.t td{padding:8px 10px;border-top:1px solid var(--line);vertical-align:middle}
+table.t .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.t tr.cl{cursor:pointer}
+table.t tr.cl:hover td{background:var(--brand-soft)}
+table.t tr.det>td{background:var(--surface2);padding:12px 16px}
+table.t tr.dif td{background:#fdf0d8}
+table.t tr.pr td{background:var(--t)}
+table.t tr.pr td:first-child{border-left:8px solid var(--c)}
+table.t input,table.t select{padding:6px 8px;font-size:14px}
+table.t tfoot td{font-weight:700;background:var(--surface2)}
+table.t.sub{background:#fff;border:1px solid var(--line)}
+table.t.sub th{background:#ebe6e7;color:var(--fg)}
+.kpis{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-width:120px}
+.kpi b{display:block;font-family:var(--display);font-size:24px}
+.kpi span{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:.05em}
+.tag{display:inline-block;border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700;white-space:nowrap}
+.tag.ok{background:#e1f2e7;color:var(--ok)}.tag.no{background:var(--gold-soft);color:#7a4a00}.tag.dif{background:#fdf0d8;color:#9c5c00}
+.nota{font-size:13px;color:var(--muted);margin:6px 0 12px}
 #imp{display:none}
 
 /* ================== IMPRESIÓN ================== */
@@ -167,7 +213,9 @@ dialog::backdrop{background:rgba(29,22,24,.5)}
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
-const GRUPOS = {M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"],X:["Otros","--otros"]};
+const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
+// Orden de preparación: sin sal y requesón, mezclas, ovejas, manchegos, cabras, porciones (3ª letra P) y averías
+const SECC = [["X","Sin sal y requesón"],["M","Mezcla"],["O","Oveja"],["D","Manchego D.O."],["C","Cabra"],["P","Porciones"],["V","Averías"]];
 const ESTADOS = ["ENVIADO","PREPARANDO","PREPARADO","ALBARANADO","ANULADO"];
 const EST_TXT = {ENVIADO:"Enviado",PREPARANDO:"Preparando",PREPARADO:"Preparado",ALBARANADO:"Con albarán",ANULADO:"Anulado"};
 
@@ -233,13 +281,25 @@ const activos=()=>S.productos.filter(p=>p.activo!==false);
 const grupoDe=c=>(prod(c)||{}).g||"X";
 const colorG=g=>(GRUPOS[g]||GRUPOS.X)[1];
 const bandTxt=(pz,b)=>b>1&&pz>=b?(pz%b===0?`${pz/b} band.`:`${Math.floor(pz/b)} band. + ${pz%b} pz`):"";
-function ordenCat(a,b){const o=Object.keys(GRUPOS);return o.indexOf(a.g)-o.indexOf(b.g)}
+const tintG=g=>colorG(g)+"-t";
+const estiloG=g=>`--c:var(${colorG(g)});--t:var(${tintG(g)})`;
+const esPorcion=p=>"MODC".includes(p.g||"X")&&String(p.c||"").replace(/\s+/g,"").charAt(2)==="P";
+const seccion=p=>p.g==="V"?"V":esPorcion(p)?"P":(GRUPOS[p.g]?p.g:"X");
+const SECC_I=Object.fromEntries(SECC.map((x,i)=>[x[0],i]));
+const seccTit=k=>(SECC.find(x=>x[0]===k)||SECC[0])[1];
+const cabSecc=k=>`<div class="grupo s-${k}">${seccTit(k)}</div>`;
+function rangos(lista){const m={};lista.map((p,i)=>({p,i})).sort((a,b)=>SECC_I[seccion(a.p)]-SECC_I[seccion(b.p)]||a.i-b.i).forEach((x,k)=>{m[x.p.c]=k});return m}
+function ordenProds(lista){const m=rangos(lista);return lista.slice().sort((a,b)=>m[a.c]-m[b.c])}
+function ordenLineas(ls){const m=rangos(S.productos);return ls.slice().sort((a,b)=>(m[a.c]??1e4)-(m[b.c]??1e4))}
+const esDesk=()=>window.matchMedia("(min-width: 1000px)").matches&&(S.rol==="ADMIN"||S.rol==="OFICINA");
+window.matchMedia("(min-width: 1000px)").addEventListener("change",()=>{if(S.user){S.scr=null;render()}});
 
 /* =================== cabecera y pestañas =================== */
 function tabsDeRol(){
   const n=e=>S.pedidos.filter(p=>p.estado===e).length;
   if(S.rol==="TIENDA") return [["nuevo","Nuevo pedido"],["mios","Mis pedidos"]];
   if(S.rol==="FABRICA") return [["preparar","Por preparar",n("ENVIADO")+n("PREPARANDO")],["hechos","Preparados"]];
+  if(esDesk()) return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["historial","Histórico"],["albaranes","Albaranes"],["exportar","Exportar"],["precios","Artículos y precios"],["nuevo","+ Pedido"]];
   return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["albaranes","Albaranes"],["nuevo","+ Pedido"],["precios","Precios"]];
 }
 function renderHeader(){
@@ -255,6 +315,7 @@ document.addEventListener("click",async e=>{ if(e.target.id==="bSalir"){const c=
 /* =================== render principal =================== */
 function barra(html){const b=$("#barra");b.hidden=!html;$("#barraIn").innerHTML=html||""}
 function render(){
+  document.body.classList.toggle("desk",!!S.user&&esDesk());
   renderHeader();
   const app=$("#app"); app.onclick=app.oninput=app.onchange=null;
   if(!S.api) return vConfig(app);
@@ -264,7 +325,8 @@ function render(){
     return f(app);
   }
   ({nuevo:()=>{S.scr={t:"editar",ped:nuevoBorrador()};render()},mios:vListaTienda,preparar:vListaFab,hechos:vListaFabHechos,
-    pedidos:vListaOficina,albaranes:vAlbaranes,precios:vPrecios})[S.tab](app);
+    pedidos:esDesk()?vPedidosDesk:vListaOficina,albaranes:esDesk()?vAlbaranesDesk:vAlbaranes,precios:vPrecios,
+    historial:vHistorial,exportar:vExportar})[S.tab](app);
 }
 
 /* =================== configuración y login =================== */
@@ -349,12 +411,12 @@ function guardarBorrador(){ if(S.scr&&S.scr.t==="editar"&&!S.scr.ped.id){S.borr=
 function vEditar(app){
   const P=S.scr.ped, q=(S.scr.q||"").trim().toUpperCase();
   const cant=c=>(P.lineas.find(l=>l.c===c)||{}).pz||0;
-  const lista=activos().filter(p=>!q||p.c.toUpperCase().includes(q)||p.n.toUpperCase().includes(q)).sort(ordenCat);
+  const lista=ordenProds(activos().filter(p=>!q||p.c.toUpperCase().includes(q)||p.n.toUpperCase().includes(q)));
   let h="",gAnt=null;
   for(const p of lista){
-    if(p.g!==gAnt){h+=`<div class="grupo">${(GRUPOS[p.g]||GRUPOS.X)[0]}</div>`;gAnt=p.g}
+    const k=seccion(p); if(k!==gAnt){h+=cabSecc(k);gAnt=k}
     const n=cant(p.c);
-    h+=`<div class="prod ${n?"has":""}" style="--c:var(${colorG(p.g)})">
+    h+=`<div class="prod ${n?"has":""}" style="${estiloG(p.g)}">
       <div class="pn"><b>${esc(p.c)}</b><span>${esc(p.n)} · ${eur(p.p)} €/kg</span></div>
       <div class="step"><button data-m="${esc(p.c)}" aria-label="Quitar una pieza">−</button><input class="num" inputmode="numeric" value="${n||""}" data-q="${esc(p.c)}" aria-label="Piezas ${esc(p.c)}"><button data-p="${esc(p.c)}" aria-label="Añadir una pieza">+</button></div>
       ${p.b>1?`<div class="band"><button data-bp="${esc(p.c)}">+ 1 bandeja (${p.b} pz)</button>${n?`<span>${bandTxt(n,p.b)}</span>`:""}</div>`:""}
@@ -413,7 +475,7 @@ function vVer(app){
   const puedePreparar=R!=="TIENDA"&&["ENVIADO","PREPARANDO","PREPARADO"].includes(E);
   const puedeAnular=(R==="TIENDA"&&E==="ENVIADO")||((R==="OFICINA"||R==="ADMIN")&&!["ALBARANADO","ANULADO"].includes(E));
   const alb=p.albaran&&S.albaranes.find(a=>String(a.num)===p.albaran);
-  const filas=p.lineas.map(l=>{const pr=prod(l.c)||{b:1,g:"X"};const serv=l.pzS??null;
+  const filas=ordenLineas(p.lineas).map(l=>{const pr=prod(l.c)||{b:1,g:"X"};const serv=l.pzS??null;
     return `<div class="lin"><div class="ln"><span class="dot" style="--c:var(${colorG(pr.g)})"></span>${esc(l.c)} <small>${esc(l.n)}</small>${l.extra?` <small>(añadido en fábrica)</small>`:""}</div>
       <div class="lt">${l.extra?"—":l.pz+" pz"}${pr.b>1&&l.pz?` <small class="muted">${bandTxt(l.pz,pr.b)}</small>`:""}</div>
       ${serv!=null||l.kg?`<div class="muted" style="grid-column:1/-1;font-size:13px">Servido: ${serv??l.pz} pz${l.kg?` · ${kgf(l.kg)} kg`:""}${l.obs?` · ${esc(l.obs)}`:""}</div>`:""}</div>`}).join("");
@@ -445,7 +507,7 @@ function vVer(app){
     if(E==="PREPARADO"){const c=await confirmar("Corregir preparación","El pedido vuelve a «Preparando» hasta que lo marques otra vez como preparado.");if(!c.ok)return;
       try{await api("reabrirPedido",{id:p.id});await cargar(true)}catch(err){return toast(err.message,true)}}
     const q=S.pedidos.find(x=>x.id===p.id)||p;
-    S.scr={t:"preparar",ped:clone({id:q.id,version:q.version,obsF:q.obsF||"",obs:q.obs,lineas:q.lineas.map(l=>({...l,pzS:l.pzS??l.pz,kg:l.kg||""}))})};render();scrollTo(0,0)};
+    S.scr={t:"preparar",ped:clone({id:q.id,version:q.version,obsF:q.obsF||"",obs:q.obs,lineas:ordenLineas(q.lineas).map(l=>({...l,pzS:l.pzS??l.pz,kg:l.kg||""}))})};render();scrollTo(0,0)};
 }
 
 /* =================== preparar (fábrica) =================== */
@@ -500,9 +562,9 @@ function vPreparar(app){
 let pickCb=null;
 function abrirPicker(cb){pickCb=cb;$("#fBus").value="";pintaPick();$("#dPick").showModal();setTimeout(()=>$("#fBus").focus(),50)}
 function pintaPick(){const q=$("#fBus").value.trim().toUpperCase();let h="",g0=null;
-  const l=activos().filter(p=>!q||p.c.toUpperCase().includes(q)||p.n.toUpperCase().includes(q)).sort(ordenCat);
-  for(const p of l){if(p.g!==g0){if(g0!==null)h+="</div>";h+=`<div class="grupo">${(GRUPOS[p.g]||GRUPOS.X)[0]}</div><div class="pick">`;g0=p.g}
-    h+=`<button style="--c:var(${colorG(p.g)})" data-pc="${esc(p.c)}"><b>${esc(p.c)}</b><span>${eur(p.p)} €</span></button>`}
+  const l=ordenProds(activos().filter(p=>!q||p.c.toUpperCase().includes(q)||p.n.toUpperCase().includes(q)));
+  for(const p of l){const k=seccion(p);if(k!==g0){if(g0!==null)h+="</div>";h+=`${cabSecc(k)}<div class="pick">`;g0=k}
+    h+=`<button style="${estiloG(p.g)}" data-pc="${esc(p.c)}"><b>${esc(p.c)}</b><span>${eur(p.p)} €</span></button>`}
   $("#lPick").innerHTML=(h?h+"</div>":`<div class="vacio">Ningún producto coincide.</div>`)}
 $("#fBus").oninput=pintaPick;
 $("#lPick").addEventListener("click",e=>{const b=e.target.closest("[data-pc]");if(!b)return;$("#dPick").close();pickCb&&pickCb(prod(b.dataset.pc))});
@@ -511,7 +573,7 @@ $("#lPick").addEventListener("click",e=>{const b=e.target.closest("[data-pc]");i
 function borradorAlbaran(ids){
   const peds=ids.map(id=>S.pedidos.find(p=>p.id===id)).filter(Boolean).sort((a,b)=>(+a.id)-(+b.id));
   const lineas=[];
-  for(const p of peds) for(const l of p.lineas){const pz=l.pzS??l.pz;if(!(pz>0||l.kg>0))continue;
+  for(const p of peds) for(const l of ordenLineas(p.lineas)){const pz=l.pzS??l.pz;if(!(pz>0||l.kg>0))continue;
     const pr=prod(l.c);lineas.push({pedido:p.id,dia:fDiaCorto(p.creado),c:l.c,n:l.n,pz,kg:l.kg||"",p:pr?pr.p:l.p})}
   return {pedidos:peds.map(p=>p.id),fecha:hoy(),cliente:"CASA",obs:peds.map(p=>p.obsF).filter(Boolean).join("\n"),lineas};
 }
@@ -588,45 +650,183 @@ function vAlbaranes(app){
   $("#fA").oninput=e=>{S.filtroAlb=e.target.value;const p=e.target.selectionStart;render();const f=$("#fA");f.focus();f.setSelectionRange(p,p)};
   $("#bCsv").onclick=()=>exportarCsv(l.filter(a=>a.estado!=="ANULADO"));
 }
-function exportarCsv(albs){
+const fCsv=f=>{const d=String(f).slice(0,10).split("-");return d.length===3?`${d[2]}/${d[1]}/${d[0]}`:f};
+function exportarCsv(albs,nombre){
   if(!albs.length)return toast("No hay albaranes que exportar",true);
   const f=x=>String(x).replace(".",",");
   const rows=[["ALBARAN","FECHA","CLIENTE","PEDIDO","CODIGO","DESCRIPCION","PIEZAS","KG","PRECIO","IMPORTE"]];
-  albs.slice().sort((a,b)=>(+a.num)-(+b.num)).forEach(a=>a.lineas.forEach(l=>rows.push([a.num,fDia(a.fecha),a.cliente,l.pedido,l.c,l.n,l.pz,f(l.kg),f(l.p),f(r2(l.kg*l.p))])));
+  albs.slice().sort((a,b)=>(+a.num)-(+b.num)).forEach(a=>a.lineas.forEach(l=>rows.push([a.num,fCsv(a.fecha),a.cliente,l.pedido,l.c,l.n||(prod(l.c)||{}).n||"",l.pz,f(l.kg),f(l.p),f(r2(l.kg*l.p))])));
   const csv=rows.map(r=>r.map(v=>/[;"\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:v).join(";")).join("\r\n");
   const blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`albaranes_tienda_${hoy()}.csv`;document.body.appendChild(a);a.click();
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${nombre||"albaranes_tienda_"+hoy()}.csv`;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
 }
 
-/* =================== precios (oficina / admin) =================== */
+/* =================== artículos y precios (oficina / admin) =================== */
 function vPrecios(app){
   S.precEd=S.precEd||clone(S.productos);
-  const P=S.precEd;
+  const P=S.precEd, desk=esDesk(), lista=ordenProds(P);
+  const idx=p=>P.indexOf(p);
+  const vecino=(p,d)=>{const k=lista.indexOf(p)+d,q=lista[k];return q&&seccion(q)===seccion(p)?q:null};
+  const selG=(p,i)=>`<select data-i="${i}" data-f="g" aria-label="Grupo">${Object.keys(GRUPOS).map(g=>`<option value="${g}"${p.g===g?" selected":""}>${GRUPOS[g][0]}</option>`).join("")}</select>`;
+  const mov=(p,i)=>`<button class="mvb" data-mv="${i}" data-d="-1" ${vecino(p,-1)?"":"disabled"} aria-label="Subir">↑</button><button class="mvb" data-mv="${i}" data-d="1" ${vecino(p,1)?"":"disabled"} aria-label="Bajar">↓</button>`;
+  const tog=(p,i)=>`<button class="tog ${p.activo===false?"off":""}" data-act="${i}">${p.activo===false?"Oculto":"Activo"}</button>`;
+  let h="",k0=null;
+  if(desk){
+    for(const p of lista){const i=idx(p),k=seccion(p);
+      if(k!==k0){h+=`<tr><td colspan="8" style="padding:0;border:0"><div class="grupo s-${k}" style="margin:0;border-radius:0">${seccTit(k)}</div></td></tr>`;k0=k}
+      h+=`<tr class="pr" style="${estiloG(p.g)}"><td style="white-space:nowrap">${mov(p,i)}</td>
+        <td><input class="pcode" value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" style="width:9em"></td>
+        <td><input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre"></td>
+        <td>${selG(p,i)}</td>
+        <td class="n"><input class="num" inputmode="decimal" value="${esc(dec(p.p))}" data-i="${i}" data-f="p" aria-label="Precio €/kg" style="width:6em"></td>
+        <td class="n"><input class="num" inputmode="numeric" value="${p.b}" data-i="${i}" data-f="b" aria-label="Piezas por bandeja" style="width:4.5em"></td>
+        <td>${tog(p,i)}</td><td><button class="x" data-del="${i}" aria-label="Borrar producto">×</button></td></tr>`}
+    h=`<div class="tblw"><table class="t"><thead><tr><th>Orden</th><th>Código</th><th>Nombre</th><th>Especie</th><th class="n">€/kg</th><th class="n">Pz/bandeja</th><th>Tienda</th><th></th></tr></thead><tbody>${h}</tbody></table></div>`;
+  } else {
+    for(const p of lista){const i=idx(p),k=seccion(p);
+      if(k!==k0){h+=cabSecc(k);k0=k}
+      h+=`<div class="pcard ${p.activo===false?"off":""}" style="${estiloG(p.g)}">
+        <div class="pc1"><input class="pcode" value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" placeholder="Código"><input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre" placeholder="Nombre"></div>
+        <div class="pc2"><label>Especie ${selG(p,i)}</label><label>€/kg<input class="num" inputmode="decimal" value="${esc(dec(p.p))}" data-i="${i}" data-f="p"></label><label>Pz/band.<input class="num" inputmode="numeric" value="${p.b}" data-i="${i}" data-f="b"></label></div>
+        <div class="pc3">${tog(p,i)}${mov(p,i)}<button class="x" data-del="${i}" aria-label="Borrar producto">×</button></div></div>`}
+  }
   app.innerHTML=`<div class="wrap">
-    <p class="muted">Precio €/kg que ve la tienda y que sale en el albarán. «Pz/band.» es cuántas piezas lleva una bandeja (1 si se pide suelto). Los cambios no valen hasta pulsar «Guardar precios».</p>
-    ${P.map((p,i)=>`<div class="prow">
-      <input value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" placeholder="Código">
-      <input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre" placeholder="Nombre">
-      <div class="r2">
-        <select data-i="${i}" data-f="g" aria-label="Grupo">${Object.keys(GRUPOS).map(g=>`<option value="${g}"${p.g===g?" selected":""}>${GRUPOS[g][0]}</option>`).join("")}</select>
-        <div><input class="num" inputmode="decimal" value="${esc(dec(p.p))}" data-i="${i}" data-f="p" aria-label="Precio €/kg"><div class="mini">€/kg</div></div>
-        <div><input class="num" inputmode="numeric" value="${p.b}" data-i="${i}" data-f="b" aria-label="Piezas por bandeja"><div class="mini">pz/band.</div></div>
-        <button class="btn sm" data-act="${i}" title="Activar o desactivar">${p.activo===false?"Oculto":"Activo"}</button>
-        <button class="x" data-del="${i}" aria-label="Borrar producto">×</button>
-      </div></div>`).join("")}
-    <button class="btn" id="bAddP" style="width:100%;margin-top:8px">+ Producto</button></div>`;
-  barra(`<button class="btn" id="bDesh">Deshacer cambios</button><button class="btn pri" id="bGP">Guardar precios</button>`);
-  app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;P[i][f]=f==="c"?e.target.value.toUpperCase():e.target.value};
-  app.onchange=e=>{if(e.target.dataset.f==="g")P[e.target.dataset.i].g=e.target.value};
-  app.onclick=async e=>{const t=e.target;
+    <p class="nota">Precio €/kg que ve la tienda y sale en el albarán. «Pz/bandeja» es cuántas piezas lleva una bandeja (1 si se pide suelto). Las <b>porciones</b> (3ª letra P, p. ej. MAP, OAP) salen solas en su grupo, después de las cabras. Con ↑ ↓ cambias el orden dentro de cada grupo; es el orden en que lo ven la tienda y quien prepara. Nada se guarda hasta pulsar «Guardar».</p>
+    ${h}
+    <button class="btn" id="bAddP" style="width:100%;margin-top:10px">+ Nuevo artículo</button></div>`;
+  barra(`<button class="btn" id="bDesh">Deshacer cambios</button><button class="btn pri" id="bGP">Guardar artículos y precios</button>`);
+  app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null||f==="g")return;P[i][f]=f==="c"?e.target.value.toUpperCase():e.target.value};
+  app.onchange=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;if(f==="g"){P[i].g=e.target.value;render()}else if(f==="c")render()};
+  app.onclick=async e=>{const t=e.target.closest("button");if(!t)return;
     if(t.dataset.act!=null){P[t.dataset.act].activo=P[t.dataset.act].activo===false;render()}
-    if(t.dataset.del!=null){const c=await confirmar("Borrar producto","¿Borrar "+P[t.dataset.del].c+"? Si solo quieres que la tienda no lo vea, usa «Oculto».");if(c.ok){P.splice(+t.dataset.del,1);render()}}};
-  $("#bAddP").onclick=()=>{P.push({c:"",n:"",g:"X",p:0,b:1,activo:true});render();const ins=app.querySelectorAll('[data-f="c"]');ins[ins.length-1].focus()};
+    else if(t.dataset.mv!=null){const a=P[t.dataset.mv],b=vecino(a,+t.dataset.d);if(b){const ia=idx(a),ib=idx(b);P[ia]=b;P[ib]=a;render()}}
+    else if(t.dataset.del!=null){const c=await confirmar("Borrar artículo","¿Borrar "+P[t.dataset.del].c+"? Si solo quieres que la tienda no lo vea, pulsa «Activo» para dejarlo «Oculto».");if(c.ok){P.splice(+t.dataset.del,1);render()}}};
+  $("#bAddP").onclick=()=>{P.push({c:"",n:"",g:"X",p:0,b:1,activo:true});render();const ins=app.querySelectorAll('[data-f="c"]');for(const x of ins)if(!x.value){x.focus();x.scrollIntoView({block:"center"});break}};
   $("#bDesh").onclick=()=>{S.precEd=clone(S.productos);render()};
-  $("#bGP").onclick=async()=>{const c=await confirmar("Guardar precios","Los pedidos y albaranes nuevos usarán estos precios.");if(!c.ok)return;
-    try{const j=await api("guardarProductos",{productos:P.map(p=>({...p,p:num(p.p),b:num(p.b)}))});S.productos=j.productos;S.precEd=clone(j.productos);toast("Precios guardados");render()}
+  $("#bGP").onclick=async()=>{
+    const vacios=P.filter(p=>!String(p.c).trim());if(vacios.length)return toast("Hay un artículo sin código",true);
+    const c=await confirmar("Guardar artículos y precios","Los pedidos y albaranes nuevos usarán estos precios y este orden.");if(!c.ok)return;
+    try{const j=await api("guardarProductos",{productos:ordenProds(P).map(p=>({...p,p:num(p.p),b:num(p.b)}))});S.productos=j.productos;S.precEd=clone(j.productos);toast("Guardado");render()}
     catch(err){toast(err.message,true)}};
+}
+
+/* =================== ESCRITORIO: pedidos en columnas =================== */
+function vPedidosDesk(app){
+  const prep=ordenados(["PREPARADO"]);
+  for(const id of [...S.sel]) if(!prep.some(p=>p.id===id)) S.sel.delete(id);
+  barra(`<span class="muted">${S.sel.size?S.sel.size+" pedido(s) marcados para el albarán":"Marca los pedidos preparados que van en el albarán"}</span><button class="btn pri" id="bHacer" ${S.sel.size?"":"disabled"}>Hacer albarán</button>`);
+  const col=(t,est,sel)=>{const l=ordenados(est);return `<div class="kcol"><div class="khead"><span>${t}</span><span>${l.length}</span></div>${l.map(p=>tarjeta(p,sel)).join("")||`<div class="vacio">Ninguno.</div>`}</div>`};
+  app.innerHTML=`<div class="wrap"><div class="kan">${col("Nuevos",["ENVIADO"])}${col("Preparándose",["PREPARANDO"])}${col("Preparados",["PREPARADO"],true)}</div>
+    <div class="sec">Últimos cerrados · el resto en «Histórico»</div><div class="kgrid">${ordenados(["ALBARANADO","ANULADO"]).slice(0,9).map(p=>tarjeta(p)).join("")||`<div class="vacio">Ninguno.</div>`}</div></div>`;
+  onLista(app);
+  $("#bHacer").onclick=()=>{S.scr={t:"albaran",alb:borradorAlbaran([...S.sel])};render();scrollTo(0,0)};
+}
+
+/* =================== ESCRITORIO: histórico =================== */
+const haceDias=d=>{const x=new Date();x.setDate(x.getDate()-d);x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,10)};
+S.H={desde:haceDias(30),hasta:hoy(),estado:"",q:"",exp:"pend",data:null,cargando:false,err:"",abiertos:new Set(),selExp:null};
+async function cargarHist(){
+  S.H.cargando=true;S.H.err="";S.H.selExp=null;render();
+  try{const j=await api("historial",{desde:S.H.desde,hasta:S.H.hasta});S.H.data={pedidos:j.pedidos,albaranes:j.albaranes}}
+  catch(e){S.H.err=e.message;const en=f=>f>=S.H.desde&&f<=S.H.hasta;
+    S.H.data={pedidos:S.pedidos.filter(p=>en(String(p.creado).slice(0,10))),albaranes:S.albaranes.filter(a=>en(String(a.fecha).slice(0,10)))}}
+  S.H.cargando=false;render();
+}
+function filtroFechas(extra){
+  return `<div class="filtros">
+    <label class="lbl">Desde<input type="date" id="hD" value="${S.H.desde}"></label>
+    <label class="lbl">Hasta<input type="date" id="hH" value="${S.H.hasta}"></label>
+    <div class="acc"><button class="btn sm" data-rg="0">Hoy</button><button class="btn sm" data-rg="7">7 días</button><button class="btn sm" data-rg="30">30 días</button><button class="btn sm" data-rg="90">3 meses</button><button class="btn sm" data-rg="365">1 año</button></div>
+    ${extra||""}<button class="btn pri" id="hBus">Buscar</button>${S.H.cargando?`<span class="muted">Cargando…</span>`:""}</div>
+    ${S.H.err?`<div class="aviso">No se ha podido leer el histórico completo del servidor (${esc(S.H.err)}). Se muestran solo los datos de los últimos 60 días. Si dice «Acción desconocida», falta pegar la última versión del script en Google.</div>`:""}`;
+}
+function enlazarFiltro(app){
+  $("#hD").onchange=e=>{S.H.desde=e.target.value};$("#hH").onchange=e=>{S.H.hasta=e.target.value};
+  $("#hBus").onclick=cargarHist;
+  app.querySelectorAll("[data-rg]").forEach(b=>b.onclick=()=>{S.H.desde=haceDias(+b.dataset.rg);S.H.hasta=hoy();cargarHist()});
+}
+const servido=l=>l.pzS??l.pz;
+const esDif=l=>!!l.extra||(l.pzS!=null&&l.pzS!==l.pz);
+function vHistorial(app){
+  barra("");
+  if(!S.H.data&&!S.H.cargando){cargarHist();return}
+  const q=S.H.q.trim().toUpperCase();
+  const peds=(S.H.data?S.H.data.pedidos:[]).filter(p=>(!S.H.estado||(S.H.estado==="DIF"?p.lineas.some(esDif):p.estado===S.H.estado))&&(!q||p.id===q||p.lineas.some(l=>String(l.c).includes(q))))
+    .sort((a,b)=>(+b.id)-(+a.id));
+  const tPed=peds.reduce((s,p)=>s+p.lineas.reduce((x,l)=>x+(+l.pz||0),0),0), tSer=peds.reduce((s,p)=>s+p.lineas.reduce((x,l)=>x+(+servido(l)||0),0),0);
+  const tKg=peds.reduce((s,p)=>s+p.lineas.reduce((x,l)=>x+num(l.kg),0),0), nDif=peds.filter(p=>p.lineas.some(esDif)).length;
+  const filas=peds.map(p=>{const pz=p.lineas.reduce((x,l)=>x+(+l.pz||0),0),sv=p.lineas.reduce((x,l)=>x+(+servido(l)||0),0),kg=p.lineas.reduce((x,l)=>x+num(l.kg),0),nd=p.lineas.filter(esDif).length,ab=S.H.abiertos.has(p.id);
+    let r=`<tr class="cl" data-ab="${esc(p.id)}"><td><b>${ab?"▾":"▸"} ${esc(p.id)}</b></td><td>${fCorta(p.creado)}</td><td>${esc(p.creadoPor)}</td><td><span class="chip e-${p.estado}">${EST_TXT[p.estado]||p.estado}</span></td>
+      <td class="n">${p.lineas.length}</td><td class="n">${pz}</td><td class="n">${p.estado==="ENVIADO"?"—":sv}</td><td class="n">${kg?kgf(kg):"—"}</td><td>${nd?`<span class="tag dif">${nd} cambio${nd>1?"s":""}</span>`:""}</td><td>${p.albaran?`Nº ${esc(p.albaran)}`:""}</td></tr>`;
+    if(ab){r+=`<tr class="det"><td colspan="10">
+      ${p.obs?`<div class="obsbox"><b>Tienda:</b> ${esc(p.obs)}</div>`:""}${p.obsF?`<div class="obsbox"><b>Fábrica:</b> ${esc(p.obsF)}</div>`:""}
+      <table class="t sub"><thead><tr><th>Código</th><th>Producto</th><th class="n">Pedido</th><th class="n">Servido</th><th class="n">Diferencia</th><th class="n">Kg</th><th>Nota</th></tr></thead><tbody>
+      ${ordenLineas(p.lineas).map(l=>{const d=(+servido(l)||0)-(+l.pz||0);return `<tr class="${esDif(l)?"dif":""}"><td><span class="dot" style="${estiloG(grupoDe(l.c))}"></span><b>${esc(l.c)}</b></td><td>${esc(l.n||(prod(l.c)||{}).n||"")}${l.extra?" <i>(añadido en fábrica)</i>":""}</td>
+        <td class="n">${l.extra?"—":l.pz}</td><td class="n">${p.estado==="ENVIADO"?"—":servido(l)}</td><td class="n">${p.estado==="ENVIADO"||!d?"":(d>0?"+":"")+d}</td><td class="n">${l.kg?kgf(num(l.kg)):""}</td><td>${esc(l.obs||"")}</td></tr>`}).join("")}
+      </tbody></table>
+      <div class="acc" style="margin-top:8px"><button class="btn sm" data-hoja="${esc(p.id)}">Imprimir hoja de preparación</button>${S.pedidos.some(x=>x.id===p.id)?`<button class="btn sm" data-ir="${esc(p.id)}">Abrir pedido</button>`:""}${p.albaran?`<button class="btn sm" data-alb="${esc(p.albaran)}">Ver albarán ${esc(p.albaran)}</button>`:""}</div></td></tr>`}
+    return r}).join("");
+  app.innerHTML=`<div class="wrap">${filtroFechas(`<label class="lbl">Estado<select id="hE"><option value="">Todos</option>${ESTADOS.map(e=>`<option value="${e}"${S.H.estado===e?" selected":""}>${EST_TXT[e]}</option>`).join("")}<option value="DIF"${S.H.estado==="DIF"?" selected":""}>Con cambios</option></select></label><label class="lbl">Código o nº pedido<input id="hQ" value="${esc(S.H.q)}" placeholder="OCG, 12…" style="width:9em"></label>`)}
+    <div class="kpis"><div class="kpi"><span>Pedidos</span><b>${peds.length}</b></div><div class="kpi"><span>Piezas pedidas</span><b>${tPed}</b></div><div class="kpi"><span>Piezas servidas</span><b>${tSer}</b></div><div class="kpi"><span>Kg servidos</span><b>${kgf(tKg)}</b></div><div class="kpi"><span>Con cambios</span><b>${nDif}</b></div></div>
+    <p class="nota">Pulsa un pedido para ver línea a línea qué se pidió y qué se mandó. En amarillo, lo que cambió (piezas distintas o artículos añadidos en fábrica).</p>
+    <div class="tblw"><table class="t"><thead><tr><th>Pedido</th><th>Fecha</th><th>Hecho por</th><th>Estado</th><th class="n">Artículos</th><th class="n">Pz pedidas</th><th class="n">Pz servidas</th><th class="n">Kg</th><th>Cambios</th><th>Albarán</th></tr></thead>
+    <tbody>${filas||`<tr><td colspan="10" class="vacio">No hay pedidos en esas fechas.</td></tr>`}</tbody></table></div></div>`;
+  enlazarFiltro(app);
+  $("#hE").onchange=e=>{S.H.estado=e.target.value;render()};
+  $("#hQ").onchange=e=>{S.H.q=e.target.value;render()};
+  app.onclick=e=>{const t=e.target;
+    const h=t.closest("[data-hoja]");if(h){imprimirHoja(S.H.data.pedidos.find(p=>p.id===h.dataset.hoja));return}
+    const ir=t.closest("[data-ir]");if(ir){S.scr={t:"ver",id:ir.dataset.ir};render();scrollTo(0,0);return}
+    const al=t.closest("[data-alb]");if(al){abrirAlbaran(al.dataset.alb);return}
+    const r=t.closest("[data-ab]");if(r){const id=r.dataset.ab;S.H.abiertos.has(id)?S.H.abiertos.delete(id):S.H.abiertos.add(id);render()}};
+}
+function abrirAlbaran(num){
+  if(!S.albaranes.some(a=>String(a.num)===String(num))){const a=(S.H.data?S.H.data.albaranes:[]).find(x=>String(x.num)===String(num));if(a)S.albaranes.push(a)}
+  S.scr={t:"verAlb",num:String(num)};render();scrollTo(0,0);
+}
+
+/* =================== ESCRITORIO: albaranes =================== */
+function vAlbaranesDesk(app){
+  barra("");
+  if(!S.H.data&&!S.H.cargando){cargarHist();return}
+  const albs=(S.H.data?S.H.data.albaranes:[]).slice().sort((a,b)=>(+b.num)-(+a.num));
+  const val=albs.filter(a=>a.estado!=="ANULADO");
+  const filas=albs.map(a=>`<tr class="cl" data-alb="${esc(a.num)}"><td><b>${esc(a.num)}</b></td><td>${fDia(a.fecha)}</td><td>${esc(a.cliente)}</td><td>${esc(a.pedidos)}</td><td class="n">${a.lineas.length}</td><td class="n">${kgf(a.kg)}</td><td class="n"><b>${eur(a.total)} €</b></td>
+    <td>${a.estado==="ANULADO"?`<span class="chip e-ANULADO">Anulado</span>`:`<span class="chip e-PREPARADO">Emitido</span>`}</td><td>${a.estado==="ANULADO"?"":a.exportado?`<span class="tag ok">Exportado ${fDiaCorto(a.exportado)}</span>`:`<span class="tag no">Pendiente</span>`}</td><td>${esc(a.creadoPor||"")}</td></tr>`).join("");
+  app.innerHTML=`<div class="wrap">${filtroFechas()}
+    <div class="kpis"><div class="kpi"><span>Albaranes</span><b>${val.length}</b></div><div class="kpi"><span>Kg</span><b>${kgf(val.reduce((s,a)=>s+(+a.kg||0),0))}</b></div><div class="kpi"><span>Importe</span><b>${eur(val.reduce((s,a)=>s+(+a.total||0),0))} €</b></div><div class="kpi"><span>Sin exportar</span><b>${val.filter(a=>!a.exportado).length}</b></div></div>
+    <div class="tblw"><table class="t"><thead><tr><th>Nº</th><th>Fecha</th><th>Cliente</th><th>Pedidos</th><th class="n">Líneas</th><th class="n">Kg</th><th class="n">Total</th><th>Estado</th><th>Programa gestión</th><th>Emitido por</th></tr></thead>
+    <tbody>${filas||`<tr><td colspan="10" class="vacio">No hay albaranes en esas fechas.</td></tr>`}</tbody></table></div></div>`;
+  enlazarFiltro(app);
+  app.onclick=e=>{const r=e.target.closest("[data-alb]");if(r)abrirAlbaran(r.dataset.alb)};
+}
+
+/* =================== ESCRITORIO: exportar al programa de gestión =================== */
+function vExportar(app){
+  if(!S.H.data&&!S.H.cargando){barra("");cargarHist();return}
+  const albs=(S.H.data?S.H.data.albaranes:[]).filter(a=>a.estado!=="ANULADO").sort((a,b)=>(+a.num)-(+b.num));
+  const vis=albs.filter(a=>S.H.exp==="todos"||(S.H.exp==="pend"?!a.exportado:!!a.exportado));
+  if(!S.H.selExp) S.H.selExp=new Set(albs.filter(a=>!a.exportado).map(a=>String(a.num)));
+  const sel=vis.filter(a=>S.H.selExp.has(String(a.num)));
+  app.innerHTML=`<div class="wrap">${filtroFechas(`<label class="lbl">Mostrar<select id="hX"><option value="pend"${S.H.exp==="pend"?" selected":""}>Pendientes de exportar</option><option value="hechos"${S.H.exp==="hechos"?" selected":""}>Ya exportados</option><option value="todos"${S.H.exp==="todos"?" selected":""}>Todos</option></select></label>`)}
+    <p class="nota">Genera el archivo CSV (separado por «;», decimales con coma) con una línea por artículo de cada albarán, para importarlo en el programa de gestión. Después de descargarlo, márcalos como exportados para no importarlos dos veces. Columnas: ALBARAN · FECHA · CLIENTE · PEDIDO · CODIGO · DESCRIPCION · PIEZAS · KG · PRECIO · IMPORTE.</p>
+    <div class="tblw"><table class="t"><thead><tr><th><input type="checkbox" id="xAll" class="selbox" ${vis.length&&sel.length===vis.length?"checked":""} aria-label="Marcar todos"></th><th>Nº</th><th>Fecha</th><th>Pedidos</th><th class="n">Líneas</th><th class="n">Kg</th><th class="n">Total</th><th>Exportado</th></tr></thead>
+    <tbody>${vis.map(a=>`<tr><td><input type="checkbox" class="selbox" data-x="${esc(a.num)}" ${S.H.selExp.has(String(a.num))?"checked":""} aria-label="Albarán ${esc(a.num)}"></td><td><b>${esc(a.num)}</b></td><td>${fDia(a.fecha)}</td><td>${esc(a.pedidos)}</td><td class="n">${a.lineas.length}</td><td class="n">${kgf(a.kg)}</td><td class="n">${eur(a.total)} €</td>
+      <td>${a.exportado?`<span class="tag ok">${fCorta(a.exportado)}${a.exportadoPor?" · "+esc(a.exportadoPor):""}</span>`:`<span class="tag no">Pendiente</span>`}</td></tr>`).join("")||`<tr><td colspan="8" class="vacio">No hay albaranes ${S.H.exp==="pend"?"pendientes de exportar ":""}en esas fechas.</td></tr>`}</tbody>
+    <tfoot><tr><td></td><td colspan="4">${sel.length} marcados</td><td class="n">${kgf(sel.reduce((s,a)=>s+(+a.kg||0),0))}</td><td class="n">${eur(sel.reduce((s,a)=>s+(+a.total||0),0))} €</td><td></td></tr></tfoot></table></div></div>`;
+  barra(`<span class="muted">${sel.length} albarán(es) marcados</span><div class="acc"><button class="btn" id="xMarcar" ${sel.length?"":"disabled"}>Marcar como exportados</button><button class="btn pri" id="xCsv" ${sel.length?"":"disabled"}>Descargar CSV</button></div>`);
+  enlazarFiltro(app);
+  $("#hX").onchange=e=>{S.H.exp=e.target.value;render()};
+  app.onchange=e=>{const t=e.target;
+    if(t.id==="xAll"){vis.forEach(a=>t.checked?S.H.selExp.add(String(a.num)):S.H.selExp.delete(String(a.num)));render()}
+    else if(t.dataset.x){t.checked?S.H.selExp.add(t.dataset.x):S.H.selExp.delete(t.dataset.x);render()}};
+  const marcar=async()=>{
+    try{const j=await api("marcarExportado",{nums:sel.map(a=>String(a.num))});sel.forEach(a=>{a.exportado=j.fecha;a.exportadoPor=S.user;S.H.selExp.delete(String(a.num))});toast(j.marcados+" albarán(es) marcados como exportados");render()}
+    catch(err){toast(err.message,true)}};
+  $("#xCsv").onclick=async()=>{exportarCsv(sel,`albaranes_tienda_${sel[0].num}-${sel[sel.length-1].num}`);
+    const c=await confirmar("Marcar como exportados",`¿Marcar estos ${sel.length} albaranes como ya exportados al programa de gestión? Hazlo cuando el archivo se haya descargado bien.`);if(c.ok)marcar()};
+  $("#xMarcar").onclick=async()=>{const c=await confirmar("Marcar como exportados",`¿Marcar ${sel.length} albaranes como ya exportados, sin descargar el CSV?`);if(c.ok)marcar()};
 }
 
 /* =================== impresión =================== */
@@ -646,7 +846,7 @@ function imprimirAlbaran(a){
   setTimeout(()=>window.print(),100);
 }
 function imprimirHoja(p){
-  const filas=p.lineas.map(l=>{const pr=prod(l.c)||{b:1};
+  const filas=ordenLineas(p.lineas).map(l=>{const pr=prod(l.c)||{b:1};
     return `<tr><td><b>${esc(l.c)}</b> <span style="font-size:9pt">${esc(l.n)}</span></td><td class="n">${l.pz||""}${pr.b>1&&l.pz?` <span style="font-size:9pt">(${bandTxt(l.pz,pr.b)})</span>`:""}</td>
       <td class="n big">${l.pzS!=null&&l.pzS!==l.pz?l.pzS:""}</td><td class="n big">${l.kg?kgf(num(l.kg)):""}</td><td class="big"></td></tr>`}).join("");
   $("#imp").innerHTML=`<section class="copia">${cabecera("HOJA DE PREPARACIÓN","Pedido "+p.id)}
