@@ -211,7 +211,7 @@ async function api(accion,datos={}){
     r=await fetch(S.api,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({accion,pin:S.pin,...datos})});
   }catch(e){throw new Error("Sin conexión con el servidor. Comprueba la cobertura e inténtalo otra vez.")}
   let j; try{j=await r.json()}catch(e){throw new Error("El servidor no responde bien (¿está publicada la última versión del script?)")}
-  if(!j.ok){ if(j.pin){S.pin="";LS.del("ped_pin");} throw new Error(j.error||"Error del servidor"); }
+  if(!j.ok){ if(j.pin){S.pin="";S.user=null;S.rol=null;S.scr=null;LS.del("ped_pin");} throw new Error(j.error||"Error del servidor"); }
   return j;
 }
 
@@ -282,7 +282,7 @@ function vLogin(app){
   <button class="btn pri">Entrar</button></form></div>`;
   const i=$("#fPin");i.focus();
   $("#fLog").onsubmit=async e=>{e.preventDefault();S.pin=i.value.trim();if(!S.pin)return;
-    try{await api("login");LS.set("ped_pin",S.pin);S.tab=null;S.scr=null;await cargar()}catch(err){toast(err.message,true);S.pin="";i.value="";i.focus()}};
+    try{await api("login");LS.set("ped_pin",S.pin);S.tab=null;S.scr=null;await cargar()}catch(err){toast(err.message,true);S.pin="";S.user=null;i.value="";i.focus()}};
   if(S.pin){ cargar(); }
 }
 
