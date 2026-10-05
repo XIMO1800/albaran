@@ -267,6 +267,11 @@ body.desk .sumf{max-width:640px}
 #cObs{margin-top:10px}
 .av-ord{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}
 .av-ord:first-of-type{border-top:0}
+.av-pos{width:52px;text-align:center;font-family:var(--display);font-size:20px;font-weight:700;padding:6px 2px;color:var(--muted)}
+.av-onm{flex:1;min-width:0;cursor:pointer;padding:6px 4px;border-radius:8px}
+.av-ord.sel{background:var(--gold-soft);border-radius:10px}
+.av-ord.dest .av-onm{outline:1.5px dashed var(--line)}
+.av-movaviso{background:var(--gold-soft);border:1px solid var(--gold);border-radius:10px;padding:8px 10px;margin-bottom:8px;display:flex;gap:10px;align-items:center;justify-content:space-between}
 .av-on{min-width:1.8em;text-align:right;font-weight:800;color:var(--muted)}
 .av-onm{flex:1;min-width:0}
 .mic{margin-top:6px}.mic.on{background:#c0392b;color:#fff;border-color:#c0392b}
@@ -439,7 +444,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "37 · 04/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "38 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1295,7 +1300,7 @@ const avDia=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNa
 const avDiaC=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"numeric",year:"2-digit"})};
 
 S.av={cargado:false,cargando:false,cuadres:LS.get("av_cache",{}),config:LS.get("av_cfg",null),pend:LS.get("av_pend",{}),
-  vend:LS.get("av_vend",""),cur:null,fase:"desc",todas:false,borrar:false,nuevoVend:false,quitarV:null,arts:false,fv:"",fd:"",fh:""};
+  vend:LS.get("av_vend",""),cur:null,fase:"desc",todas:false,borrar:false,nuevoVend:false,quitarV:null,ordSel:null,arts:false,fv:"",fd:"",fh:""};
 function avCfg(){const c=S.av.config||(S.av.config={});c.vendedores=c.vendedores||["Miguel Ángel","Mere"];const iM=c.vendedores.indexOf("Mary");if(iM>=0&&!Object.values(S.av.cuadres).some(x=>x.vendedor==="Mary"))c.vendedores[iM]="Mere";c.taras=c.taras||{grande:0,mini:2.6};
   c.arts=c.arts||[];c.peso=c.peso||{grande:"",mini:""};return c}
 const avCuadre=()=>S.av.cur&&S.av.cuadres[S.av.cur];
@@ -1463,7 +1468,8 @@ function vAvArts(app){
   avOrdenInicial();
   const cf=avCfg(), en=new Set(cf.arts); let h="",k0=null;
   const ord=cf.arts.map((c,i)=>{const p=prod(c)||{c,n:"(no está en el catálogo)",g:"X"};
-    return `<div class="av-ord" style="${estiloG(p.g)}"><span class="av-on">${i+1}</span><span class="dot"></span><div class="av-onm"><b>${esc(c)}</b> <span class="muted">${esc(p.n)}</span></div>
+    const sel=S.av.ordSel===i, des=S.av.ordSel!=null&&!sel;
+    return `<div class="av-ord ${sel?"sel":""} ${des?"dest":""}" style="${estiloG(p.g)}"><input class="av-pos" data-avpos="${i}" value="${i+1}" inputmode="numeric" aria-label="Posición de ${esc(c)}"><span class="dot"></span><div class="av-onm" data-avpick="${i}" role="button" tabindex="0"><b>${esc(c)}</b> <span class="muted">${esc(p.n)}</span>${sel?` <span class="chip e-ENVIADO">moviendo</span>`:""}</div>
       <button class="mvb" data-avmv="${i}" data-d="-1" ${i?"":"disabled"} aria-label="Subir">↑</button><button class="mvb" data-avmv="${i}" data-d="1" ${i<cf.arts.length-1?"":"disabled"} aria-label="Bajar">↓</button></div>`}).join("");
   const sinPapel=AV_PAPEL.pz.filter(([x])=>!S.productos.some(p=>{const k=avNorm(x);return avNorm(p.n)===k||avNorm(p.c)===k})).map(([x])=>x);
   for(const p of ordenProds(S.productos)){const k=seccion(p);if(k!==k0){h+=cabSecc(k);k0=k}
@@ -1474,7 +1480,8 @@ function vAvArts(app){
     <div class="acc" style="justify-content:space-between;align-items:center"><button class="btn sm" id="avArtV">← Autoventa</button><span class="muted" id="avSt"></span></div>
     <p class="nota">Marca los artículos que llevan los camiones; salen en la hoja del cuadre en el orden de abajo («Orden en la hoja de cuadre»), que solo afecta al cuadre: en pedidos y precios se sigue usando el orden del catálogo. Si falta alguno, créalo en «Artículos y precios» y ponlo «Oculto»: la tienda no lo verá pero aquí sí. Los precios no se usan en el cuadre.</p>
     <div class="card"><div class="sec" style="margin-top:0">Orden en la hoja de cuadre</div>
-      <p class="muted" style="margin:0 0 8px">Como en la hoja de papel. Con ↑ ↓ lo cambias; los que marques nuevos se añaden al final.</p>
+      <p class="muted" style="margin:0 0 8px">Para mover uno lejos: <b>toca su nombre</b> y luego <b>toca el artículo</b> en cuyo sitio quieres ponerlo. O escribe directamente el número de posición. ↑ ↓ para ajustes de uno en uno.</p>
+      ${S.av.ordSel!=null&&cf.arts[S.av.ordSel]?`<div class="av-movaviso">Moviendo <b>${esc(cf.arts[S.av.ordSel])}</b>: toca dónde ponerlo. <button class="btn sm" id="avOrdNo">Cancelar</button></div>`:""}
       ${ord||`<div class="vacio">Marca abajo los artículos de autoventa.</div>`}
       ${sinPapel.length?`<p class="muted" style="margin:10px 0 0">De la hoja de papel no encuentro en el catálogo, por el nombre: <b>${sinPapel.map(esc).join(", ")}</b>. Si ya existen con otro nombre, colócalos tú con ↑ ↓; si no, créalos en «Artículos y precios».</p>`:""}
       <div class="acc" style="margin-top:8px"><button class="btn sm" id="avOrdPapel">Volver a ordenar como la hoja de papel</button></div></div>
@@ -1483,13 +1490,21 @@ function vAvArts(app){
       <div class="av-g2" style="margin-top:8px"><div><label class="l" for="avTaraG">Tara caja aceite grande (kg)</label><input id="avTaraG" class="num" inputmode="decimal" value="${avF(cf.taras.grande)}"></div>
         <div><label class="l" for="avTaraM">Tara bandeja minis (kg)</label><input id="avTaraM" class="num" inputmode="decimal" value="${avF(cf.taras.mini)}"></div></div></div>
     ${h||`<div class="vacio">No hay artículos en el catálogo.</div>`}</div>`;
-  barra(`<span class="muted">${cf.arts.length} artículos en la hoja de autoventa</span>`);
-  app.onclick=e=>{const b=e.target.closest("button");if(!b)return;
-    if(b.id==="avArtV"){S.av.arts=false;render();scrollTo(0,0);return}
+  barra(S.av.ordSel!=null&&cf.arts[S.av.ordSel]?`<span>Moviendo <b>${esc(cf.arts[S.av.ordSel])}</b>: toca dónde ponerlo</span><button class="btn" id="avOrdNo2">Cancelar</button>`:`<span class="muted">${cf.arts.length} artículos en la hoja de autoventa</span>`);
+  const mover=(a,z)=>{z=Math.max(0,Math.min(cf.arts.length-1,z));if(a===z)return;const [x]=cf.arts.splice(a,1);cf.arts.splice(z,0,x);avGuardarCfg()};
+  const repinta=()=>{const y=scrollY;render();scrollTo(0,y)};
+  const bn=$("#avOrdNo2");if(bn)bn.onclick=()=>{S.av.ordSel=null;repinta()};
+  app.onclick=e=>{const pk=e.target.closest("[data-avpick]");
+    if(pk){const i=+pk.dataset.avpick;if(S.av.ordSel==null)S.av.ordSel=i;else{if(S.av.ordSel!==i){mover(S.av.ordSel,i);toast(cf.arts[i]+" → posición "+(i+1))}S.av.ordSel=null}repinta();return}
+    const b=e.target.closest("button");if(!b)return;
+    if(b.id==="avOrdNo"){S.av.ordSel=null;repinta();return}
+    if(b.id==="avArtV"){S.av.arts=false;S.av.ordSel=null;render();scrollTo(0,0);return}
     if(b.dataset.avmv!=null){const a=+b.dataset.avmv,z=a+(+b.dataset.d);if(z>=0&&z<cf.arts.length){[cf.arts[a],cf.arts[z]]=[cf.arts[z],cf.arts[a]];avGuardarCfg();const y=scrollY;render();scrollTo(0,y)}return}
     if(b.id==="avOrdPapel"){cf.ordenHoja=false;avOrdenInicial();toast("Ordenado como la hoja de papel");render();return}
     if(b.dataset.art){const c=b.dataset.art,i=cf.arts.indexOf(c);if(i<0){const pi=c2=>{const p=prod(c2);return p?avPapelIdx(p):-1},mi=pi(c);const j=mi<0?-1:cf.arts.findIndex(x=>{const q=pi(x);return q>mi});if(j<0)cf.arts.push(c);else cf.arts.splice(j,0,c)}else cf.arts.splice(i,1);avGuardarCfg();const y=scrollY;render();scrollTo(0,y)}};
+  app.onkeydown=e=>{if(e.key==="Enter"&&e.target.dataset.avpos!=null){e.preventDefault();e.target.blur()}};
   app.onchange=e=>{const id=e.target.id;
+    if(e.target.dataset.avpos!=null){const a=+e.target.dataset.avpos,z=parseInt(e.target.value,10)-1;if(!isNaN(z)){S.av.ordSel=null;mover(a,z);toast(cf.arts[Math.max(0,Math.min(cf.arts.length-1,z))]+" → posición "+(Math.max(0,Math.min(cf.arts.length-1,z))+1))}setTimeout(repinta,0);return}
     if(id==="avPeso-grande"||id==="avPeso-mini"){cf.peso[id.slice(7)]=e.target.value;avGuardarCfg();return}
     if(id==="avTaraG"||id==="avTaraM"){cf.taras[id==="avTaraG"?"grande":"mini"]=avP(e.target.value)||0;avGuardarCfg()}};
 }
