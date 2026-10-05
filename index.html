@@ -274,6 +274,7 @@ body.desk .sumf{max-width:640px}
 .av-movaviso{background:var(--gold-soft);border:1px solid var(--gold);border-radius:10px;padding:8px 10px;margin-bottom:8px;display:flex;gap:10px;align-items:center;justify-content:space-between}
 .av-on{min-width:1.8em;text-align:right;font-weight:800;color:var(--muted)}
 .av-onm{flex:1;min-width:0}
+textarea.conObs{background:#fff35c;border:3px solid #e2b900;font-weight:700;font-size:18px;color:#1d1618}
 .mic{margin-top:6px}.mic.on{background:#c0392b;color:#fff;border-color:#c0392b}
 .cmpc,body.desk .cmpc{padding:0;overflow:hidden}
 .cmpt{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer}
@@ -444,7 +445,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "38 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "39 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -774,7 +775,7 @@ function vEditar(app){
     </div>
     ${h||`<div class="vacio">Ningún producto coincide.</div>`}
     <div class="sec">Observaciones</div>
-    <textarea id="fObs" placeholder="Ej.: si no hay curado grande, mandad mediano. Averías: …">${esc(P.obs)}</textarea><button type="button" class="btn sm mic" data-dictar="fObs">🎤 Dictar</button>
+    <textarea id="fObs" class="${P.obs?"conObs":""}" placeholder="Ej.: si no hay curado grande, mandad mediano. Averías: …">${esc(P.obs)}</textarea><button type="button" class="btn sm mic" data-dictar="fObs">🎤 Dictar</button>
   </div>`;
   const pz=P.lineas.reduce((s,l)=>s+l.pz,0);
   barra(`<div class="tot"><small>${P.lineas.length} productos</small>${pz} piezas</div><button class="btn pri" id="bEnv" ${P.lineas.length?"":"disabled"}>${editando?"Guardar cambios":"Enviar pedido"}</button>`);
@@ -789,7 +790,7 @@ function vEditar(app){
   };
   app.querySelectorAll("[data-q]").forEach(i=>i.onchange=()=>{setQ(i.dataset.q,num(i.value));render()});
   $("#fQ").oninput=e=>{S.scr.q=e.target.value;const pos=e.target.selectionStart;render();const f=$("#fQ");f.focus();f.setSelectionRange(pos,pos)};
-  $("#fObs").oninput=e=>{P.obs=e.target.value;guardarBorrador()};
+  $("#fObs").oninput=e=>{P.obs=e.target.value;e.target.classList.toggle("conObs",!!P.obs.trim());guardarBorrador()};
   const rep=$("#bRep"); if(rep) rep.onclick=()=>{P.lineas=ultimo.lineas.filter(l=>!l.extra&&l.pz>0&&prod(l.c)).map(l=>({c:l.c,n:prod(l.c).n,pz:l.pz,p:prod(l.c).p}));guardarBorrador();render();toast("Copiado el pedido "+ultimo.id+". Revisa las cantidades.")};
   const vac=$("#bVaciar"); if(vac) vac.onclick=async()=>{const c=await confirmar("Vaciar pedido","¿Borrar todo lo que has puesto?");if(c.ok){P.lineas=[];P.obs="";guardarBorrador();render()}};
   const can=$("#bCanc"); if(can) can.onclick=()=>{S.scr={t:"ver",id:P.id};render()};
