@@ -1,5 +1,5 @@
 /* Albarán Tienda: funciona sin cobertura. Solo toca sus propias cachés (albaran-*), nunca las de TraceQueso o Recogida. */
-const CACHE = 'albaran-v39';
+const CACHE = 'albaran-v40';
 const ARCHIVOS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(

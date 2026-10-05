@@ -445,7 +445,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "39 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "40 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -869,8 +869,9 @@ function vPreparar(app){
     ${P.obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>OBSERVACIONES DE LA TIENDA</b><p>${esc(P.obs)}</p></div></div>`:""}
     <div class="plist">${filas}</div>
     <button class="btn" id="bAdd" style="width:100%">+ Añadir producto (avería, cambio…)</button>
-    <div class="sec">Observaciones generales del pedido</div>
-    <textarea id="fObsF" placeholder="Ej.: no había OCG, se mandan 2 OCM. El gigante va el jueves. Avería: …">${esc(P.obsF)}</textarea><button type="button" class="btn sm mic" data-dictar="fObsF">🎤 Dictar</button>
+    ${P.obs?`<div class="obsT" style="margin-top:14px"><span class="obsTi">⚠</span><div><b>RECUERDA · OBSERVACIONES DE LA TIENDA</b><p>${esc(P.obs)}</p></div></div>`:""}
+    <div class="sec">Notas de fábrica (las escribes tú, si hace falta)</div>
+    <textarea id="fObsF" placeholder="Solo si hay algo que contar: no había OCG, se mandan 2 OCM, el gigante va el jueves…">${esc(P.obsF)}</textarea><button type="button" class="btn sm mic" data-dictar="fObsF">🎤 Dictar</button>
     <div class="acc" style="margin-top:10px"><button class="btn" id="bGuardar">Guardar y seguir luego</button><button class="btn" id="bHoja">Imprimir hoja</button></div>
   </div>`;
   const kgL=l=>num(l.kg)>0?num(l.kg):(num(l.pzS)>0?kgEst(l):0);
