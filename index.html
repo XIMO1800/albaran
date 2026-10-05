@@ -449,7 +449,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "43 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "44 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -957,7 +957,7 @@ function vAlbaran(app){
     const c=await confirmar("Emitir albarán",`${A.lineas.length} líneas · ${kgf(kg())} kg · ${eur(tot())} €. Se le asigna número y se imprime.`);if(!c.ok)return;
     S.busy=true;$("#bEmit").disabled=true;
     try{const j=await api("emitirAlbaran",{albaran:{...A,lineas:A.lineas.map(l=>({pedido:l.pedido,c:l.c,n:l.n,pz:num(l.pz),kg:num(l.kg),p:num(l.p)}))}});
-      toast("Albarán "+j.num+" emitido");S.sel.clear();
+      toast("Albarán "+j.num+" emitido"+(j.fichero?" · enviado al programa ("+j.fichero+")":""));S.sel.clear();
       const alb={num:j.num,fecha:A.fecha,cliente:A.cliente,pedidos:A.pedidos.join(","),obs:A.obs,estado:"EMITIDO",kg:j.kg,total:j.total,
         lineas:A.lineas.map(l=>({pedido:l.pedido,c:l.c,n:l.n,pz:num(l.pz),kg:num(l.kg),p:num(l.p)}))};
       S.scr={t:"verAlb",num:String(j.num)};S.albaranes.unshift(alb);render();imprimirAlbaran(alb);cargar(true);
