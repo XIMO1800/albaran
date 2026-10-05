@@ -217,7 +217,7 @@ var ACCIONES = {
     log_(u, 'EMITE ALBARÁN', num, 'Pedidos ' + ids.join(',') + ' · ' + r2_(total) + ' €');
     var fich = '';
     try {   // fichero para el programa de gestión (si falla, el albarán queda emitido igual)
-      fich = exportarAlbaranProg_(num, lineas);
+      fich = exportarAlbaranProg_(num, lineas, fecha);
       var fa = buscar_('ALBARANES', 'NUM', num);
       if (fa) escribir_(shA, fa.fila, {EXPORTADO: new Date(), EXPORTADO_POR: 'AUTO ' + fich});
     } catch (e) { log_(u, 'ERROR EXPORTAR', num, String(e && e.message || e)); }
@@ -266,7 +266,7 @@ var ACCIONES = {
       var ls = lineas.filter(function (l) { return String(l.NUM) === String(num); })
         .map(function (l) { return {c: String(l.CODIGO), pz: num_(l.PIEZAS), kg: num_(l.KG), p: num_(l.PRECIO)}; });
       if (!ls.length) return;
-      var fich = exportarAlbaranProg_(num, ls);
+      var fich = exportarAlbaranProg_(num, ls, f.obj.FECHA);
       escribir_(sh, f.fila, {EXPORTADO: ahora, EXPORTADO_POR: 'AUTO ' + fich});
       hechos.push({num: String(num), fichero: fich});
     });
@@ -307,10 +307,11 @@ var ACCIONES = {
 // administración, Google Drive la baja y la tarea «Copia ALBTIEND» copia los T*.TXT a V:\SERVIDORW10\ALBTIEND.
 var CARPETA_PROGRAMA_ID = '1qoFDcSbndVMs9u4lIU0_OofFxRvTwJts';
 function nombreAlbaranProg_(num) { return 'T' + ('0000000' + String(num).replace(/\D/g, '')).slice(-7) + '.TXT'; }
-// Una línea por artículo: CODIGO;PIEZAS;KG;PRECIO  (separador ; · decimales con punto · sin cabecera · CRLF)
-function exportarAlbaranProg_(num, lineas) {
+// Una línea por artículo: FECHA;CODIGO;PIEZAS;KG;PRECIO  (fecha del albarán dd/mm/aaaa)  (separador ; · decimales con punto · sin cabecera · CRLF)
+function exportarAlbaranProg_(num, lineas, fecha) {
+  var fx = Utilities.formatDate(fecha instanceof Date ? fecha : new Date(fecha || Date.now()), 'Europe/Madrid', 'dd/MM/yyyy');
   var txt = lineas.map(function (l) {
-    return [l.c, Math.round(l.pz), r3_(l.kg).toFixed(3), r2_(l.p).toFixed(2)].join(';');
+    return [fx, l.c, Math.round(l.pz), r3_(l.kg).toFixed(3), r2_(l.p).toFixed(2)].join(';');
   }).join('\r\n') + '\r\n';
   var nombre = nombreAlbaranProg_(num), carpeta = DriveApp.getFolderById(CARPETA_PROGRAMA_ID);
   var viejos = carpeta.getFilesByName(nombre); while (viejos.hasNext()) viejos.next().setTrashed(true);
@@ -329,13 +330,13 @@ function EXPORTAR_PENDIENTES() {
     var ls = lineas.filter(function (l) { return String(l.NUM) === String(a.NUM); })
       .map(function (l) { return {c: String(l.CODIGO), pz: num_(l.PIEZAS), kg: num_(l.KG), p: num_(l.PRECIO)}; });
     if (!ls.length) return;
-    var fich = exportarAlbaranProg_(a.NUM, ls), f = buscar_('ALBARANES', 'NUM', a.NUM);
+    var fich = exportarAlbaranProg_(a.NUM, ls, a.FECHA), f = buscar_('ALBARANES', 'NUM', a.NUM);
     escribir_(sh, f.fila, {EXPORTADO: new Date(), EXPORTADO_POR: 'AUTO ' + fich}); n++;
   });
   Logger.log(n + ' albaranes enviados al programa');
 }
 // Para probar desde el editor (pide permiso de Drive la primera vez)
-function PROBAR_EXPORTAR() { Logger.log(exportarAlbaranProg_('9999999', [{c: 'MAN', pz: 3, kg: 1.05, p: 13.2}])); borrarAlbaranProg_('9999999'); }
+function PROBAR_EXPORTAR() { Logger.log(exportarAlbaranProg_('9999999', [{c: 'MAN', pz: 3, kg: 1.05, p: 13.2}], new Date())); borrarAlbaranProg_('9999999'); }
 
 /* ---------------------------- utilidades ---------------------------- */
 
