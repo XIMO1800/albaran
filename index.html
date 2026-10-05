@@ -449,7 +449,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "44 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "45 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -548,7 +548,7 @@ function tabsDeRol(){
   const n=e=>S.pedidos.filter(p=>p.estado===e).length;
   if(S.rol==="TIENDA") return [["nuevo","Nuevo pedido"],["mios","Mis pedidos"],["difs","Diferencias"]];
   if(S.rol==="FABRICA") return [["preparar","Por preparar",n("ENVIADO")+n("PREPARANDO")],["hechos","Preparados"],["difs","Diferencias"]];
-  if(esDesk()) return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["historial","Histórico"],["difs","Diferencias"],["albaranes","Albaranes"],["exportar","Exportar"],["precios","Artículos y precios"],["nuevo","+ Pedido"],...(S.rol==="ADMIN"?[["autoventa","Autoventa"]]:[])];
+  if(esDesk()) return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["historial","Histórico"],["difs","Diferencias"],["albaranes","Albaranes"],["exportar","Programa"],["precios","Artículos y precios"],["nuevo","+ Pedido"],...(S.rol==="ADMIN"?[["autoventa","Autoventa"]]:[])];
   return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["albaranes","Albaranes"],["difs","Diferencias"],["nuevo","+ Pedido"],["precios","Precios"],...(S.rol==="ADMIN"?[["autoventa","Autoventa"]]:[])];
 }
 function renderHeader(){
@@ -989,13 +989,12 @@ function vAlbaranes(app){
   const q=S.filtroAlb.trim().toUpperCase();
   const l=S.albaranes.filter(a=>!q||String(a.num).includes(q)||fDia(a.fecha).includes(q)).sort((a,b)=>(+b.num)-(+a.num));
   app.innerHTML=`<div class="wrap">
-    <div class="acc" style="margin-bottom:8px"><input id="fA" placeholder="Buscar nº o fecha" value="${esc(S.filtroAlb)}" style="flex:1"><button class="btn" id="bCsv">Exportar CSV</button></div>
+    <div class="acc" style="margin-bottom:8px"><input id="fA" placeholder="Buscar nº o fecha" value="${esc(S.filtroAlb)}" style="flex:1"></div>
     ${l.map(a=>`<div class="card ped" data-alb="${esc(a.num)}"><span></span><b>Albarán ${esc(a.num)}</b><span>${a.estado==="ANULADO"?`<span class="chip e-ANULADO">Anulado</span>`:`<b>${eur(a.total)} €</b>`}</span>
       <div class="meta">${fDia(a.fecha)} · ${esc(a.cliente)} · pedidos ${esc(a.pedidos)} · ${kgf(a.kg)} kg</div></div>`).join("")||`<div class="vacio">No hay albaranes en los últimos 60 días.</div>`}</div>`;
   barra("");
   onLista(app);
   $("#fA").oninput=e=>{S.filtroAlb=e.target.value;const p=e.target.selectionStart;render();const f=$("#fA");f.focus();f.setSelectionRange(p,p)};
-  $("#bCsv").onclick=()=>exportarCsv(l.filter(a=>a.estado!=="ANULADO"));
 }
 const fCsv=f=>{const d=String(f).slice(0,10).split("-");return d.length===3?`${d[2]}/${d[1]}/${d[0]}`:f};
 function exportarCsv(albs,nombre){
@@ -1065,7 +1064,7 @@ function vPrecios(app){
 
 /* =================== ESCRITORIO: marco tipo Recogida (barra lateral + título) =================== */
 const SIDE=[["pedidos","Pedidos","Nuevos, preparando y preparados"],["historial","Histórico","Lo pedido frente a lo servido"],["difs","Diferencias","Pedido frente a lo enviado"],["albaranes","Albaranes","Emitidos y reimpresión"],
-  ["exportar","Exportar","CSV para el programa de gestión"],["precios","Artículos y precios","Catálogo, orden y precios"],["nuevo","Nuevo pedido","Meter un pedido a mano"]];
+  ["exportar","Programa de gestión","Envío de albaranes"],["precios","Artículos y precios","Catálogo, orden y precios"],["nuevo","Nuevo pedido","Meter un pedido a mano"]];
 function marcoDesk(){
   const sd=$("#side"), on=document.body.classList.contains("desk");
   if(!on){sd.innerHTML="";return}
@@ -1078,7 +1077,7 @@ function marcoDesk(){
   $("#sideAct").onclick=async()=>{if(["historial","albaranes","exportar","difs"].includes(S.tab)&&!S.scr){cargarHist()}else{await cargar();toast("Datos actualizados")}};
   $("#sideSalir").onclick=async()=>{const c=await confirmar("Salir","¿Cerrar la sesión en este ordenador?");if(c.ok){S.pin="";S.user=null;LS.del("ped_pin");render()}};
   // título grande en la cabecera
-  const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Exportar","Albaranes al programa de gestión"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"],autoventa:["Autoventa","Cuadres de los camiones"]};
+  const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Programa de gestión","Albaranes enviados a GESTEURO"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"],autoventa:["Autoventa","Cuadres de los camiones"]};
   let t=T[S.tab]||["Pedidos",""];
   if(S.scr){const sc=S.scr;
     if(sc.t==="ver")t=["Pedido "+sc.id,"Detalle"];else if(sc.t==="preparar")t=["Preparando pedido "+sc.ped.id,"Piezas servidas y pesos"];
@@ -1226,28 +1225,31 @@ function vAlbaranesDesk(app){
 /* =================== ESCRITORIO: exportar al programa de gestión =================== */
 function vExportar(app){
   if(!S.H.data&&!S.H.cargando){barra("");cargarHist();return}
-  const albs=(S.H.data?S.H.data.albaranes:[]).filter(a=>a.estado!=="ANULADO").sort((a,b)=>(+a.num)-(+b.num));
+  if(!S.H.exp)S.H.exp="todos";
+  const albs=(S.H.data?S.H.data.albaranes:[]).filter(a=>a.estado!=="ANULADO").sort((a,b)=>(+b.num)-(+a.num));
   const vis=albs.filter(a=>S.H.exp==="todos"||(S.H.exp==="pend"?!a.exportado:!!a.exportado));
-  if(!S.H.selExp) S.H.selExp=new Set(albs.filter(a=>!a.exportado).map(a=>String(a.num)));
-  const sel=vis.filter(a=>S.H.selExp.has(String(a.num)));
-  app.innerHTML=`<div class="wrap">${filtroFechas(`<label class="lbl">Mostrar<select id="hX"><option value="pend"${S.H.exp==="pend"?" selected":""}>Pendientes de exportar</option><option value="hechos"${S.H.exp==="hechos"?" selected":""}>Ya exportados</option><option value="todos"${S.H.exp==="todos"?" selected":""}>Todos</option></select></label>`)}
-    <p class="nota">Genera el archivo CSV (separado por «;», decimales con coma) con una línea por artículo de cada albarán, para importarlo en el programa de gestión. Después de descargarlo, márcalos como exportados para no importarlos dos veces. Columnas: ALBARAN · FECHA · CLIENTE · PEDIDO · CODIGO · DESCRIPCION · PIEZAS · KG · PRECIO · IMPORTE.</p>
-    <div class="tblw"><table class="t"><thead><tr><th><input type="checkbox" id="xAll" class="selbox" ${vis.length&&sel.length===vis.length?"checked":""} aria-label="Marcar todos"></th><th>Nº</th><th>Fecha</th><th>Pedidos</th><th class="n">Líneas</th><th class="n">Kg</th><th class="n">Total</th><th>Exportado</th></tr></thead>
-    <tbody>${vis.map(a=>`<tr><td><input type="checkbox" class="selbox" data-x="${esc(a.num)}" ${S.H.selExp.has(String(a.num))?"checked":""} aria-label="Albarán ${esc(a.num)}"></td><td><b>${esc(a.num)}</b></td><td>${fDia(a.fecha)}</td><td>${esc(a.pedidos)}</td><td class="n">${a.lineas.length}</td><td class="n">${kgf(a.kg)}</td><td class="n">${eur(a.total)} €</td>
-      <td>${a.exportado?`<span class="tag ok">${fCorta(a.exportado)}${a.exportadoPor?" · "+esc(a.exportadoPor):""}</span>`:`<span class="tag no">Pendiente</span>`}</td></tr>`).join("")||`<tr><td colspan="8" class="vacio">No hay albaranes ${S.H.exp==="pend"?"pendientes de exportar ":""}en esas fechas.</td></tr>`}</tbody>
-    <tfoot><tr><td></td><td colspan="4">${sel.length} marcados</td><td class="n">${kgf(sel.reduce((s,a)=>s+(+a.kg||0),0))}</td><td class="n">${eur(sel.reduce((s,a)=>s+(+a.total||0),0))} €</td><td></td></tr></tfoot></table></div></div>`;
-  barra(`<span class="muted">${sel.length} albarán(es) marcados</span><div class="acc"><button class="btn" id="xMarcar" ${sel.length?"":"disabled"}>Marcar como exportados</button><button class="btn pri" id="xCsv" ${sel.length?"":"disabled"}>Descargar CSV</button></div>`);
+  if(!S.H.selExp) S.H.selExp=new Set();
+  const sel=vis.filter(a=>S.H.selExp.has(String(a.num))), npend=albs.filter(a=>!a.exportado).length;
+  const fich=a=>/AUTO (T\d+\.TXT)/.exec(a.exportadoPor||"");
+  app.innerHTML=`<div class="wrap">${filtroFechas(`<label class="lbl">Mostrar<select id="hX"><option value="todos"${S.H.exp==="todos"?" selected":""}>Todos</option><option value="pend"${S.H.exp==="pend"?" selected":""}>Sin enviar</option><option value="hechos"${S.H.exp==="hechos"?" selected":""}>Enviados</option></select></label>`)}
+    <p class="nota">Cada albarán se envía <b>solo</b> al programa de gestión al emitirlo: fichero <b>T + nº de albarán</b> (p. ej. T0000012.TXT) en la carpeta V:\\SERVIDORW10\\ALBTIEND, unos minutos después. Aquí ves cuáles han llegado a enviarse. Si alguno sale «Sin enviar» o hay que repetirlo (por ejemplo, tras corregir un código), márcalo y pulsa «Enviar al programa».</p>
+    ${npend?`<div class="aviso">${npend} albarán(es) sin enviar al programa.</div>`:""}
+    <div class="tblw"><table class="t"><thead><tr><th><input type="checkbox" id="xAll" class="selbox" ${vis.length&&sel.length===vis.length?"checked":""} aria-label="Marcar todos"></th><th>Nº</th><th>Fecha</th><th>Pedidos</th><th class="n">Líneas</th><th class="n">Kg</th><th class="n">Importe</th><th>Programa de gestión</th></tr></thead>
+    <tbody>${vis.map(a=>{const f=fich(a);return `<tr><td><input type="checkbox" class="selbox" data-x="${esc(a.num)}" ${S.H.selExp.has(String(a.num))?"checked":""} aria-label="Albarán ${esc(a.num)}"></td><td><b>${esc(a.num)}</b></td><td>${fDia(a.fecha)}</td><td>${esc(a.pedidos)}</td><td class="n">${a.lineas.length}</td><td class="n">${kgf(a.kg)}</td><td class="n">${eur(a.total)} €</td>
+      <td>${a.exportado?`<span class="tag ok">Enviado ${fCorta(a.exportado)}${f?" · "+f[1]:a.exportadoPor?" · "+esc(a.exportadoPor):""}</span>`:`<span class="tag no">Sin enviar</span>`}</td></tr>`}).join("")||`<tr><td colspan="8" class="vacio">No hay albaranes en estas fechas.</td></tr>`}</tbody></table></div></div>`;
+  barra(`<span class="muted">${sel.length} albarán(es) marcados</span><button class="btn pri" id="xEnv" ${sel.length?"":"disabled"}>Enviar al programa</button>`);
   enlazarFiltro(app);
   $("#hX").onchange=e=>{S.H.exp=e.target.value;render()};
   app.onchange=e=>{const t=e.target;
     if(t.id==="xAll"){vis.forEach(a=>t.checked?S.H.selExp.add(String(a.num)):S.H.selExp.delete(String(a.num)));render()}
     else if(t.dataset.x){t.checked?S.H.selExp.add(t.dataset.x):S.H.selExp.delete(t.dataset.x);render()}};
-  const marcar=async()=>{
-    try{const j=await api("marcarExportado",{nums:sel.map(a=>String(a.num))});sel.forEach(a=>{a.exportado=j.fecha;a.exportadoPor=S.user;S.H.selExp.delete(String(a.num))});toast(j.marcados+" albarán(es) marcados como exportados");render()}
+  $("#xEnv").onclick=async()=>{
+    const rep=sel.filter(a=>a.exportado).length;
+    const c=await confirmar("Enviar al programa",`Se crea el fichero de ${sel.length} albarán(es) para el programa de gestión.${rep?` ${rep} ya se habían enviado: si Bernardo ya los importó, se duplicarían en el programa.`:""}`);if(!c.ok)return;
+    try{const j=await api("enviarProg",{nums:sel.map(a=>String(a.num))});
+      (j.hechos||[]).forEach(h=>{const a=albs.find(x=>String(x.num)===String(h.num));if(a){a.exportado=j.fecha;a.exportadoPor="AUTO "+h.fichero}S.H.selExp.delete(String(h.num))});
+      toast((j.hechos||[]).length+" enviado(s) al programa");render()}
     catch(err){toast(err.message,true)}};
-  $("#xCsv").onclick=async()=>{exportarCsv(sel,`albaranes_tienda_${sel[0].num}-${sel[sel.length-1].num}`);
-    const c=await confirmar("Marcar como exportados",`¿Marcar estos ${sel.length} albaranes como ya exportados al programa de gestión? Hazlo cuando el archivo se haya descargado bien.`);if(c.ok)marcar()};
-  $("#xMarcar").onclick=async()=>{const c=await confirmar("Marcar como exportados",`¿Marcar ${sel.length} albaranes como ya exportados, sin descargar el CSV?`);if(c.ok)marcar()};
 }
 
 /* =================== impresión =================== */

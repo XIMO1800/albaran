@@ -256,6 +256,24 @@ var ACCIONES = {
     return {pedidos: peds, albaranes: albs};
   },
 
+  // (Re)envía al programa de gestión el fichero de los albaranes indicados
+  enviarProg: function (req, u) {
+    permitir_(u, ['OFICINA','ADMIN']);
+    var sh = hoja_('ALBARANES'), lineas = leer_('ALBARAN_LINEAS'), ahora = new Date(), hechos = [];
+    (req.nums || []).forEach(function (num) {
+      var f = buscar_('ALBARANES', 'NUM', num);
+      if (!f || f.obj.ESTADO === 'ANULADO') return;
+      var ls = lineas.filter(function (l) { return String(l.NUM) === String(num); })
+        .map(function (l) { return {c: String(l.CODIGO), pz: num_(l.PIEZAS), kg: num_(l.KG), p: num_(l.PRECIO)}; });
+      if (!ls.length) return;
+      var fich = exportarAlbaranProg_(num, ls);
+      escribir_(sh, f.fila, {EXPORTADO: ahora, EXPORTADO_POR: 'AUTO ' + fich});
+      hechos.push({num: String(num), fichero: fich});
+    });
+    log_(u, 'ENVÍA AL PROGRAMA', '', hechos.map(function (h) { return h.fichero; }).join(','));
+    return {hechos: hechos, fecha: ahora.toISOString()};
+  },
+
   // Marca albaranes como exportados al programa de gestión
   marcarExportado: function (req, u) {
     permitir_(u, ['OFICINA','ADMIN']);
