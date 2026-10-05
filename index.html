@@ -171,9 +171,9 @@ body.desk{font-size:17px;line-height:1.45}
 html.desk{zoom:1.1}
 @media (min-width:1500px){html.desk{zoom:1.22}}
 @media print{html.desk{zoom:1}}
-body.desk #side{display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;width:250px;background:var(--brand-deep);color:#fff;z-index:7;padding:18px 12px;gap:4px;overflow-y:auto}
+body.desk #side{display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;width:250px;background:#3a0a0f;color:#fff;z-index:7;padding:18px 12px;gap:4px;overflow-y:auto}
 .side-t{font-family:var(--display);font-size:24px;font-weight:700;line-height:1.1;padding:4px 10px 14px;border-bottom:1px solid rgba(255,255,255,.15);margin-bottom:8px}
-.sgrp{background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:4px 4px 6px}
+.sgrp{background:var(--brand-deep);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:4px 4px 6px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
 .sgrp-av{margin-top:22px}
 .lgrp-s{font-family:var(--display);font-size:21px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);padding:8px 10px 6px;margin:0 4px 6px;border-bottom:2px solid rgba(196,149,43,.45)}
 .side-t small{display:block;font-family:var(--font);font-size:13.5px;font-weight:500;opacity:.9;margin-top:4px}
@@ -445,7 +445,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "40 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "41 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
