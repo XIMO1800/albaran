@@ -154,7 +154,7 @@ dialog::backdrop{background:rgba(29,22,24,.5)}
 .pcard{background:var(--t,var(--card));border:1px solid var(--line);border-left:8px solid var(--c);border-radius:12px;padding:10px;margin-bottom:8px;display:grid;gap:8px}
 .pcard.off{opacity:.55}
 .pc1{display:grid;grid-template-columns:9.5em 1fr;gap:6px}
-.pcode{font-family:var(--display);font-weight:700!important;font-size:18px!important;text-transform:uppercase}
+.pcode{font-family:var(--display);font-weight:700!important;font-size:18px!important}
 .pc2{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:end}
 .pc2 label,.lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;flex-direction:column;gap:2px}
 .pc3{display:flex;gap:6px;align-items:center}
@@ -445,7 +445,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "41 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "42 · 05/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1044,7 +1044,7 @@ function vPrecios(app){
   barra(desk?`<span class="muted">${cambios?"<b style=\"color:var(--warn)\">Hay cambios sin guardar</b>":P.length+" artículos"}</span><div class="acc"><button class="btn" id="bAddP">+ Nuevo artículo</button><button class="btn" id="bDesh" ${cambios?"":"disabled"}>Deshacer cambios</button><button class="btn pri" id="bGP" ${cambios?"":"disabled"}>Guardar artículos y precios</button></div>`
     :`<div class="b3"><button class="btn" id="bAddP">+ Nuevo</button><button class="btn" id="bDesh" ${cambios?"":"disabled"}>Deshacer</button><button class="btn pri" id="bGP" ${cambios?"":"disabled"}>Guardar</button></div>`);
   const marcaCambios=()=>{const g=$("#bGP"),d=$("#bDesh");if(g){g.disabled=false;d.disabled=false;const m=$("#barraIn .muted");if(m)m.innerHTML='<b style="color:var(--warn)">Hay cambios sin guardar</b>'}};
-  app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null||f==="g")return;P[i][f]=f==="c"?e.target.value.toUpperCase():e.target.value;marcaCambios()};
+  app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null||f==="g")return;P[i][f]=f==="c"?e.target.value.trim():e.target.value;marcaCambios()};
   app.onchange=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;if(f==="g"){P[i].g=e.target.value;render()}else if(f==="c")render()};
   app.onclick=async e=>{const t=e.target.closest("button");if(!t)return;
     if(t.dataset.act!=null){P[t.dataset.act].activo=P[t.dataset.act].activo===false;render()}
