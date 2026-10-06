@@ -453,7 +453,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "50 · 06/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "51 · 06/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1406,6 +1406,8 @@ const avLista=v=>Object.entries(S.av.cuadres).filter(([,c])=>!v||c.vendedor===v)
 const avUltCerrado=v=>avLista(v).find(([,c])=>c.estado==="cerrado");
 const avAbierto=v=>avLista(v).find(([,c])=>c.estado!=="cerrado");
 function avNuevo(v){
+  if(!S.av.cargado)return toast("Espera a que se lean los cuadres de la hoja",true);
+  const yaAb=avAbierto(v);if(yaAb){toast(v+" ya tiene un cuadre abierto: se abre ese");return avAbrir(yaAb[0])}
   const ant=avUltCerrado(v), c={vendedor:v,fecha:hoy(),estado:"abierto",creado:Date.now(),lineas:{},pesos:{grande:avPeso0(),mini:avPeso0()},bandejas:{},nota:""};
   if(ant){const a=ant[1];
     avRefs(a).forEach(k=>{const x=avCalc(avLin(a,k));if(x.sale)c.lineas[k]={ll:x.sale}});
@@ -1442,8 +1444,8 @@ function vAutoventa(app){
     const est=c.estado!=="cerrado"?`<span class="chip e-PREPARANDO">Abierto</span>`:mal?`<span class="chip e-ANULADO">${mal} sin cuadrar</span>`:`<span class="chip e-PREPARADO">Cuadrado</span>`;
     return desk?`<tr data-avabrir="${id}" class="av-click"><td>${avDiaC(c.fecha)}</td><td>${esc(c.vendedor)}</td><td class="n">${t.lleva}</td><td class="n"><b>${t.vend}</b></td>
       <td>${t.difs.map(([k,d])=>`<span class="chip av-mal">${esc(k)} ${d>0?"+":""}${d}</span>`).join(" ")||(t.pend?`<span class="muted">${t.pend} sin comprobar</span>`:"")}</td>
-      <td class="n ${avDifCls(g.difG)}">${g.difG===null?"":avDifTxt(g.difG)}</td><td class="n ${avDifCls(m.difG)}">${m.difG===null?"":avDifTxt(m.difG)}</td><td class="n">${c.estado!=="cerrado"&&!t.de?"—":t.sale}</td><td>${est}</td></tr>`
-    :`<div class="card ped" data-avabrir="${id}"><span></span><b>${avDiaC(c.fecha)} · ${esc(c.vendedor)}</b><span>${est}</span>
+      <td class="n ${avDifCls(g.difG)}">${g.difG===null?"":avDifTxt(g.difG)}</td><td class="n ${avDifCls(m.difG)}">${m.difG===null?"":avDifTxt(m.difG)}</td><td class="n">${c.estado!=="cerrado"&&!t.de?"—":t.sale}</td><td>${est}</td><td><button class="x" data-avborra="${id}" title="Borrar este cuadre" aria-label="Borrar cuadre">🗑</button></td></tr>`
+    :`<div class="card ped" data-avabrir="${id}"><span></span><b>${avDiaC(c.fecha)} · ${esc(c.vendedor)}</b><span>${est} <button class="x" data-avborra="${id}" title="Borrar este cuadre" aria-label="Borrar cuadre">🗑</button></span>
       <div class="meta">${t.vend} vendidas${t.difs.length?" · dif. en "+t.difs.map(([k,d])=>k+" "+(d>0?"+":"")+d).join(", "):""} · sale con ${t.sale}</div></div>`};
   app.innerHTML=`<div class="wrap">
     <div class="av-vends">${vs.map(tarjVend).join("")}</div>
@@ -1458,11 +1460,15 @@ function vAutoventa(app){
     <div class="sec">Histórico de cuadres</div>
     <div class="acc av-filtro"><select id="avFv"><option value="">Todos los vendedores</option>${vs.map(x=>`<option ${x===fv?"selected":""}>${esc(x)}</option>`).join("")}</select>
       <label>Desde <input type="date" id="avFd" value="${fd}"></label><label>Hasta <input type="date" id="avFh" value="${fh}"></label></div>
-    ${desk?`<div class="tblw"><table class="t av-hist"><thead><tr><th>Fecha</th><th>Vendedor</th><th class="n">Llevaba</th><th class="n">Vendidas</th><th>Diferencias con albaranes</th><th class="n">Aceite grande</th><th class="n">Minis</th><th class="n">Sale con</th><th>Estado</th></tr></thead>
-      <tbody>${hist.map(filaH).join("")||`<tr><td colspan="9" class="vacio">No hay cuadres con estos filtros.</td></tr>`}</tbody></table></div>`
+    ${desk?`<div class="tblw"><table class="t av-hist"><thead><tr><th>Fecha</th><th>Vendedor</th><th class="n">Llevaba</th><th class="n">Vendidas</th><th>Diferencias con albaranes</th><th class="n">Aceite grande</th><th class="n">Minis</th><th class="n">Sale con</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${hist.map(filaH).join("")||`<tr><td colspan="10" class="vacio">No hay cuadres con estos filtros.</td></tr>`}</tbody></table></div>`
       :hist.map(filaH).join("")||`<div class="vacio">No hay cuadres con estos filtros.</div>`}
   </div>`;
-  app.onclick=e=>{const b=e.target.closest("[data-avabrir],[data-avnuevo],[data-avvend],button");if(!b)return;
+  app.onclick=async e=>{const bb=e.target.closest("[data-avborra]");
+    if(bb){e.stopPropagation();const id=bb.dataset.avborra,c=S.av.cuadres[id];if(!c)return;const t=avTot(c);
+      const r=await confirmar("Borrar cuadre",`¿Borrar el cuadre de ${c.vendedor} del ${avDiaC(c.fecha)}${t.lleva||t.vend?` (lleva ${t.lleva}, vendidas ${t.vend})`:" (vacío)"}? No se puede deshacer.`);
+      if(!r.ok)return;delete S.av.cuadres[id];S.av.pend[id]="borrar";avTocar(id);toast("Cuadre borrado");render();return}
+    const b=e.target.closest("[data-avabrir],[data-avnuevo],[data-avvend],button");if(!b)return;
     if(b.dataset.avabrir)return avAbrir(b.dataset.avabrir);
     if(b.dataset.avnuevo){S.av.vend=b.dataset.avnuevo;LS.set("av_vend",S.av.vend);return avNuevo(S.av.vend)}
     if(b.dataset.avvend){S.av.vend=b.dataset.avvend;LS.set("av_vend",S.av.vend);render();return}
