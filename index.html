@@ -480,7 +480,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "59 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "60 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1720,20 +1720,20 @@ function avBloquePeso(c,b){
   return `<div class="card av-peso">
     <div class="pcab"><b>${AV_PNOM[b]}</b><span class="pnm">${code?esc(nomDe(code)):"sin artículo asignado"}</span>
       <label for="avTara-${b}">Tara caja</label><input id="avTara-${b}" class="num" data-tara="${b}" inputmode="decimal" value="${avF(w.tara)}"></div>
-    <div class="pl"><span class="ps"></span><span class="pt">Llevaba<small>${code?lx.lleva+" pz":""}</small></span><input id="avLl-${b}" class="num pin" data-pk="${b}|llevaKg" inputmode="decimal" value="${avF(avN(p.llevaKg))}" placeholder="kg"></div>
+    <div class="pl"><span class="ps"></span><span class="pt">CARGA INICIAL<small>${code?lx.lleva+" pz":""}</small></span><input id="avLl-${b}" class="num pin" data-pk="${b}|llevaKg" inputmode="decimal" value="${avF(avN(p.llevaKg))}" placeholder="kg"></div>
     ${verE?`<div class="mov car"><div class="pl"><span class="ps">+</span><span class="pt">Cargó entre medias<small>${entrePz?entrePz+" pz":""}</small></span><b>${entreKg?"+"+avKg(entreKg)+" kg":"—"}</b></div>
       <div class="pb"><div class="av-chips">${entre.map((e,i)=>`<span class="av-w"><b>+${avN(e.pz)??"?"} pz · ${avKg(avN(e.kg))} kg</b><button data-quita="${b}|entre|${i}" aria-label="Quitar">×</button></span>`).join("")}</div>
       <div class="padd"><input id="avEp-${b}" class="num" inputmode="numeric" placeholder="Pz" style="width:60px"><span class="muted">pz</span><input id="avEk-${b}" class="num" inputmode="decimal" placeholder="Kilos" style="width:90px"><span class="muted">kg</span><button class="btn sm" data-entre="${b}">Añadir</button></div></div></div>
-      <div class="pl sub"><span class="ps">=</span><span class="pt">Total llevaba</span><b id="avTL-${b}">${avKg(w.total)} kg</b></div>`
+      <div class="pl sub"><span class="ps">=</span><span class="pt">TOTAL CARGA</span><b id="avTL-${b}">${avKg(w.total)} kg</b></div>`
     :`<button class="lnk" data-verentre="${b}">+ Cargó algo entre medias</button>`}
     <div class="mov des"><div class="pl"><span class="ps">−</span><span class="pt">Descarga hoy<small>${cajas(w.d)}</small></span><b>${w.d.n?"−"+avKg(w.d.neto)+" kg":"—"}</b></div>
     <div class="pb">${chips("desc")}${add("desc","Peso caja")}</div></div>
-    <div class="pl sub"><span class="ps">=</span><span class="pt">Vendido</span><b id="avVe-${b}">${avKg(w.vend)} kg</b></div>
+    <div class="pl sub"><span class="ps">=</span><span class="pt">TOTAL VENDIDO</span><b id="avVe-${b}">${avKg(w.vend)} kg</b></div>
     <div class="pb av-alb"><label class="l" for="avAlb-${b}" style="margin:0">Según albaranes</label><input id="avAlb-${b}" class="num" data-pk="${b}|albKg" inputmode="decimal" value="${avF(avN(p.albKg))}" placeholder="kg" style="width:100px">
       <button class="av-mini-ok ${ok?"on":""}" data-albok="${b}" title="Coincide con lo vendido">✓</button><span class="chip ${avDifCls(w.difG)}" id="avDif-${b}">${avDifTxt(w.difG)}</span></div>
     <div class="mov car"><div class="pl"><span class="ps">+</span><span class="pt">Carga hoy<small>${cajas(w.cg)}${code&&lx.ca?` · ${lx.ca} pz en la hoja`:""}</small></span><b>${w.cg.n?"+"+avKg(w.cg.neto)+" kg":"—"}</b></div>
     <div class="pb">${chips("carga")}${add("carga","Peso caja")}</div></div>
-    <div class="pl sub fin"><span class="ps">=</span><span class="pt">Sale con</span><b>${avKg(w.sale)} kg</b></div></div>`;
+    <div class="pl sub fin"><span class="ps">=</span><span class="pt">CARGA FINAL</span><b>${avKg(w.sale)} kg</b></div></div>`;
 }
 function avPesoVivo(b){const w=avPeso(avCuadre(),b),d=$("#avDif-"+b),set=(id,t)=>{const e=$(id);if(e)e.textContent=t};if(d){d.className="chip "+avDifCls(w.difG);d.textContent=avDifTxt(w.difG)}
   set("#avTL-"+b,avKg(w.total)+" kg");set("#avVe-"+b,avKg(w.vend)+" kg");const ok=$(`[data-albok="${b}"]`);if(ok)ok.classList.toggle("on",w.difG!==null&&Math.abs(w.difG)<=AV_TOL);avBarra()}
