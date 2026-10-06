@@ -417,6 +417,13 @@ tr.av-nada th{color:var(--muted)}
 .chip.av-ok{background:#e1f2e7}.chip.av-mal{background:#fde4e4}.chip.av-neu{background:#ebe6e7}
 .av-pie{margin-top:12px;align-items:center}
 .nalb{color:var(--brand);font-weight:600}
+.av-peso{padding-top:0;overflow:hidden}
+.pcab{display:flex;align-items:center;gap:8px;background:var(--brand);color:#fff;margin:0 -14px 6px;padding:10px 14px}
+.pcab b{font-family:var(--display);font-size:20px;white-space:nowrap}.pcab .pnm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pcab span{opacity:.85;font-size:14px}.pcab label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;opacity:.9}
+.pcab input{width:64px;background:#fff;color:var(--fg);padding:6px 8px;min-height:0}
+.mov{border-radius:10px;padding:2px 10px 8px 0;margin:6px 0}
+.mov.des{background:#fbeceb}.mov.des .pl>b,.mov.des .ps{color:#b3261e}
+.mov.car{background:#e9f5ee}.mov.car .pl>b,.mov.car .ps{color:#1f8a4c}
 .pl{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:6px;padding:9px 0 3px}
 .pl .ps{font-weight:800;color:var(--muted);font-size:20px;text-align:center;line-height:1}
 .pl .pt{font-weight:700;font-size:16px}.pl .pt small{font-weight:500;color:var(--muted);margin-left:8px;font-size:13px}
@@ -472,7 +479,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "57 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "58 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1710,21 +1717,21 @@ function avBloquePeso(c,b){
   const entre=p.entre||[], verE=entre.length||(S.av.verEntre||{})[b], entreKg=avR3(entre.reduce((a,e)=>a+(avN(e.kg)||0),0)), entrePz=entre.reduce((a,e)=>a+(avN(e.pz)||0),0);
   const ok=w.difG!==null&&Math.abs(w.difG)<=AV_TOL;
   return `<div class="card av-peso">
-    <div class="acc" style="align-items:center;margin-bottom:2px"><b class="av-h">${AV_PNOM[b]}</b><span class="muted">${code?esc(nomDe(code)):"sin artículo asignado"}</span><span style="flex:1"></span>
-      <label class="l" for="avTara-${b}" style="margin:0">Tara caja</label><input id="avTara-${b}" class="num" data-tara="${b}" inputmode="decimal" value="${avF(w.tara)}" style="width:64px"></div>
+    <div class="pcab"><b>${AV_PNOM[b]}</b><span class="pnm">${code?esc(nomDe(code)):"sin artículo asignado"}</span>
+      <label for="avTara-${b}">Tara caja</label><input id="avTara-${b}" class="num" data-tara="${b}" inputmode="decimal" value="${avF(w.tara)}"></div>
     <div class="pl"><span class="ps"></span><span class="pt">Llevaba<small>${code?lx.lleva+" pz":""}</small></span><input id="avLl-${b}" class="num pin" data-pk="${b}|llevaKg" inputmode="decimal" value="${avF(avN(p.llevaKg))}" placeholder="kg"></div>
-    ${verE?`<div class="pl"><span class="ps">+</span><span class="pt">Cargó entre medias<small>${entrePz?entrePz+" pz":""}</small></span><b>${avKg(entreKg)}</b></div>
+    ${verE?`<div class="mov car"><div class="pl"><span class="ps">+</span><span class="pt">Cargó entre medias<small>${entrePz?entrePz+" pz":""}</small></span><b>${entreKg?"+"+avKg(entreKg)+" kg":"—"}</b></div>
       <div class="pb"><div class="av-chips">${entre.map((e,i)=>`<span class="av-w"><b>${avN(e.pz)??"?"} pz · ${avKg(avN(e.kg))}</b><button data-quita="${b}|entre|${i}" aria-label="Quitar">×</button></span>`).join("")}</div>
-      <div class="acc"><input id="avEp-${b}" class="num" inputmode="numeric" placeholder="Pz" style="width:70px"><input id="avEk-${b}" class="num" inputmode="decimal" placeholder="Kilos" style="flex:1"><button class="btn" data-entre="${b}">Añadir</button></div></div>
+      <div class="acc"><input id="avEp-${b}" class="num" inputmode="numeric" placeholder="Pz" style="width:70px"><input id="avEk-${b}" class="num" inputmode="decimal" placeholder="Kilos" style="flex:1"><button class="btn" data-entre="${b}">Añadir</button></div></div></div>
       <div class="pl sub"><span class="ps">=</span><span class="pt">Total llevaba</span><b id="avTL-${b}">${avKg(w.total)} kg</b></div>`
     :`<button class="lnk" data-verentre="${b}">+ Cargó algo entre medias</button>`}
-    <div class="pl"><span class="ps">−</span><span class="pt">Descarga hoy<small>${cajas(w.d)}</small></span><b>${w.d.n?avKg(w.d.neto)+" kg":"—"}</b></div>
-    <div class="pb">${chips("desc")}${add("desc","Peso de cada caja y Intro")}</div>
+    <div class="mov des"><div class="pl"><span class="ps">−</span><span class="pt">Descarga hoy<small>${cajas(w.d)}</small></span><b>${w.d.n?"−"+avKg(w.d.neto)+" kg":"—"}</b></div>
+    <div class="pb">${chips("desc")}${add("desc","Peso de cada caja y Intro")}</div></div>
     <div class="pl sub"><span class="ps">=</span><span class="pt">Vendido</span><b id="avVe-${b}">${avKg(w.vend)} kg</b></div>
     <div class="pb av-alb"><label class="l" for="avAlb-${b}" style="margin:0">Según albaranes</label><input id="avAlb-${b}" class="num" data-pk="${b}|albKg" inputmode="decimal" value="${avF(avN(p.albKg))}" placeholder="kg" style="width:100px">
       <button class="av-mini-ok ${ok?"on":""}" data-albok="${b}" title="Coincide con lo vendido">✓</button><span class="chip ${avDifCls(w.difG)}" id="avDif-${b}">${avDifTxt(w.difG)}</span></div>
-    <div class="pl"><span class="ps">+</span><span class="pt">Carga hoy<small>${cajas(w.cg)}${code&&lx.ca?` · ${lx.ca} pz en la hoja`:""}</small></span><b>${w.cg.n?avKg(w.cg.neto)+" kg":"—"}</b></div>
-    <div class="pb">${chips("carga")}${add("carga","Peso de cada caja y Intro")}</div>
+    <div class="mov car"><div class="pl"><span class="ps">+</span><span class="pt">Carga hoy<small>${cajas(w.cg)}${code&&lx.ca?` · ${lx.ca} pz en la hoja`:""}</small></span><b>${w.cg.n?"+"+avKg(w.cg.neto)+" kg":"—"}</b></div>
+    <div class="pb">${chips("carga")}${add("carga","Peso de cada caja y Intro")}</div></div>
     <div class="pl sub fin"><span class="ps">=</span><span class="pt">Sale con</span><b>${avKg(w.sale)} kg</b></div></div>`;
 }
 function avPesoVivo(b){const w=avPeso(avCuadre(),b),d=$("#avDif-"+b),set=(id,t)=>{const e=$(id);if(e)e.textContent=t};if(d){d.className="chip "+avDifCls(w.difG);d.textContent=avDifTxt(w.difG)}
