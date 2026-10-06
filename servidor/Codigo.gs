@@ -121,7 +121,7 @@ var ACCIONES = {
     if (!p.id) {
       var id = siguienteId_();
       sh.appendRow([id, ahora, u.nombre, 'ENVIADO', p.obs || '', JSON.stringify(lineas), 1, ahora, u.nombre, '', '']);
-      log_(u, 'NUEVO PEDIDO', id, resumen_(lineas));
+      log_(u, 'NUEVO PEDIDO', id, resumen_(lineas) + (p.obs ? ' · OBS: ' + p.obs : ''));
       return {pedido: pedidoOut_(buscar_('PEDIDOS', 'ID', id).obj)};
     }
     var f = buscar_('PEDIDOS', 'ID', p.id);
@@ -133,7 +133,7 @@ var ACCIONES = {
       throw new Error('El pedido está ' + f.obj.ESTADO.toLowerCase() + ' y no se puede cambiar');
     escribir_(sh, f.fila, {OBS: p.obs || '', LINEAS_JSON: JSON.stringify(lineas),
       VERSION: (+f.obj.VERSION || 1) + 1, ACTUALIZADO: ahora, ACTUALIZADO_POR: u.nombre});
-    log_(u, 'MODIFICA PEDIDO', p.id, resumen_(lineas));
+    log_(u, 'MODIFICA PEDIDO', p.id, resumen_(lineas) + (p.obs ? ' · OBS: ' + p.obs : ''));
     return {pedido: pedidoOut_(buscar_('PEDIDOS', 'ID', p.id).obj)};
   },
 
@@ -168,6 +168,23 @@ var ACCIONES = {
       ACTUALIZADO: new Date(), ACTUALIZADO_POR: u.nombre});
     log_(u, 'REABRE PEDIDO', req.id, '');
     return {pedido: pedidoOut_(buscar_('PEDIDOS', 'ID', req.id).obj)};
+  },
+
+  // Historia de lo pedido: el original y cada modificación (sale del LOG)
+  historialPedido: function (req, u) {
+    var id = String(req.id || ''), out = [];
+    var v = hoja_('LOG').getDataRange().getValues();
+    for (var i = 1; i < v.length; i++) {
+      var r = v[i], acc = String(r[2]);
+      if (String(r[3]) !== id || (acc !== 'NUEVO PEDIDO' && acc !== 'MODIFICA PEDIDO')) continue;
+      var det = String(r[4] || ''), obs = null, k = det.indexOf(' · OBS: ');
+      if (k >= 0) { obs = det.slice(k + 8); det = det.slice(0, k); }
+      var ls = det.split(', ').map(function (t) {
+        var m = t.match(/^(-?[\d.]+)\s+(.+)$/); return m ? {c: m[2].trim(), pz: num_(m[1])} : null;
+      }).filter(function (x) { return x; });
+      out.push({fecha: iso_(r[0]), usuario: String(r[1]), accion: acc, lineas: ls, obs: obs});
+    }
+    return {historial: out};
   },
 
   anularPedido: function (req, u) {

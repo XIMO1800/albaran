@@ -257,6 +257,9 @@ table.t.sub th{background:#ebe6e7;color:var(--fg)}
 .sumf span{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 .sumf .ok b{color:var(--ok)}.sumf .ko b{color:#c0392b}
 .sumf button.on{border-color:var(--brand);box-shadow:inset 0 0 0 1.5px var(--brand);background:#fbf3f4}
+.hcmp .cmph,.hcmp .cmpr{grid-template-columns:1fr 5.6em 4.6em 30px}
+.hpaso{padding:8px 0;border-top:1px solid var(--line)}.hpaso:first-child{border-top:0}.hpaso>div{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:2px}
+.hq{color:var(--danger);font-weight:600}.ha{color:#1f8a4c;font-weight:600}.hc{color:#a15c00;font-weight:600}
 .cmpr.tot{border-top:2px solid var(--fg);font-size:16px}
 body.desk .sumf{max-width:640px}
 .obsT{display:flex;gap:12px;align-items:flex-start;background:#fff35c;border:3px solid #e2b900;border-radius:12px;padding:12px 14px;margin-bottom:12px;color:#1d1618;box-shadow:0 2px 0 #e2b900}
@@ -457,7 +460,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "54 · 06/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "55 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -579,7 +582,7 @@ function render(){
   if(!S.api) return vConfig(app);
   if(!S.pin||!S.user) return vLogin(app);
   if(S.scr){
-    const f={editar:vEditar,preparar:vPreparar,ver:vVer,albaran:vAlbaran,verAlb:vVerAlb,cmp:vCmp}[S.scr.t];
+    const f={editar:vEditar,preparar:vPreparar,ver:vVer,albaran:vAlbaran,verAlb:vVerAlb,cmp:vCmp,hist:vHist}[S.scr.t];
     return f(app);
   }
   ({nuevo:()=>{S.scr={t:"editar",ped:nuevoBorrador()};render()},mios:vListaTienda,preparar:vListaFab,hechos:vListaFabHechos,
@@ -697,6 +700,45 @@ function vDiferencias(app){
     const f=e.target.closest(".sumf [data-f]");if(f){S.difF=f.dataset.f;render();return}
     const t=e.target.closest("[data-cmp]");if(t){S.scr={t:"cmp",id:t.dataset.cmp};render();scrollTo(0,0)}};
 }
+const huboCambio=p=>p.actualizadoPor&&p.actualizado&&p.actualizado!==p.creado;
+// Lo pedido originalmente y cada modificación (del registro del servidor)
+function vHist(app){
+  const sc=S.scr,p=pedDe(sc.id);if(!p){S.scr=null;return render()}
+  barra("");
+  const volver=()=>{S.scr=sc.vuelve;render();scrollTo(0,0)};
+  if(!sc.h){
+    app.innerHTML=`<div class="wrap" style="max-width:900px"><div class="acc" style="margin-bottom:10px"><button class="btn sm" id="bVolver">← Volver</button></div><div class="vacio">${sc.err?esc(sc.err):"Buscando el pedido original…"}</div></div>`;
+    $("#bVolver").onclick=volver;
+    if(!sc.err&&!sc.cargando){sc.cargando=true;api("historialPedido",{id:p.id}).then(j=>{sc.h=j.historial||[];if(S.scr===sc)render()})
+      .catch(e=>{sc.err=/desconocida/i.test(e.message)?"Falta pegar en Apps Script el Codigo.gs nuevo para poder ver los cambios.":e.message;sc.cargando=false;if(S.scr===sc)render()})}
+    return}
+  const H=sc.h, mapa=ls=>{const m=new Map();ls.forEach(l=>m.set(l.c,(m.get(l.c)||0)+(+l.pz||0)));return m};
+  const actual=mapa(p.lineas.filter(l=>!l.extra));
+  const orig=H.length?mapa(H[0].lineas):null;
+  const nom=c=>esc(nomDe(c));
+  const cambios=(a,b)=>{const r=[];new Set([...a.keys(),...b.keys()]).forEach(c=>{const x=a.get(c)||0,y=b.get(c)||0;
+      if(x===y)return;if(!y)r.push(`<span class="hq">Quitó ${x} ${nom(c)}</span>`);else if(!x)r.push(`<span class="ha">Añadió ${y} ${nom(c)}</span>`);else r.push(`<span class="hc">${nom(c)}: ${x} → ${y}</span>`)});return r};
+  const pasos=H.slice(1).map((v,i)=>{const prev=H[i],r=cambios(mapa(prev.lineas),mapa(v.lineas));
+      if(v.obs!==null&&prev.obs!==null&&v.obs!==prev.obs)r.push(`<span class="hc">Cambió las observaciones</span>`);
+      return `<div class="hpaso"><b>${fCorta(v.fecha)} · ${esc(v.usuario)}</b><div>${r.join("")||`<span class="muted">Guardó sin cambiar artículos</span>`}</div></div>`}).join("");
+  let cuerpo;
+  if(!orig) cuerpo=`<div class="vacio">No encuentro en el registro cómo se hizo este pedido.</div>`;
+  else{const cods=[...new Set([...orig.keys(),...actual.keys()])];
+    const filas=cods.map(c=>{const o=orig.get(c)||0,a=actual.get(c)||0,k=o===a?"ok":!a?"no":!o?"mas":"no",
+        t=o===a?"":!a?"Quitado":!o?"Añadido":a<o?`${o-a} menos`:`${a-o} más`;
+      return `<div class="cmpr ${k}"><span class="cmpa"><i class="dot" style="${estiloG(grupoDe(c))}"></i><b>${nom(c)}</b>${t?`<em>${t}</em>`:""}</span><span class="n">${o||"—"}</span><span class="n"><b>${a||"—"}</b></span><span class="ico ${k==="ok"?"si":"no"}">${k==="ok"?"✓":"✗"}</span></div>`}).join("");
+    const sum=m=>[...m.values()].reduce((x,y)=>x+y,0), o0=H[0];
+    cuerpo=`<div class="card cmpc"><div class="cmp hcmp"><div class="cmph"><span>Artículo</span><span>Original</span><span>Ahora</span><span></span></div>${filas}
+      <div class="cmpr tot"><span class="cmpa"><b>Total piezas</b></span><span class="n"><b>${sum(orig)}</b></span><span class="n"><b>${sum(actual)}</b></span><span></span></div></div></div>
+      ${o0.obs!==null&&o0.obs!==(p.obs||"")?`<div class="obsbox"><b>Observaciones originales:</b> ${esc(o0.obs)}</div>`:""}
+      <div class="sec">Cambios</div><div class="card">${pasos||`<span class="muted">No se ha modificado lo pedido.</span>`}</div>`}
+  app.innerHTML=`<div class="wrap" style="max-width:900px">
+    <div class="acc" style="margin-bottom:10px"><button class="btn sm" id="bVolver">← Volver</button></div>
+    <div class="card"><b style="font-family:var(--display);font-size:22px">${fDiaPed(p.creado)}</b><div class="muted">Pedido ${esc(p.id)} · original: ${H.length?`${fCorta(H[0].fecha)} por ${esc(H[0].usuario)}`:"—"}</div></div>
+    ${cuerpo}</div>`;
+  $("#bVolver").onclick=volver;
+}
+
 function vCmp(app){
   const p=pedDe(S.scr.id);if(!p){S.scr=null;return render()}
   barra("");
@@ -844,6 +886,7 @@ function vVer(app){
     <div class="card">${filas}</div>
     <div class="acc">
       ${puedeEditar?`<button class="btn" id="bEdit">Modificar</button>`:""}
+      ${huboCambio(p)?`<button class="btn" id="bHist">Ver cambios</button>`:""}
       ${R!=="TIENDA"?`<button class="btn" id="bHoja">Imprimir hoja de preparación</button>`:""}
       ${alb?`<button class="btn" id="bVerAlb">Ver albarán</button>`:""}
       ${puedeAnular?`<button class="btn del" id="bAnular">Anular pedido</button>`:""}
@@ -852,6 +895,7 @@ function vVer(app){
   </div>`;
   barra(puedePreparar?`<span class="muted">${totPz(p)} piezas</span><button class="btn pri" id="bPrep">${E==="PREPARADO"?"Corregir preparación":E==="PREPARANDO"?"Seguir preparando":"Preparar pedido"}</button>`:"");
   $("#bVolver").onclick=()=>{S.scr=null;render()};
+  const bh=$("#bHist"); if(bh) bh.onclick=()=>{S.scr={t:"hist",id:p.id,vuelve:{t:"ver",id:p.id}};render();scrollTo(0,0)};
   const ed=$("#bEdit"); if(ed) ed.onclick=()=>{S.scr={t:"editar",ped:clone({id:p.id,version:p.version,obs:p.obs,lineas:p.lineas.map(l=>({c:l.c,n:l.n,pz:l.pz,p:l.p}))})};render();scrollTo(0,0)};
   const ho=$("#bHoja"); if(ho) ho.onclick=()=>imprimirHoja(p);
   const va=$("#bVerAlb"); if(va) va.onclick=()=>{S.scr={t:"verAlb",num:p.albaran};render()};
@@ -1134,6 +1178,7 @@ function detalleDesk(p){
     <div class="acc" style="margin-top:12px">
       ${puedePrep?`<button class="btn pri" data-dact="prep">${E==="PREPARADO"?"Corregir preparación":E==="PREPARANDO"?"Seguir preparando":"Preparar pedido"}</button>`:""}
       ${puedeEditar?`<button class="btn" data-dact="edit">Modificar pedido</button>`:""}
+      ${huboCambio(p)?`<button class="btn" data-dact="hist">Ver cambios</button>`:""}
       <button class="btn" data-dact="hoja">Imprimir hoja de preparación</button>
       ${alb?`<button class="btn" data-dact="alb">Ver albarán ${esc(p.albaran)}</button>`:""}
       ${puedeAnular&&(R==="ADMIN"||R==="OFICINA")?`<button class="btn del" data-dact="anular">Anular pedido</button>`:""}
@@ -1141,6 +1186,7 @@ function detalleDesk(p){
 }
 async function accionPedido(p,a){
   if(a==="hoja")return imprimirHoja(p);
+  if(a==="hist"){S.scr={t:"hist",id:p.id,vuelve:null};render();return scrollTo(0,0)}
   if(a==="alb")return abrirAlbaran(p.albaran);
   if(a==="edit"){S.scr={t:"editar",ped:clone({id:p.id,version:p.version,obs:p.obs,lineas:p.lineas.map(l=>({c:l.c,n:l.n,pz:l.pz,p:l.p}))})};return render()}
   if(a==="anular"){const c=await confirmar("Anular pedido "+p.id,"El pedido quedará anulado y no se preparará.",true);if(!c.ok)return;
