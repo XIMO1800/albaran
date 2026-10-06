@@ -454,7 +454,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "52 · 06/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "53 · 06/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1471,7 +1471,7 @@ function vAutoventa(app){
   </div>`;
   app.onclick=async e=>{const bb=e.target.closest("[data-avborra]");
     if(bb){e.stopPropagation();const id=bb.dataset.avborra,c=S.av.cuadres[id];if(!c)return;const t=avTot(c);
-      const r=await confirmar("Borrar cuadre",`¿Borrar el cuadre de ${c.vendedor} (viaje ${avViaje(c)})${t.lleva||t.vend?` (lleva ${t.lleva}, vendidas ${t.vend})`:" (vacío)"}? No se puede deshacer.`);
+      const d0=avDesde(c);$("#cOk").textContent="Borrar";const r=await confirmar("Borrar cuadre",`¿Confirmas el borrado del cuadre de ${c.vendedor}, ${d0?"viaje "+avViaje(c):"del "+avDiaV(c.fecha)}?`);$("#cOk").textContent="Aceptar";
       if(!r.ok)return;delete S.av.cuadres[id];S.av.pend[id]="borrar";avTocar(id);toast("Cuadre borrado");render();return}
     const b=e.target.closest("[data-avabrir],[data-avnuevo],[data-avvend],button");if(!b)return;
     if(b.dataset.avabrir)return avAbrir(b.dataset.avabrir);
