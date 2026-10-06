@@ -402,6 +402,12 @@ table.av-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
 .av-t td,.av-t tbody th{border-top:1px solid var(--line)}
 .av-t tfoot td,.av-t tfoot th{border-top:2px solid var(--brand);font-weight:700;text-align:center;padding:8px 6px}
 .av-t tfoot th{text-align:left;padding-left:12px}
+/* primera columna (artículo) fija al desplazar la tabla a los lados */
+.av-t thead th:first-child,.av-t tbody th,.av-t tfoot th{position:sticky;left:0;z-index:2;background:var(--card);box-shadow:2px 0 0 var(--line)}
+.av-t thead th:first-child{background:var(--brand);z-index:3}
+.av-t tfoot th{background:var(--card)}
+@media (max-width:699px){.av-t tbody th{min-width:0;width:118px;max-width:130px;font-size:14px;padding-left:8px}.av-t thead th:first-child,.av-t tfoot th{padding-left:8px}
+  .av-t td{min-width:88px}}
 .av-c{text-align:center;padding:0 6px;font-size:17px;min-width:52px}
 .av-b{font-weight:700}
 input.av-n{width:100%;min-width:58px;height:46px;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;text-align:center;font-family:var(--display);font-size:22px;font-weight:700;color:var(--brand);padding:0 2px}
@@ -484,7 +490,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "62 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "63 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
