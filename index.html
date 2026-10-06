@@ -432,6 +432,9 @@ tr.av-nada th{color:var(--muted)}
 .pl.sub{border-top:2px solid var(--fg);margin-top:2px}.pl.sub .pt,.pl.sub>b{font-size:19px}
 .pl.fin>b{font-family:var(--display);font-size:26px;color:var(--brand)}
 .pb{margin-left:26px}
+.av-peso>.pl .pt{text-align:right;padding-right:6px}
+.palb{padding-top:2px}.palb .pt{display:flex;align-items:center;justify-content:flex-end;gap:6px}.palb label{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
+.av-peso>.pl .pt{text-align:right;padding-right:6px}
 .padd{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.padd .btn{margin-left:4px}
 .av-alb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;margin-bottom:4px}
 .av-mini-ok{min-width:44px;height:38px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:18px;font-weight:800;color:#c9bcbe;cursor:pointer}.av-mini-ok.on{background:#1f8a4c;border-color:#1f8a4c;color:#fff}
@@ -480,7 +483,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "60 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "61 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1729,8 +1732,7 @@ function avBloquePeso(c,b){
     <div class="mov des"><div class="pl"><span class="ps">−</span><span class="pt">Descarga hoy<small>${cajas(w.d)}</small></span><b>${w.d.n?"−"+avKg(w.d.neto)+" kg":"—"}</b></div>
     <div class="pb">${chips("desc")}${add("desc","Peso caja")}</div></div>
     <div class="pl sub"><span class="ps">=</span><span class="pt">TOTAL VENDIDO</span><b id="avVe-${b}">${avKg(w.vend)} kg</b></div>
-    <div class="pb av-alb"><label class="l" for="avAlb-${b}" style="margin:0">Según albaranes</label><input id="avAlb-${b}" class="num" data-pk="${b}|albKg" inputmode="decimal" value="${avF(avN(p.albKg))}" placeholder="kg" style="width:100px">
-      <button class="av-mini-ok ${ok?"on":""}" data-albok="${b}" title="Coincide con lo vendido">✓</button><span class="chip ${avDifCls(w.difG)}" id="avDif-${b}">${avDifTxt(w.difG)}</span></div>
+    <div class="pl palb"><span></span><span class="pt"><button class="av-mini-ok ${ok?"on":""}" data-albok="${b}" title="Coincide con lo vendido">✓</button><span class="chip ${avDifCls(w.difG)}" id="avDif-${b}">${avDifTxt(w.difG)}</span><label for="avAlb-${b}">Albaranes</label></span><input id="avAlb-${b}" class="num pin" data-pk="${b}|albKg" inputmode="decimal" value="${avF(avN(p.albKg))}" placeholder="kg"></div>
     <div class="mov car"><div class="pl"><span class="ps">+</span><span class="pt">Carga hoy<small>${cajas(w.cg)}${code&&lx.ca?` · ${lx.ca} pz en la hoja`:""}</small></span><b>${w.cg.n?"+"+avKg(w.cg.neto)+" kg":"—"}</b></div>
     <div class="pb">${chips("carga")}${add("carga","Peso caja")}</div></div>
     <div class="pl sub fin"><span class="ps">=</span><span class="pt">CARGA FINAL</span><b>${avKg(w.sale)} kg</b></div></div>`;
