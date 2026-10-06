@@ -416,6 +416,18 @@ tr.av-nada th{color:var(--muted)}
 .av-ok{color:var(--ok)}.av-mal{color:var(--danger)}.av-neu{color:var(--muted)}
 .chip.av-ok{background:#e1f2e7}.chip.av-mal{background:#fde4e4}.chip.av-neu{background:#ebe6e7}
 .av-pie{margin-top:12px;align-items:center}
+.nalb{color:var(--brand);font-weight:600}
+.pl{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:6px;padding:9px 0 3px}
+.pl .ps{font-weight:800;color:var(--muted);font-size:20px;text-align:center;line-height:1}
+.pl .pt{font-weight:700;font-size:16px}.pl .pt small{font-weight:500;color:var(--muted);margin-left:8px;font-size:13px}
+.pl>b{font-variant-numeric:tabular-nums;font-size:18px;text-align:right}
+.pl .pin{width:110px;text-align:right;font-weight:700}
+.pl.sub{border-top:2px solid var(--fg);margin-top:2px}.pl.sub .pt,.pl.sub>b{font-size:19px}
+.pl.fin>b{font-family:var(--display);font-size:26px;color:var(--brand)}
+.pb{margin-left:26px}
+.av-alb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;margin-bottom:4px}
+.av-mini-ok{min-width:44px;height:38px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:18px;font-weight:800;color:#c9bcbe;cursor:pointer}.av-mini-ok.on{background:#1f8a4c;border-color:#1f8a4c;color:#fff}
+.lnk{background:none;border:0;color:var(--brand);font-weight:600;padding:6px 0 0 26px;cursor:pointer;font-size:14px}
 .av-pesos{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px}
 .av-peso{margin:0}
 .av-g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -460,7 +472,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "55 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "57 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1025,7 +1037,7 @@ function vVerAlb(app){
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="justify-content:space-between;align-items:center;margin-bottom:10px"><button class="btn sm" id="bVolver">← Volver</button>
       ${a.estado==="ANULADO"?`<span class="chip e-ANULADO">Anulado</span>`:""}</div>
-    <div class="card"><b style="font-size:18px">Albarán nº ${esc(a.num)}</b><div class="muted">${fDia(a.fecha)} · ${esc(a.cliente)} · pedidos ${esc(a.pedidos)}${a.creadoPor?` · emitido por ${esc(a.creadoPor)}`:""}</div></div>
+    <div class="card"><b style="font-family:var(--display);font-size:24px">${fDiaPed(a.fecha+"T12:00:00")}</b><div class="muted"><span class="nalb">Albarán nº ${esc(a.num)}</span> · ${esc(a.cliente)} · pedidos ${esc(a.pedidos)}${a.creadoPor?` · emitido por ${esc(a.creadoPor)}`:""}</div></div>
     ${a.obs?`<div class="obsbox">${esc(a.obs)}</div>`:""}
     <div class="card">${filas}</div>
     ${S.rol==="ADMIN"&&a.estado!=="ANULADO"?`<button class="btn del" id="bAnA">Anular albarán</button><p class="muted">Al anularlo, sus pedidos vuelven a «Preparado» para corregirlos y emitir otro.</p>`:""}
@@ -1043,8 +1055,8 @@ function vAlbaranes(app){
   const l=S.albaranes.filter(a=>!q||String(a.num).includes(q)||fDia(a.fecha).includes(q)).sort((a,b)=>(+b.num)-(+a.num));
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="margin-bottom:8px"><input id="fA" placeholder="Buscar nº o fecha" value="${esc(S.filtroAlb)}" style="flex:1"></div>
-    ${l.map(a=>`<div class="card ped" data-alb="${esc(a.num)}"><span></span><b>Albarán ${esc(a.num)}</b><span>${a.estado==="ANULADO"?`<span class="chip e-ANULADO">Anulado</span>`:`<b>${eur(a.total)} €</b>`}</span>
-      <div class="meta">${fDia(a.fecha)} · ${esc(a.cliente)} · pedidos ${esc(a.pedidos)} · ${kgf(a.kg)} kg</div></div>`).join("")||`<div class="vacio">No hay albaranes en los últimos 60 días.</div>`}</div>`;
+    ${l.map(a=>`<div class="card ped" data-alb="${esc(a.num)}"><span></span><b>${fDiaPed(a.fecha+"T12:00:00")}</b><span>${a.estado==="ANULADO"?`<span class="chip e-ANULADO">Anulado</span>`:`<b>${eur(a.total)} €</b>`}</span>
+      <div class="meta"><span class="nalb">Albarán ${esc(a.num)}</span> · ${esc(a.cliente)} · pedidos ${esc(a.pedidos)} · ${kgf(a.kg)} kg</div></div>`).join("")||`<div class="vacio">No hay albaranes en los últimos 60 días.</div>`}</div>`;
   barra("");
   onLista(app);
   $("#fA").oninput=e=>{S.filtroAlb=e.target.value;const p=e.target.selectionStart;render();const f=$("#fA");f.focus();f.setSelectionRange(p,p)};
@@ -1267,11 +1279,11 @@ function vAlbaranesDesk(app){
   if(!S.H.data&&!S.H.cargando){cargarHist();return}
   const albs=(S.H.data?S.H.data.albaranes:[]).slice().sort((a,b)=>(+b.num)-(+a.num));
   const val=albs.filter(a=>a.estado!=="ANULADO");
-  const filas=albs.map(a=>`<tr class="cl" data-alb="${esc(a.num)}"><td><b>${esc(a.num)}</b></td><td>${fDia(a.fecha)}</td><td>${esc(a.cliente)}</td><td>${esc(a.pedidos)}</td><td class="n">${a.lineas.length}</td><td class="n">${kgf(a.kg)}</td><td class="n"><b>${eur(a.total)} €</b></td>
+  const filas=albs.map(a=>`<tr class="cl" data-alb="${esc(a.num)}"><td><b>${fDia(a.fecha)}</b></td><td class="nalb">${esc(a.num)}</td><td>${esc(a.cliente)}</td><td>${esc(a.pedidos)}</td><td class="n">${a.lineas.length}</td><td class="n">${kgf(a.kg)}</td><td class="n"><b>${eur(a.total)} €</b></td>
     <td>${a.estado==="ANULADO"?`<span class="chip e-ANULADO">Anulado</span>`:`<span class="chip e-PREPARADO">Emitido</span>`}</td><td>${a.estado==="ANULADO"?"":a.exportado?`<span class="tag ok">Exportado ${fDiaCorto(a.exportado)}</span>`:`<span class="tag no">Pendiente</span>`}</td><td>${esc(a.creadoPor||"")}</td></tr>`).join("");
   app.innerHTML=`<div class="wrap">${filtroFechas()}
     <div class="kpis"><div class="kpi"><span>Albaranes</span><b>${val.length}</b></div><div class="kpi"><span>Kg</span><b>${kgf(val.reduce((s,a)=>s+(+a.kg||0),0))}</b></div><div class="kpi"><span>Importe</span><b>${eur(val.reduce((s,a)=>s+(+a.total||0),0))} €</b></div><div class="kpi"><span>Sin exportar</span><b>${val.filter(a=>!a.exportado).length}</b></div></div>
-    <div class="tblw"><table class="t"><thead><tr><th>Nº</th><th>Fecha</th><th>Cliente</th><th>Pedidos</th><th class="n">Líneas</th><th class="n">Kg</th><th class="n">Total</th><th>Estado</th><th>Programa gestión</th><th>Emitido por</th></tr></thead>
+    <div class="tblw"><table class="t"><thead><tr><th>Fecha</th><th>Nº</th><th>Cliente</th><th>Pedidos</th><th class="n">Líneas</th><th class="n">Kg</th><th class="n">Total</th><th>Estado</th><th>Programa gestión</th><th>Emitido por</th></tr></thead>
     <tbody>${filas||`<tr><td colspan="10" class="vacio">No hay albaranes en esas fechas.</td></tr>`}</tbody></table></div></div>`;
   enlazarFiltro(app);
   app.onclick=e=>{const r=e.target.closest("[data-alb]");if(r)abrirAlbaran(r.dataset.alb)};
@@ -1289,8 +1301,8 @@ function vExportar(app){
   app.innerHTML=`<div class="wrap">${filtroFechas(`<label class="lbl">Mostrar<select id="hX"><option value="todos"${S.H.exp==="todos"?" selected":""}>Todos</option><option value="pend"${S.H.exp==="pend"?" selected":""}>Sin enviar</option><option value="hechos"${S.H.exp==="hechos"?" selected":""}>Enviados</option></select></label>`)}
     <p class="nota">Cada albarán se envía <b>solo</b> al programa de gestión al emitirlo: fichero <b>T + nº de albarán</b> (p. ej. T0000012.TXT) en la carpeta V:\\SERVIDORW10\\ALBTIEND, unos minutos después. Aquí ves cuáles han llegado a enviarse. Si alguno sale «Sin enviar» o hay que repetirlo (por ejemplo, tras corregir un código), márcalo y pulsa «Enviar al programa».</p>
     ${npend?`<div class="aviso">${npend} albarán(es) sin enviar al programa.</div>`:""}
-    <div class="tblw"><table class="t"><thead><tr><th><input type="checkbox" id="xAll" class="selbox" ${vis.length&&sel.length===vis.length?"checked":""} aria-label="Marcar todos"></th><th>Nº</th><th>Fecha</th><th>Pedidos</th><th class="n">Líneas</th><th class="n">Kg</th><th class="n">Importe</th><th>Programa de gestión</th></tr></thead>
-    <tbody>${vis.map(a=>{const f=fich(a);return `<tr><td><input type="checkbox" class="selbox" data-x="${esc(a.num)}" ${S.H.selExp.has(String(a.num))?"checked":""} aria-label="Albarán ${esc(a.num)}"></td><td><b>${esc(a.num)}</b></td><td>${fDia(a.fecha)}</td><td>${esc(a.pedidos)}</td><td class="n">${a.lineas.length}</td><td class="n">${kgf(a.kg)}</td><td class="n">${eur(a.total)} €</td>
+    <div class="tblw"><table class="t"><thead><tr><th><input type="checkbox" id="xAll" class="selbox" ${vis.length&&sel.length===vis.length?"checked":""} aria-label="Marcar todos"></th><th>Fecha</th><th>Nº</th><th>Pedidos</th><th class="n">Líneas</th><th class="n">Kg</th><th class="n">Importe</th><th>Programa de gestión</th></tr></thead>
+    <tbody>${vis.map(a=>{const f=fich(a);return `<tr><td><input type="checkbox" class="selbox" data-x="${esc(a.num)}" ${S.H.selExp.has(String(a.num))?"checked":""} aria-label="Albarán ${esc(a.num)}"></td><td><b>${fDia(a.fecha)}</b></td><td class="nalb">${esc(a.num)}</td><td>${esc(a.pedidos)}</td><td class="n">${a.lineas.length}</td><td class="n">${kgf(a.kg)}</td><td class="n">${eur(a.total)} €</td>
       <td>${a.exportado?`<span class="tag ok">Enviado ${fCorta(a.exportado)}${f?" · "+f[1]:a.exportadoPor?" · "+esc(a.exportadoPor):""}</span>`:`<span class="tag no">Sin enviar</span>`}</td></tr>`}).join("")||`<tr><td colspan="8" class="vacio">No hay albaranes en estas fechas.</td></tr>`}</tbody></table></div></div>`;
   barra(`<span class="muted">${sel.length} albarán(es) marcados</span><button class="btn pri" id="xEnv" ${sel.length?"":"disabled"}>Enviar al programa</button>`);
   enlazarFiltro(app);
@@ -1645,6 +1657,8 @@ function vAvCuadre(app){
     if(b.dataset.addp)return avAddPeso(b.dataset.addp);
     if(b.dataset.tog){const[bk,ls,i]=b.dataset.tog.split("|"),e2=c.pesos[bk][ls][+i];e2.t=!e2.t;avTocar();avRepintar();return}
     if(b.dataset.quita){const[bk,ls,i]=b.dataset.quita.split("|");c.pesos[bk][ls].splice(+i,1);avTocar();avRepintar();return}
+    if(b.dataset.verentre){(S.av.verEntre||(S.av.verEntre={}))[b.dataset.verentre]=true;avRepintar();return}
+    if(b.dataset.albok){const bk=b.dataset.albok,w=avPeso(c,bk);if(w.vend===null)return;const p=c.pesos[bk]||(c.pesos[bk]=avPeso0());p.albKg=(avN(p.albKg)!==null&&Math.abs(Math.round((avN(p.albKg)-w.vend)*1000))<=AV_TOL)?null:w.vend;avTocar();avRepintar();return}
     if(b.dataset.entre){const bk=b.dataset.entre,pz=avP($("#avEp-"+bk).value),kg=avP($("#avEk-"+bk).value);if(kg===null)return;const p=c.pesos[bk]||(c.pesos[bk]=avPeso0());(p.entre||(p.entre=[])).push({pz,kg});avTocar();avRepintar();return}
     if(b.id==="avCerrar"){c.estado="cerrado";c.cierre=hoy();delete c.primero;avTocar();
       const sig=Object.entries(S.av.cuadres).find(([i2,x])=>x.origen===id&&x.estado!=="cerrado"), otro=avAbierto(c.vendedor);
@@ -1689,30 +1703,32 @@ function avAddPeso(key){
   const y=scrollY;render();scrollTo(0,y);const n=$(`#avAdd-${bk}-${ls}`);if(n)n.focus({preventScroll:true});
 }
 function avBloquePeso(c,b){
-  const w=avPeso(c,b),p=w.p,code=avCfg().peso[b],lx=avCalc(avLin(c,code));
-  const chips=ls=>`<div class="av-chips">${(p[ls]||[]).map((e,i)=>`<span class="av-w"><b>${avKg(avN(e.kg))}</b><button data-tog="${b}|${ls}|${i}" class="${e.t?"on":""}">${e.t?"−tara":"sin tara"}</button><button data-quita="${b}|${ls}|${i}" aria-label="Quitar peso">×</button></span>`).join("")}</div>`;
-  const add=ls=>`<div class="acc"><input id="avAdd-${b}-${ls}" class="num" inputmode="decimal" placeholder="Peso y Intro" data-addp="${b}|${ls}" style="flex:1"><button class="btn" data-addp="${b}|${ls}">Añadir</button></div>`;
+  const w=avPeso(c,b),p=w.p,code=avCfg().peso[b],lx=avCalc(avLin(c,code)),conTara=w.tara>0;
+  const chips=ls=>`<div class="av-chips">${(p[ls]||[]).map((e,i)=>`<span class="av-w"><b>${avKg(avN(e.kg))}</b>${conTara?`<button data-tog="${b}|${ls}|${i}" class="${e.t?"on":""}" title="Restar la tara de la caja">${e.t?"−tara":"sin tara"}</button>`:""}<button data-quita="${b}|${ls}|${i}" aria-label="Quitar peso">×</button></span>`).join("")}</div>`;
+  const add=(ls,ph)=>`<div class="acc"><input id="avAdd-${b}-${ls}" class="num" inputmode="decimal" placeholder="${ph}" data-addp="${b}|${ls}" style="flex:1"><button class="btn" data-addp="${b}|${ls}">Añadir</button></div>`;
+  const cajas=(x)=>x.n?`${x.n} caja${x.n===1?"":"s"}${x.taras?` · taras −${avKg(x.taras)}`:""}`:"";
+  const entre=p.entre||[], verE=entre.length||(S.av.verEntre||{})[b], entreKg=avR3(entre.reduce((a,e)=>a+(avN(e.kg)||0),0)), entrePz=entre.reduce((a,e)=>a+(avN(e.pz)||0),0);
+  const ok=w.difG!==null&&Math.abs(w.difG)<=AV_TOL;
   return `<div class="card av-peso">
-    <div class="acc" style="align-items:center"><b class="av-h">${AV_PNOM[b]}</b>${code?`<span class="muted">${esc(code)}</span>`:`<span class="muted">sin artículo asignado</span>`}<span style="flex:1"></span><label class="l" for="avTara-${b}" style="margin:0">Tara</label><input id="avTara-${b}" class="num" data-tara="${b}" inputmode="decimal" value="${avF(w.tara)}" style="width:72px"></div>
-    <div class="sec">Llevaba</div>
-    <div class="av-g2"><div><span class="l">Piezas (de la hoja)</span><b class="av-big">${code?lx.lleva:"—"}</b></div>
-      <div><label class="l" for="avLl-${b}">Kilos</label><input id="avLl-${b}" class="num" data-pk="${b}|llevaKg" inputmode="decimal" value="${avF(avN(p.llevaKg))}"></div></div>
-    <span class="l" style="margin-top:8px">Cargado entre cuadres</span>
-    <div class="av-chips">${(p.entre||[]).map((e,i)=>`<span class="av-w"><b>${avN(e.pz)??"?"} pz · ${avKg(avN(e.kg))}</b><button data-quita="${b}|entre|${i}" aria-label="Quitar">×</button></span>`).join("")}</div>
-    <div class="acc"><input id="avEp-${b}" class="num" inputmode="numeric" placeholder="Piezas" style="width:90px"><input id="avEk-${b}" class="num" inputmode="decimal" placeholder="Kilos" style="flex:1"><button class="btn" data-entre="${b}">Añadir</button></div>
-    <div class="av-kv"><span>Total llevaba</span><b id="avTL-${b}">${avKg(w.total)} kg</b></div>
-    <div class="sec">Descarga · peso de cada caja o bandeja</div>${chips("desc")}${add("desc")}
-    <div class="av-kv"><span class="muted">Bruto (${w.d.n})</span><b>${avKg(w.d.bruto)}</b><span class="muted">Taras</span><b>−${avKg(w.d.taras)}</b><span class="av-tot">Trae</span><b class="av-tot">${avKg(w.d.neto)} kg</b></div>
-    <div class="sec">Vendido</div>
-    <div class="av-g2"><div><span class="l">Según báscula</span><b class="av-big" id="avVe-${b}">${avKg(w.vend)} kg</b></div>
-      <div><label class="l" for="avAlb-${b}">Kilos en albaranes</label><input id="avAlb-${b}" class="num" data-pk="${b}|albKg" inputmode="decimal" value="${avF(avN(p.albKg))}"></div></div>
-    <div style="margin-top:6px"><span class="chip ${avDifCls(w.difG)}" id="avDif-${b}">${avDifTxt(w.difG)}</span></div>
-    <div class="sec">Carga hoy${code?` · ${lx.ca} piezas en la hoja`:""}</div>${chips("carga")}${add("carga")}
-    <div class="av-kv"><span class="muted">Bruto (${w.cg.n})</span><b>${avKg(w.cg.bruto)}</b><span class="muted">Taras</span><b>−${avKg(w.cg.taras)}</b><span>Cargado</span><b>${avKg(w.cg.neto)} kg</b>
-      <span class="av-tot">Sale con</span><b class="av-tot av-big">${avKg(w.sale)} kg</b></div></div>`;
+    <div class="acc" style="align-items:center;margin-bottom:2px"><b class="av-h">${AV_PNOM[b]}</b><span class="muted">${code?esc(nomDe(code)):"sin artículo asignado"}</span><span style="flex:1"></span>
+      <label class="l" for="avTara-${b}" style="margin:0">Tara caja</label><input id="avTara-${b}" class="num" data-tara="${b}" inputmode="decimal" value="${avF(w.tara)}" style="width:64px"></div>
+    <div class="pl"><span class="ps"></span><span class="pt">Llevaba<small>${code?lx.lleva+" pz":""}</small></span><input id="avLl-${b}" class="num pin" data-pk="${b}|llevaKg" inputmode="decimal" value="${avF(avN(p.llevaKg))}" placeholder="kg"></div>
+    ${verE?`<div class="pl"><span class="ps">+</span><span class="pt">Cargó entre medias<small>${entrePz?entrePz+" pz":""}</small></span><b>${avKg(entreKg)}</b></div>
+      <div class="pb"><div class="av-chips">${entre.map((e,i)=>`<span class="av-w"><b>${avN(e.pz)??"?"} pz · ${avKg(avN(e.kg))}</b><button data-quita="${b}|entre|${i}" aria-label="Quitar">×</button></span>`).join("")}</div>
+      <div class="acc"><input id="avEp-${b}" class="num" inputmode="numeric" placeholder="Pz" style="width:70px"><input id="avEk-${b}" class="num" inputmode="decimal" placeholder="Kilos" style="flex:1"><button class="btn" data-entre="${b}">Añadir</button></div></div>
+      <div class="pl sub"><span class="ps">=</span><span class="pt">Total llevaba</span><b id="avTL-${b}">${avKg(w.total)} kg</b></div>`
+    :`<button class="lnk" data-verentre="${b}">+ Cargó algo entre medias</button>`}
+    <div class="pl"><span class="ps">−</span><span class="pt">Descarga hoy<small>${cajas(w.d)}</small></span><b>${w.d.n?avKg(w.d.neto)+" kg":"—"}</b></div>
+    <div class="pb">${chips("desc")}${add("desc","Peso de cada caja y Intro")}</div>
+    <div class="pl sub"><span class="ps">=</span><span class="pt">Vendido</span><b id="avVe-${b}">${avKg(w.vend)} kg</b></div>
+    <div class="pb av-alb"><label class="l" for="avAlb-${b}" style="margin:0">Según albaranes</label><input id="avAlb-${b}" class="num" data-pk="${b}|albKg" inputmode="decimal" value="${avF(avN(p.albKg))}" placeholder="kg" style="width:100px">
+      <button class="av-mini-ok ${ok?"on":""}" data-albok="${b}" title="Coincide con lo vendido">✓</button><span class="chip ${avDifCls(w.difG)}" id="avDif-${b}">${avDifTxt(w.difG)}</span></div>
+    <div class="pl"><span class="ps">+</span><span class="pt">Carga hoy<small>${cajas(w.cg)}${code&&lx.ca?` · ${lx.ca} pz en la hoja`:""}</small></span><b>${w.cg.n?avKg(w.cg.neto)+" kg":"—"}</b></div>
+    <div class="pb">${chips("carga")}${add("carga","Peso de cada caja y Intro")}</div>
+    <div class="pl sub fin"><span class="ps">=</span><span class="pt">Sale con</span><b>${avKg(w.sale)} kg</b></div></div>`;
 }
 function avPesoVivo(b){const w=avPeso(avCuadre(),b),d=$("#avDif-"+b),set=(id,t)=>{const e=$(id);if(e)e.textContent=t};if(d){d.className="chip "+avDifCls(w.difG);d.textContent=avDifTxt(w.difG)}
-  set("#avTL-"+b,avKg(w.total)+" kg");set("#avVe-"+b,avKg(w.vend)+" kg");avBarra()}
+  set("#avTL-"+b,avKg(w.total)+" kg");set("#avVe-"+b,avKg(w.vend)+" kg");const ok=$(`[data-albok="${b}"]`);if(ok)ok.classList.toggle("on",w.difG!==null&&Math.abs(w.difG)<=AV_TOL);avBarra()}
 function avHoja(c){
   const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini"),cerr=c.estado==="cerrado";
   const fs=avRefs(c).filter(k=>avCalc(avLin(c,k)).usada);
