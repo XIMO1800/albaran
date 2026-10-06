@@ -453,7 +453,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "49 · 06/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "50 · 06/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1541,33 +1541,27 @@ function avAyudaPapel(c){
 }
 function vAvCuadre(app){
   const c=avCuadre(), id=S.av.cur, cerr=c.estado==="cerrado", cf=avCfg();
-  const F=[["desc","1 · Descarga"],["alb","2 · Albaranes"],["carga","3 · Carga"],["pesos","4 · Pesos"],["hoja","Hoja y cierre"]];
+  if(S.av.fase==="alb")S.av.fase="hoja";
+  const F=[["desc","1 · Descarga"],["pesos","2 · Pesos"],["carga","3 · Carga"],["hoja","4 · Hoja y cierre"]];
   let cuerpo="";
   if(S.av.fase==="desc"){const fs=avFilas(c);
     cuerpo=`${avAyudaPapel(c)}<p class="nota">Cuenta lo que trae y apúntalo en <b>Descarga</b>. <b>Lleva</b> viene del cuadre anterior; en <b>+Cargó</b> lo que se llevó entre cuadres. Con Intro pasas al siguiente.</p>
     <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Lleva</th><th>+Cargó</th><th>Descarga</th><th>Vendidos</th></tr></thead><tbody>
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th>${avIn(i,k,"ll",l.ll,"soft")}${avIn(i,k,"en",l.en,"soft")}${avIn(i,k,"de",l.de)}<td class="av-c av-b" data-c="vend"></td></tr>`}).join("")||`<tr><td colspan="5" class="vacio">No hay artículos. Márcalos en «Artículos de autoventa» o pulsa «Ver todo el catálogo».</td></tr>`}
     </tbody><tfoot><tr><th>Total</th><td data-t="lleva"></td><td></td><td data-t="de"></td><td data-t="vend"></td></tr></tfoot></table></div>
-    <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="alb">Siguiente: albaranes →</button></div>`}
-  else if(S.av.fase==="alb"){const fs=avFilas(c,x=>x.vend||x.al!==null);
-    cuerpo=`<p class="nota"><b>Vendidos</b> = lo que llevaba − lo que trae (lo físico). En <b>Según albaranes</b> apunta lo que dice el listado de Bernardo para cada referencia: toca <b>✓</b> si coincide o escribe su número. Si no cuadra, sale la diferencia para buscar el fallo (albarán sin hacer o mal contado).</p>
-    <div class="acc" style="align-items:center;margin-bottom:8px"><button class="btn sm" id="avTodoOk">Marcar todo como cuadrado</button><span style="flex:1"></span><span id="avRes"></span></div>
-    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Vendidos</th><th>Según albaranes</th><th>Cuadra</th></tr></thead><tbody>
-    ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c av-b" data-c="vend"></td>${avIn(i,k,"al",l.al)}<td><button class="av-tick" data-tick="${esc(k)}" data-c="tick"></button></td></tr>`}).join("")||`<tr><td colspan="4" class="vacio">Primero rellena la descarga.</td></tr>`}
-    </tbody></table></div>
-    <div class="acc av-pie"><button class="btn" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn pri" data-avf="carga">Siguiente: carga →</button></div>`}
+    <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="pesos">Siguiente: pesos →</button></div>`}
   else if(S.av.fase==="carga"){const fs=avFilas(c);
-    cuerpo=`<p class="nota">Lo que carga hoy. <b>Sale con</b> es lo que lleva el próximo día de ruta y será el «Lleva» del siguiente cuadre.</p>
-    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Trae</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>
+    cuerpo=`<p class="nota"><b>Descarga</b> es lo que trajo (lo apuntado en la descarga). En <b>Carga</b> lo que carga hoy. <b>Sale con</b> es lo que lleva el próximo día de ruta y será el «Lleva» del siguiente cuadre.</p>
+    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Descarga</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted" data-c="de"></td>${avIn(i,k,"ca",l.ca)}<td class="av-c av-b" data-c="sale"></td></tr>`}).join("")}
     </tbody><tfoot><tr><th>Total</th><td data-t="de"></td><td data-t="ca"></td><td data-t="sale"></td></tr></tfoot></table></div>
-    <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="pesos">Siguiente: pesos →</button></div>`}
+    <div class="acc av-pie"><button class="btn" data-avf="pesos">← Pesos</button>${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="hoja">Siguiente: hoja y cierre →</button></div>`}
   else if(S.av.fase==="pesos"){const bj=c.bandejas||{},tb=(avN(bj.desc)||0)+(avN(bj.carga)||0);
     cuerpo=`<div class="av-pesos">${avBloquePeso(c,"grande")}${avBloquePeso(c,"mini")}</div><div class="card"><div class="sec" style="margin-top:0">Bandejas</div>
       <div class="av-g2"><div><label class="l" for="avBjD">Descarga</label><input id="avBjD" class="num" data-bj="desc" inputmode="numeric" value="${avF(avN(bj.desc))}"></div>
       <div><label class="l" for="avBjC">Carga</label><input id="avBjC" class="num" data-bj="carga" inputmode="numeric" value="${avF(avN(bj.carga))}"></div></div>
       <div class="av-kv" style="margin-top:8px"><span>Total en el camión</span><b id="avBjT">${tb||"—"}</b></div></div>
-      <div class="acc av-pie"><button class="btn" data-avf="carga">← Carga</button><span style="flex:1"></span><button class="btn pri" data-avf="hoja">Siguiente: hoja →</button></div>`}
+      <div class="acc av-pie"><button class="btn" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn pri" data-avf="carga">Siguiente: carga →</button></div>`}
   else cuerpo=avHoja(c);
   app.innerHTML=`<div class="wrap av-wrap">
     <div class="acc" style="justify-content:space-between;align-items:center"><button class="btn sm" id="avVolver">← Autoventa</button><span class="muted" id="avSt" style="font-size:13px">${Object.keys(S.av.pend).length?"Pendiente de guardar":"Guardado en la hoja"}</span></div>
@@ -1654,11 +1648,12 @@ function avHoja(c){
   const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini"),cerr=c.estado==="cerrado";
   const fs=avRefs(c).filter(k=>avCalc(avLin(c,k)).usada);
   const tick=x=>!x.vend&&x.al===null?"":x.al===null?`<span class="muted">?</span>`:x.dif===0?`<span class="av-ok">✓</span>`:`<span class="av-mal">${x.dif>0?"+":""}${x.dif}</span>`;
-  return `<div class="acc" style="margin-bottom:8px"><span class="chip ${t.mal?"av-mal":"av-ok"}">${t.mal} con diferencia</span><span class="chip ${t.pend?"e-ENVIADO":"av-neu"}">${t.pend} sin comprobar</span>
-    <span class="chip ${avDifCls(g.difG)}">Grande: ${avDifTxt(g.difG)}</span><span class="chip ${avDifCls(m.difG)}">Minis: ${avDifTxt(m.difG)}</span></div>
-  <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Lleva</th><th>Desc.</th><th>Vend.</th><th>Alb.</th><th>Carga</th><th>Sale</th></tr></thead><tbody>
-  ${fs.map(k=>{const x=avCalc(avLin(c,k));return `<tr><th>${avRefTxt(k)}</th><td class="av-c muted">${x.lleva}</td><td class="av-c">${x.de??""}</td><td class="av-c av-b">${x.vend??""}</td><td class="av-c">${tick(x)}</td><td class="av-c">${x.ca||""}</td><td class="av-c av-b">${x.sale??""}</td></tr>`}).join("")}
-  </tbody><tfoot><tr><th>Total</th><td>${t.lleva}</td><td>${t.de}</td><td>${t.vend}</td><td></td><td>${t.ca}</td><td>${t.sale}</td></tr></tfoot></table></div>
+  return `<div class="acc" style="margin-bottom:8px"><span class="chip ${avDifCls(g.difG)}">Grande: ${avDifTxt(g.difG)}</span><span class="chip ${avDifCls(m.difG)}">Minis: ${avDifTxt(m.difG)}</span></div>
+  <p class="nota">Compara <b>Vendidos</b> con lo que te dice el listado de la oficina: escríbelo en <b>Según albaranes</b> (Intro pasa al siguiente) o toca <b>✓</b> si coincide. Si no cuadra, sale la diferencia.</p>
+  <div class="acc" style="align-items:center;margin-bottom:8px"><button class="btn sm" id="avTodoOk">Marcar todo como cuadrado</button><span style="flex:1"></span><span id="avRes"></span></div>
+  <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Lleva</th><th>Descarga</th><th>Vendidos</th><th>Según albaranes</th><th>Cuadra</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>
+  ${fs.map((k,i)=>{const x=avCalc(avLin(c,k)),l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted">${x.lleva}</td><td class="av-c">${x.de??""}</td><td class="av-c av-b" data-c="vend">${x.vend??""}</td>${avIn(i,k,"al",l.al)}<td><button class="av-tick" data-tick="${esc(k)}" data-c="tick"></button></td><td class="av-c">${x.ca||""}</td><td class="av-c av-b" data-c="sale">${x.sale??""}</td></tr>`}).join("")}
+  </tbody><tfoot><tr><th>Total</th><td>${t.lleva}</td><td>${t.de}</td><td data-t="vend">${t.vend}</td><td></td><td></td><td>${t.ca}</td><td>${t.sale}</td></tr></tfoot></table></div>
   <div class="sec">Pesos (kg)</div>
   <div class="av-tw"><table class="av-t"><thead><tr><th></th><th>Lleva</th><th>Trae</th><th>Vendido</th><th>Albarán</th><th>Dif.</th><th>Sale</th></tr></thead><tbody>
   ${[["Aceite grande",g],["Minis",m]].map(([n,w])=>`<tr><th>${n}</th><td class="av-c">${avKg(w.total)}</td><td class="av-c">${w.d.n?avKg(w.d.neto):"—"}</td><td class="av-c av-b">${avKg(w.vend)}</td><td class="av-c">${avKg(w.alb)}</td><td class="av-c ${avDifCls(w.difG)}">${w.difG===null?"":(w.difG>0?"+":"")+w.difG+" g"}</td><td class="av-c av-b">${avKg(w.sale)}</td></tr>`).join("")}
