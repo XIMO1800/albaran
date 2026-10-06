@@ -453,7 +453,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "48 · 06/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "49 · 06/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -832,8 +832,8 @@ function vVer(app){
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="justify-content:space-between;align-items:center;margin-bottom:10px">
       <button class="btn sm" id="bVolver">← Volver</button><span class="chip e-${E}">${EST_TXT[E]}</span></div>
-    <div class="card">${R==="TIENDA"?`<b style="font-family:var(--display);font-size:24px">${fDiaPed(p.creado)}</b><div class="muted">Pedido ${esc(p.id)} · ${fHora(p.creado)}</div>`:`<b style="font-size:18px">Pedido ${esc(p.id)}</b>`}
-      <div class="muted">Hecho ${fCorta(p.creado)} por ${esc(p.creadoPor)}${p.actualizadoPor&&p.actualizado!==p.creado?` · último cambio ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`:""}</div>
+    <div class="card">${R==="TIENDA"?`<b style="font-family:var(--display);font-size:24px">${fDiaPed(p.creado)}</b><div class="muted">Pedido ${esc(p.id)} · ${fHora(p.creado)}</div>`:`<b style="font-family:var(--display);font-size:24px">${fDiaPed(p.creado)}</b><div class="muted">Pedido ${esc(p.id)}</div>`}
+      <div class="muted">Hecho a las ${fHora(p.creado)} por ${esc(p.creadoPor)}${p.actualizadoPor&&p.actualizado!==p.creado?` · último cambio ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`:""}</div>
       ${p.albaran?`<div style="margin-top:4px">Albarán nº <b>${esc(p.albaran)}</b>${alb?` · ${kgf(alb.kg)} kg · ${eur(alb.total)} €`:""}</div>`:""}</div>
     ${p.obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>OBSERVACIONES DE LA TIENDA</b><p>${esc(p.obs)}</p></div></div>`:""}
     ${p.obsF?`<div class="obsbox"><b>Notas de fábrica:</b>\n${esc(p.obsF)}</div>`:""}
@@ -1085,7 +1085,7 @@ function marcoDesk(){
   const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Programa de gestión","Albaranes enviados a GESTEURO"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"],autoventa:["Autoventa","Cuadres de los camiones"]};
   let t=T[S.tab]||["Pedidos",""];
   if(S.scr){const sc=S.scr;
-    if(sc.t==="ver")t=["Pedido "+sc.id,"Detalle"];else if(sc.t==="preparar")t=["Preparando pedido "+sc.ped.id,"Piezas servidas y pesos"];
+    if(sc.t==="ver"){const pp=S.pedidos.find(x=>x.id===sc.id);t=pp?["Pedido del "+fDiaPed(pp.creado).replace(/^(Hoy|Ayer) · /,""),"Pedido "+sc.id]:["Pedido "+sc.id,"Detalle"]}else if(sc.t==="preparar")t=["Preparando pedido "+sc.ped.id,"Piezas servidas y pesos"];
     else if(sc.t==="editar")t=sc.ped.id?["Modificar pedido "+sc.ped.id,""]:T.nuevo;else if(sc.t==="albaran")t=["Nuevo albarán","Pedidos "+sc.alb.pedidos.join(", ")];
     else if(sc.t==="verAlb")t=["Albarán nº "+sc.num,""];else if(sc.t==="cmp")t=["Pedido "+sc.id,"Lo pedido frente a lo enviado"];}
   $("#hT").textContent=t[0];$("#hS").textContent=t[1]+(S.ult?(t[1]?" · ":"")+"actualizado "+S.ult.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}):"");
@@ -1101,7 +1101,7 @@ function vPedidosDesk(app){
   if(!S.dsel||!todos.some(p=>p.id===S.dsel)) S.dsel=(todos[0]||{}).id||null;
   const item=(p,sel)=>`<div class="litem ${S.dsel===p.id?"on":""}" data-dsel="${esc(p.id)}">
       ${sel?`<input type="checkbox" class="selbox" data-sel="${esc(p.id)}" ${S.sel.has(p.id)?"checked":""} aria-label="Marcar pedido ${esc(p.id)} para el albarán">`:""}
-      <div class="lt1"><b>Pedido ${esc(p.id)}</b> <span class="chip e-${p.estado}">${EST_TXT[p.estado]}</span><small>${fCorta(p.creado)} · ${esc(p.creadoPor)}${p.albaran?" · alb. "+esc(p.albaran):""}</small></div>
+      <div class="lt1"><b>${fDiaPed(p.creado)}</b> <span class="chip e-${p.estado}">${EST_TXT[p.estado]}</span><small>Pedido ${esc(p.id)} · ${fHora(p.creado)} · ${esc(p.creadoPor)}${p.albaran?" · alb. "+esc(p.albaran):""}</small></div>
       <div class="lt2">${kgPed(p)?kgf(kgPed(p))+" kg":pzPed(p)+" pz"}</div></div>`;
   const grupo=(t,l,sel)=>`<div class="lgrp">${t}</div>${l.map(p=>item(p,sel)).join("")||`<div class="lvac">Ninguno</div>`}`;
   const p=S.pedidos.find(x=>x.id===S.dsel);
@@ -1122,8 +1122,8 @@ function detalleDesk(p){
     return `<tr class="${E!=="ENVIADO"&&esDif(l)?"dif":""}"><td><span class="dot" style="${estiloG(grupoDe(l.c))}"></span><b>${esc(nomDe(l.c,l.n))}</b>${l.extra?" <i>(añadido en fábrica)</i>":""}</td><td class="muted">${esc(l.c)}</td>
       <td class="n">${l.extra?"—":l.pz}${pr.b>1&&l.pz>=pr.b?` <small class="muted">${bandTxt(l.pz,pr.b,pr.g)}</small>`:""}</td><td class="n">${E==="ENVIADO"?"—":servido(l)}</td><td class="n">${E==="ENVIADO"||!d?"":(d>0?"+":"")+d}</td><td class="n">${l.kg?(l.aprox?"≈ ":"")+kgf(num(l.kg)):""}</td><td>${esc(l.obs||"")}</td></tr>`}).join("");
   const R=S.rol, puedeEditar=["ENVIADO","PREPARANDO"].includes(E), puedePrep=["ENVIADO","PREPARANDO","PREPARADO"].includes(E), puedeAnular=!["ALBARANADO","ANULADO"].includes(E);
-  return `<div class="dcard"><div class="dhead"><h2>Pedido ${esc(p.id)}</h2><span class="chip e-${E}">${EST_TXT[E]}</span></div>
-    <div class="muted">Hecho ${fCorta(p.creado)} por ${esc(p.creadoPor)}${p.actualizadoPor&&p.actualizado!==p.creado?` · último cambio ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`:""}${p.albaran?` · albarán nº <b>${esc(p.albaran)}</b>`:""}</div>
+  return `<div class="dcard"><div class="dhead"><h2>${fDiaPed(p.creado)}</h2><span class="chip e-${E}">${EST_TXT[E]}</span></div>
+    <div class="muted"><b>Pedido ${esc(p.id)}</b> · hecho a las ${fHora(p.creado)} por ${esc(p.creadoPor)}${p.actualizadoPor&&p.actualizado!==p.creado?` · último cambio ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`:""}${p.albaran?` · albarán nº <b>${esc(p.albaran)}</b>`:""}</div>
     <div class="kpis" style="margin-top:12px"><div class="kpi"><span>Artículos</span><b>${p.lineas.length}</b></div><div class="kpi"><span>Piezas pedidas</span><b>${pzPed(p)}</b></div><div class="kpi"><span>Piezas servidas</span><b>${E==="ENVIADO"?"—":pzSer(p)}</b></div><div class="kpi"><span>Kg</span><b>${kgPed(p)?kgf(kgPed(p)):"—"}</b></div>${alb?`<div class="kpi"><span>Importe</span><b>${eur(alb.total)} €</b></div>`:""}${nd&&E!=="ENVIADO"?`<div class="kpi kd"><span>Cambios</span><b>${nd}</b></div>`:""}</div>
     ${p.obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>OBSERVACIONES DE LA TIENDA</b><p>${esc(p.obs)}</p></div></div>`:""}${p.obsF?`<div class="obsbox"><b>Fábrica:</b> ${esc(p.obsF)}</div>`:""}
     <div class="tblw"><table class="t"><thead><tr><th>Producto</th><th>Código</th><th class="n">Pedido</th><th class="n">Servido</th><th class="n">Diferencia</th><th class="n">Kg</th><th>Nota</th></tr></thead><tbody>${filas}</tbody></table></div>
@@ -1182,7 +1182,7 @@ function vHistorial(app){
   const tPed=peds.reduce((s,p)=>s+p.lineas.reduce((x,l)=>x+(+l.pz||0),0),0), tSer=peds.reduce((s,p)=>s+p.lineas.reduce((x,l)=>x+(+servido(l)||0),0),0);
   const tKg=peds.reduce((s,p)=>s+p.lineas.reduce((x,l)=>x+num(l.kg),0),0), nDif=peds.filter(p=>p.lineas.some(esDif)).length;
   const filas=peds.map(p=>{const pz=p.lineas.reduce((x,l)=>x+(+l.pz||0),0),sv=p.lineas.reduce((x,l)=>x+(+servido(l)||0),0),kg=p.lineas.reduce((x,l)=>x+num(l.kg),0),nd=p.lineas.filter(esDif).length,ab=S.H.abiertos.has(p.id);
-    let r=`<tr class="cl" data-ab="${esc(p.id)}"><td><b>${ab?"▾":"▸"} ${esc(p.id)}</b></td><td>${fCorta(p.creado)}</td><td>${esc(p.creadoPor)}</td><td><span class="chip e-${p.estado}">${EST_TXT[p.estado]||p.estado}</span></td>
+    let r=`<tr class="cl" data-ab="${esc(p.id)}"><td><b>${ab?"▾":"▸"} ${fDiaPed(p.creado)}</b></td><td>${esc(p.id)} · ${fHora(p.creado)}</td><td>${esc(p.creadoPor)}</td><td><span class="chip e-${p.estado}">${EST_TXT[p.estado]||p.estado}</span></td>
       <td class="n">${p.lineas.length}</td><td class="n">${pz}</td><td class="n">${p.estado==="ENVIADO"?"—":sv}</td><td class="n">${kg?kgf(kg):"—"}</td><td>${nd?`<span class="tag dif">${nd} cambio${nd>1?"s":""}</span>`:""}</td><td>${p.albaran?`Nº ${esc(p.albaran)}`:""}</td></tr>`;
     if(ab){r+=`<tr class="det"><td colspan="10">
       ${p.obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>OBSERVACIONES DE LA TIENDA</b><p>${esc(p.obs)}</p></div></div>`:""}${p.obsF?`<div class="obsbox"><b>Fábrica:</b> ${esc(p.obsF)}</div>`:""}
@@ -1195,7 +1195,7 @@ function vHistorial(app){
   app.innerHTML=`<div class="wrap">${filtroFechas(`<label class="lbl">Estado<select id="hE"><option value="">Todos</option>${ESTADOS.map(e=>`<option value="${e}"${S.H.estado===e?" selected":""}>${EST_TXT[e]}</option>`).join("")}<option value="DIF"${S.H.estado==="DIF"?" selected":""}>Con cambios</option></select></label><label class="lbl">Código o nº pedido<input id="hQ" value="${esc(S.H.q)}" placeholder="OCG, 12…" style="width:9em"></label>`)}
     <div class="kpis"><div class="kpi"><span>Pedidos</span><b>${peds.length}</b></div><div class="kpi"><span>Piezas pedidas</span><b>${tPed}</b></div><div class="kpi"><span>Piezas servidas</span><b>${tSer}</b></div><div class="kpi"><span>Kg servidos</span><b>${kgf(tKg)}</b></div><div class="kpi"><span>Con cambios</span><b>${nDif}</b></div></div>
     <p class="nota">Pulsa un pedido para ver línea a línea qué se pidió y qué se mandó. En amarillo, lo que cambió (piezas distintas o artículos añadidos en fábrica).</p>
-    <div class="tblw"><table class="t"><thead><tr><th>Pedido</th><th>Fecha</th><th>Hecho por</th><th>Estado</th><th class="n">Artículos</th><th class="n">Pz pedidas</th><th class="n">Pz servidas</th><th class="n">Kg</th><th>Cambios</th><th>Albarán</th></tr></thead>
+    <div class="tblw"><table class="t"><thead><tr><th>Fecha</th><th>Pedido</th><th>Hecho por</th><th>Estado</th><th class="n">Artículos</th><th class="n">Pz pedidas</th><th class="n">Pz servidas</th><th class="n">Kg</th><th>Cambios</th><th>Albarán</th></tr></thead>
     <tbody>${filas||`<tr><td colspan="10" class="vacio">No hay pedidos en esas fechas.</td></tr>`}</tbody></table></div></div>`;
   enlazarFiltro(app);
   $("#hE").onchange=e=>{S.H.estado=e.target.value;render()};
