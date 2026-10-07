@@ -506,7 +506,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "82 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "83 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1691,7 +1691,7 @@ function vAvCuadre(app){
   else if(S.av.fase==="pesos"){
     cuerpo=`<div class="av-pesos">${avBloquePeso(c,"grande")}${avBloquePeso(c,"mini")}</div>
       <div class="acc av-pie"><button class="btn" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn pri" data-avf="carga">Siguiente: carga →</button></div>`}
-  else if(S.av.fase==="ctl") cuerpo=`<p class="nota">Registro que pide calidad (FOR PR 08-10): se rellena casi solo con los datos del cuadre; tú solo pones la temperatura.</p>${avBjCard(c)}${avCtlCard(c)}
+  else if(S.av.fase==="ctl") cuerpo=`<p class="nota">Registro que pide calidad (FOR PR 08-10): se rellena casi solo con los datos del cuadre; tú solo pones la temperatura.</p>${avCtlCard(c)}<div class="sec">Comprobación de bandejas · solo para ti, no va al registro de calidad</div>${avBjCard(c)}
       <div class="acc av-pie"><button class="btn" data-avf="hoja">← Hoja y cierre</button><span style="flex:1"></span><button class="btn pri" id="avImpCtl">Imprimir control de carga</button></div>`;
   else cuerpo=avHoja(c);
   app.innerHTML=`<div class="wrap av-wrap">
