@@ -325,6 +325,9 @@ textarea.conObs{background:#fff35c;border:3px solid #e2b900;font-weight:700;font
   #imp{display:block}
   .copia{break-after:page;page-break-after:always;padding:0 2mm}
   .copia:last-child{break-after:auto;page-break-after:auto}
+  .ctlb{margin:8mm 0 14mm}.ctlf{font-size:13pt;margin-bottom:3mm}.ctlb td{font-size:13pt;height:9mm}
+  .sello{border:2px solid #555;width:95mm;margin:6mm auto 0;padding:3mm 4mm;text-align:center;font-size:9pt;color:#333}.sref{font-size:7.5pt;margin-top:2mm;color:#555}
+  .ctlpie{font-size:9pt;color:#444;margin-top:6mm}
   .ph{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #862133;padding-bottom:6px;margin-bottom:8px}
   .ph .emp{font-size:10pt;display:flex;align-items:center;gap:10px}.ph .emp b{font-size:13pt;color:#862133}
   .plogo{height:14mm;width:auto}
@@ -442,6 +445,8 @@ tr.av-nada th{color:var(--muted)}
 .palb{padding-top:2px}.palb .pt{display:flex;align-items:center;justify-content:flex-end;gap:6px}.palb label{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
 .av-peso>.pl .pt{text-align:right;padding-right:6px}
 .pav{font-size:14px;font-weight:600;margin:2px 0 4px}.pav.ok{color:#1f8a4c}.pav.mal{color:#fff;background:#b3261e;border-radius:8px;padding:5px 9px;display:inline-block}
+.av-ctlg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}.av-ctlg label{display:flex;flex-direction:column;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);gap:3px}.av-ctlg input{font-size:17px;text-transform:none}
+.av-conf{display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-size:14px}.av-conf input{width:22px;height:22px;flex:none;margin-top:1px}
 .padd{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.padd .btn{margin-left:4px}
 .av-alb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;margin-bottom:4px}
 .av-mini-ok{min-width:44px;height:38px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:18px;font-weight:800;color:#c9bcbe;cursor:pointer}.av-mini-ok.on{background:#1f8a4c;border-color:#1f8a4c;color:#fff}
@@ -490,7 +495,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "64 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "65 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1479,6 +1484,13 @@ async function avSubir(){
 }
 function avEstado(t){const e=$("#avSt");if(e){e.textContent=t;e.classList.toggle("av-pend",!/Guardado/.test(t))}}
 function avGuardarCfg(){avTocar("CONFIG")}
+// Bandejas: las que trae (desc) y las que hay al terminar de cargar (total); cargadas = diferencia
+function avBj(c){const bj=c.bandejas||{},d=avN(bj.desc),t=avN(bj.total)??(avN(bj.carga)!==null?(d||0)+avN(bj.carga):null);return {d,t,ca:t===null||d===null?null:t-d}}
+// Kilos aproximados de lo que sale: piezas × peso medio; el aceite pesado con su peso real
+function avKgSale(c){const cf=avCfg();let kg=0;const pes={};["grande","mini"].forEach(b=>{if(cf.peso[b])pes[cf.peso[b]]=avPeso(c,b).sale});
+  avRefs(c).forEach(k=>{const x=avCalc(avLin(c,k));if(!x.sale)return;kg+=pes[k]!=null?pes[k]:x.sale*pmDe(k)});return Math.round(kg)}
+function avCtl(c){const ct=c.control||{},cf=avCfg(),bj=avBj(c);
+  return {fecha:ct.fecha||c.cierre||hoy(),trans:c.vendedor,mat:ct.mat??((cf.matriculas||{})[c.vendedor]||""),bultos:ct.bultos??bj.t,kilos:ct.kilos??avKgSale(c),temp:ct.temp??null,conf:ct.conf!==false,obs:ct.obs||""}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&Object.keys(S.av.pend).length&&S.pin)avSubir()});
 window.addEventListener("online",()=>{if(Object.keys(S.av.pend).length&&S.pin)avSubir()});
 
@@ -1492,7 +1504,7 @@ function avViaje(c){const h=avHasta(c);return `${avDiaV(c.fecha)} → ${h?avDiaV
 function avBase(a,c){c.lineas=c.lineas||{};avRefs(a).forEach(k=>{const x=avCalc(avLin(a,k));if(!x.sale){if(c.lineas[k]){delete c.lineas[k].ll;delete c.lineas[k].en}return}
     const l=c.lineas[k]||(c.lineas[k]={});const ll=x.sale-(x.ca||0);if(ll)l.ll=ll;else delete l.ll;if(x.ca)l.en=x.ca;else delete l.en});
   c.pesos=c.pesos||{grande:avPeso0(),mini:avPeso0()};["grande","mini"].forEach(b=>{const w=avPeso(a,b);c.pesos[b]=c.pesos[b]||avPeso0();c.pesos[b].llevaKg=w.sale;if(w.p.tara!=null)c.pesos[b].tara=w.p.tara});
-  const bj=a.bandejas||{},tb=(avN(bj.desc)||0)+(avN(bj.carga)||0);c.bandejas=c.bandejas||{};if(tb)c.bandejas.lleva=tb}
+  const tb=avBj(a).t;c.bandejas=c.bandejas||{};if(tb)c.bandejas.lleva=tb}
 const avLista=v=>Object.entries(S.av.cuadres).filter(([,c])=>!v||c.vendedor===v).sort((a,b)=>(b[1].fecha||"").localeCompare(a[1].fecha||"")||(b[1].creado||0)-(a[1].creado||0));
 const avUltCerrado=v=>avLista(v).find(([,c])=>c.estado==="cerrado");
 const avAbierto=v=>avLista(v).find(([,c])=>c.estado!=="cerrado");
@@ -1547,7 +1559,7 @@ function vAutoventa(app){
     ${carga}
     <div class="sec">Histórico de cuadres</div>
     <div class="acc av-filtro"><select id="avFv"><option value="">Todos los vendedores</option>${vs.map(x=>`<option ${x===fv?"selected":""}>${esc(x)}</option>`).join("")}</select>
-      <label>Desde <input type="date" id="avFd" value="${fd}"></label><label>Hasta <input type="date" id="avFh" value="${fh}"></label></div>
+      <label>Desde <input type="date" id="avFd" value="${fd}"></label><label>Hasta <input type="date" id="avFh" value="${fh}"></label><button class="btn sm" id="avCtlTodos">Imprimir controles de carga</button></div>
     ${desk?`<div class="tblw"><table class="t av-hist"><thead><tr><th>Viaje</th><th>Vendedor</th><th class="n">Llevaba</th><th class="n">Vendidas</th><th>Dif. con albaranes</th><th class="n">Aceite gr.</th><th class="n">Minis</th><th class="n">Sale con</th><th>Estado</th><th></th></tr></thead>
       <tbody>${hist.map(filaH).join("")||`<tr><td colspan="10" class="vacio">No hay cuadres con estos filtros.</td></tr>`}</tbody></table></div>`
       :hist.map(filaH).join("")||`<div class="vacio">No hay cuadres con estos filtros.</div>`}
@@ -1560,6 +1572,7 @@ function vAutoventa(app){
     if(b.dataset.avabrir)return avAbrir(b.dataset.avabrir);
     if(b.dataset.avnuevo){S.av.vend=b.dataset.avnuevo;LS.set("av_vend",S.av.vend);return avNuevo(S.av.vend)}
     if(b.dataset.avvend){S.av.vend=b.dataset.avvend;LS.set("av_vend",S.av.vend);render();return}
+    if(b.id==="avCtlTodos"){const l=hist.map(([,c])=>c).filter(c=>c.estado==="cerrado"||c.control).sort((a,b)=>avCtl(a).fecha.localeCompare(avCtl(b).fecha));if(!l.length)return toast("No hay controles de carga con estos filtros",true);return avImprimirCtl(l)}
     if(b.id==="avArts"){S.av.arts=true;render();scrollTo(0,0);return}
     if(b.id==="avNVsi"){S.av.nuevoVend=!S.av.nuevoVend;S.av.quitarV=null;render();return}
     if(b.dataset.avquitav){S.av.quitarV=b.dataset.avquitav;render();return}
@@ -1650,11 +1663,11 @@ function vAvCuadre(app){
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted" data-c="de"></td>${avIn(i,k,"ca",l.ca)}<td class="av-c av-b" data-c="sale"></td></tr>`}).join("")}
     </tbody><tfoot><tr><th>Total</th><td data-t="de"></td><td data-t="ca"></td><td data-t="sale"></td></tr></tfoot></table></div>
     <div class="acc av-pie"><button class="btn" data-avf="pesos">← Pesos</button>${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="hoja">Siguiente: hoja y cierre →</button></div>`}
-  else if(S.av.fase==="pesos"){const bj=c.bandejas||{},tb=(avN(bj.desc)||0)+(avN(bj.carga)||0);
-    cuerpo=`<div class="av-pesos">${avBloquePeso(c,"grande")}${avBloquePeso(c,"mini")}</div><div class="card"><div class="sec" style="margin-top:0">Bandejas</div>
-      <div class="av-g2"><div><label class="l" for="avBjD">Descarga</label><input id="avBjD" class="num" data-bj="desc" inputmode="numeric" value="${avF(avN(bj.desc))}"></div>
-      <div><label class="l" for="avBjC">Carga</label><input id="avBjC" class="num" data-bj="carga" inputmode="numeric" value="${avF(avN(bj.carga))}"></div></div>
-      <div class="av-kv" style="margin-top:8px"><span>Total en el camión</span><b id="avBjT">${tb||"—"}</b></div></div>
+  else if(S.av.fase==="pesos"){const bj=avBj(c);
+    cuerpo=`<div class="av-pesos">${avBloquePeso(c,"grande")}${avBloquePeso(c,"mini")}</div><div class="card av-peso"><div class="pcab"><b>Bandejas</b><span class="pnm">${avN((c.bandejas||{}).lleva)!==null?`salió con ${c.bandejas.lleva}`:""}</span></div>
+      <div class="pl"><span class="ps"></span><span class="pt">Bandejas que trae</span><input id="avBjD" class="num pin" data-bj="desc" inputmode="numeric" value="${avF(bj.d)}"></div>
+      <div class="pl"><span class="ps"></span><span class="pt">Bandejas al terminar de cargar</span><input id="avBjT" class="num pin" data-bj="total" inputmode="numeric" value="${avF(bj.t)}"></div>
+      <div class="pl sub"><span class="ps">=</span><span class="pt">CARGADAS HOY</span><b id="avBjC">${bj.ca??"—"}</b></div></div>
       <div class="acc av-pie"><button class="btn" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn pri" data-avf="carga">Siguiente: carga →</button></div>`}
   else cuerpo=avHoja(c);
   app.innerHTML=`<div class="wrap av-wrap">
@@ -1689,13 +1702,16 @@ function vAvCuadre(app){
     if(b.id==="avNoBorrar"){S.av.borrar=false;render();return}
     if(b.id==="avSiBorrar"){delete S.av.cuadres[id];S.av.pend[id]="borrar";avTocar(id);S.av.cur=null;render();return}
     if(b.id==="avImprimir")return avImprimir(c);
+    if(b.id==="avImpCtl")return avImprimirCtl([c]);
     if(b.id==="avCopiar")return avCopiar(c);
   };
   app.oninput=e=>{const el=e.target;
     if(el.dataset.f&&el.closest("tr[data-row]")){const k=el.dataset.k,l=c.lineas[k]||(c.lineas[k]={});l[el.dataset.f]=avP(el.value);avRefrescar();avTocar();return}
     if(el.dataset.pk){const[bk,f]=el.dataset.pk.split("|");(c.pesos[bk]||(c.pesos[bk]=avPeso0()))[f]=avP(el.value);avTocar();avPesoVivo(bk);return}
     if(el.dataset.tara){(c.pesos[el.dataset.tara]||(c.pesos[el.dataset.tara]=avPeso0())).tara=avP(el.value);avTocar();return}
-    if(el.dataset.bj){(c.bandejas||(c.bandejas={}))[el.dataset.bj]=avP(el.value);const t=(avN(c.bandejas.desc)||0)+(avN(c.bandejas.carga)||0);$("#avBjT").textContent=t||"—";avTocar();return}
+    if(el.dataset.bj){const bj0=c.bandejas||(c.bandejas={});if(el.dataset.bj==="total")delete bj0.carga;bj0[el.dataset.bj]=avP(el.value);const x=$("#avBjC");if(x)x.textContent=avBj(c).ca??"—";avTocar();return}
+    if(el.dataset.ctl){const ct=c.control||(c.control={}),f=el.dataset.ctl;ct[f]=el.type==="checkbox"?el.checked:["bultos","kilos","temp"].includes(f)?avP(el.value):f==="mat"?el.value.trim().toUpperCase():el.value;
+      if(f==="mat"){const cf=avCfg();(cf.matriculas||(cf.matriculas={}))[c.vendedor]=el.value.trim().toUpperCase();avGuardarCfg()}avTocar();return}
     if(el.id==="avNota"){c.nota=el.value;avTocar();return}
   };
   app.onchange=e=>{const el=e.target;
@@ -1768,7 +1784,8 @@ function avHoja(c){
   ${[["Aceite grande",g],["Minis",m]].map(([n,w])=>`<tr><th>${n}</th><td class="av-c">${avKg(w.total)}</td><td class="av-c">${w.d.n?avKg(w.d.neto):"—"}</td><td class="av-c av-b">${avKg(w.vend)}</td><td class="av-c">${avKg(w.alb)}</td><td class="av-c ${avDifCls(w.difG)}">${w.difG===null?"":(w.difG>0?"+":"")+w.difG+" g"}</td><td class="av-c av-b">${avKg(w.sale)}</td></tr>`).join("")}
   </tbody></table></div>
   <div class="sec">Notas</div><textarea id="avNota" placeholder="Incidencias, devoluciones, fallos de cuadres anteriores…">${esc(c.nota||"")}</textarea>
-  <div class="acc" style="margin-top:12px"><button class="btn" id="avCopiar">Copiar resumen</button><button class="btn" id="avImprimir">Imprimir hoja</button><span style="flex:1"></span>
+  ${avCtlCard(c)}
+  <div class="acc" style="margin-top:12px"><button class="btn" id="avCopiar">Copiar resumen</button><button class="btn" id="avImprimir">Imprimir hoja</button><button class="btn" id="avImpCtl">Imprimir control de carga</button><span style="flex:1"></span>
     ${cerr?`<button class="btn" id="avReabrir">Reabrir para corregir</button>`:`<button class="btn pri" id="avCerrar">Cerrar cuadre</button>`}</div>
   ${S.av.borrar?`<div class="card" style="margin-top:12px;border-color:var(--danger)"><b>¿Borrar este cuadre?</b> No se puede deshacer.<div class="acc" style="margin-top:8px"><button class="btn del" id="avSiBorrar">Borrar</button><button class="btn" id="avNoBorrar">Cancelar</button></div></div>`:`<div style="margin-top:12px"><button class="btn sm del" id="avBorrar">Borrar cuadre</button></div>`}`;
 }
@@ -1795,6 +1812,31 @@ async function avCopiar(c){
   try{await navigator.clipboard.writeText(L.join("\n"));toast("Resumen copiado")}catch(e){toast("No se pudo copiar",true)}
 }
 const avNom=k=>{const p=prod(k);return p?p.n:""};
+function avCtlCard(c){const k=avCtl(c),ct=c.control||{},bj=avBj(c);
+  return `<div class="card av-peso av-ctl" style="margin-top:12px"><div class="pcab"><b>Control carga vehículo</b><span class="pnm">Calidad · FOR PR 08-10</span></div>
+    <div class="av-ctlg">
+      <label>Fecha<input type="date" data-ctl="fecha" value="${k.fecha}"></label>
+      <label>Transportista<input value="${esc(k.trans)}" disabled></label>
+      <label>Matrícula<input data-ctl="mat" value="${esc(k.mat)}" placeholder="0000-XXX" autocapitalize="characters" style="text-transform:uppercase"></label>
+      <label>Bultos<input class="num" data-ctl="bultos" inputmode="numeric" value="${avF(avN(ct.bultos))}" placeholder="${bj.t??""}"></label>
+      <label>Kilos aprox.<input class="num" data-ctl="kilos" inputmode="decimal" value="${avF(avN(ct.kilos))}" placeholder="${avKgSale(c)}"></label>
+      <label>T (ºC)<input class="num" data-ctl="temp" inputmode="decimal" value="${avF(avN(ct.temp))}" placeholder="ºC"></label>
+    </div>
+    <label class="av-conf"><input type="checkbox" data-ctl="conf" ${k.conf?"checked":""}> Conforme: higiene, limpieza, mantenimiento correcto, ausencia de plagas, suciedad, humedad y olores en el interior del vehículo y productos</label>
+    <input data-ctl="obs" value="${esc(k.obs)}" placeholder="Observaciones" style="width:100%;margin-top:6px">
+    <p class="muted" style="margin:6px 0 0;font-size:13px">Bultos y kilos se rellenan solos (bandejas al terminar de cargar y piezas × peso medio, con el aceite pesado); escribe encima si quieres otro valor.</p></div>`}
+function avImprimirCtl(lista){
+  const blq=c=>{const k=avCtl(c);return `<div class="ctlb">
+    <div class="ctlf"><b>FECHA:</b> ${fDia(k.fecha)}</div>
+    <table><thead><tr><th>Nombre transportista</th><th>Matrícula coche</th><th>Bultos</th><th>Kilos</th></tr></thead>
+    <tbody><tr><td>${esc(k.trans)}</td><td>${esc(k.mat)}</td><td class="n">${k.bultos??""}</td><td class="n">${k.kilos??""}</td></tr></tbody></table>
+    <div class="sello"><b>LÁCTEOS CUQUERELLA, S.L.</b><br><b>CONTROL TRANSPORTE PREVIA CARGA</b><br>Higiene, Limpieza, Mantenimiento correcto, Ausencia de plagas, Suciedad, Humedad, Olores en interior del vehículo y Productos.
+      <div style="margin-top:2mm">T (ºC): <b>${k.temp!=null?String(k.temp).replace(".",","):"______"}</b> &nbsp;&nbsp; Conforme: <b>${k.conf?"SÍ":"NO"}</b></div>
+      <div>Observaciones: ${esc(k.obs)}</div><div class="sref">FOR PR 09-02/Enero 2015</div></div></div>`};
+  const pags=[];for(let i=0;i<lista.length;i+=2)pags.push(lista.slice(i,i+2));
+  $("#imp").innerHTML=pags.map(pg=>`<section class="copia ctlp">${cabecera("CONTROL CARGA VEHÍCULOS AUTOVENTAS","","")}${pg.map(blq).join("")}<div class="ctlpie">FOR PR 08-10(1)</div></section>`).join("");
+  imprimir("A4 portrait","12mm");
+}
 function avImprimir(c){
   const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini");
   const filas=avRefs(c).filter(k=>avCalc(avLin(c,k)).usada).map(k=>{const x=avCalc(avLin(c,k)),d=x.al===null?"":x.dif===0?"✓":(x.dif>0?"+":"")+x.dif;
