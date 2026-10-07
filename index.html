@@ -495,7 +495,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "65 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "66 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1649,7 +1649,7 @@ function avAyudaPapel(c){
 function vAvCuadre(app){
   const c=avCuadre(), id=S.av.cur, cerr=c.estado==="cerrado", cf=avCfg();
   if(S.av.fase==="alb")S.av.fase="hoja";
-  const F=[["desc","1 · Descarga"],["pesos","2 · Pesos"],["carga","3 · Carga"],["hoja","4 · Hoja y cierre"]];
+  const F=[["desc","1 · Descarga"],["pesos","2 · Pesos"],["carga","3 · Carga"],["hoja","4 · Hoja y cierre"],["ctl","5 · Control carga"]];
   let cuerpo="";
   if(S.av.fase==="desc"){const fs=avFilas(c);
     cuerpo=`${avAyudaPapel(c)}<p class="nota"><b>Descargó</b> y <b>Cargó</b> son del día que salió (${avDia(c.fecha)}); vienen solos del cuadre anterior. Cuenta lo que trae hoy y apúntalo en <b>Descarga hoy</b>. Vendidos = Descargó + Cargó − Descarga hoy. Con Intro pasas al siguiente.</p>
@@ -1669,6 +1669,8 @@ function vAvCuadre(app){
       <div class="pl"><span class="ps"></span><span class="pt">Bandejas al terminar de cargar</span><input id="avBjT" class="num pin" data-bj="total" inputmode="numeric" value="${avF(bj.t)}"></div>
       <div class="pl sub"><span class="ps">=</span><span class="pt">CARGADAS HOY</span><b id="avBjC">${bj.ca??"—"}</b></div></div>
       <div class="acc av-pie"><button class="btn" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn pri" data-avf="carga">Siguiente: carga →</button></div>`}
+  else if(S.av.fase==="ctl") cuerpo=`<p class="nota">Registro que pide calidad (FOR PR 08-10): se rellena casi solo con los datos del cuadre; tú solo pones la temperatura.</p>${avCtlCard(c)}
+      <div class="acc av-pie"><button class="btn" data-avf="hoja">← Hoja y cierre</button><span style="flex:1"></span><button class="btn pri" id="avImpCtl">Imprimir control de carga</button></div>`;
   else cuerpo=avHoja(c);
   app.innerHTML=`<div class="wrap av-wrap">
     <div class="acc" style="justify-content:space-between;align-items:center"><button class="btn sm" id="avVolver">← Autoventa</button><span class="muted" id="avSt" style="font-size:13px">${Object.keys(S.av.pend).length?"Pendiente de guardar":"Guardado en la hoja"}</span></div>
@@ -1676,6 +1678,7 @@ function vAvCuadre(app){
     <div class="av-fases">${F.map(([k,t])=>`<button data-avf="${k}" class="${S.av.fase===k?"on":""}">${t}</button>`).join("")}</div>
     ${cuerpo}</div>`;
   avRefrescar();
+  {const fb=document.querySelector(".av-fases .on");if(fb){const bar=fb.parentNode;bar.scrollLeft=Math.max(0,fb.offsetLeft-bar.offsetLeft-(bar.clientWidth-fb.offsetWidth)/2)}}
 
   app.onclick=e=>{const b=e.target.closest("button");if(!b)return;
     if(b.id==="avVolver"){avSubir();S.av.cur=null;render();scrollTo(0,0);return}
@@ -1784,8 +1787,7 @@ function avHoja(c){
   ${[["Aceite grande",g],["Minis",m]].map(([n,w])=>`<tr><th>${n}</th><td class="av-c">${avKg(w.total)}</td><td class="av-c">${w.d.n?avKg(w.d.neto):"—"}</td><td class="av-c av-b">${avKg(w.vend)}</td><td class="av-c">${avKg(w.alb)}</td><td class="av-c ${avDifCls(w.difG)}">${w.difG===null?"":(w.difG>0?"+":"")+w.difG+" g"}</td><td class="av-c av-b">${avKg(w.sale)}</td></tr>`).join("")}
   </tbody></table></div>
   <div class="sec">Notas</div><textarea id="avNota" placeholder="Incidencias, devoluciones, fallos de cuadres anteriores…">${esc(c.nota||"")}</textarea>
-  ${avCtlCard(c)}
-  <div class="acc" style="margin-top:12px"><button class="btn" id="avCopiar">Copiar resumen</button><button class="btn" id="avImprimir">Imprimir hoja</button><button class="btn" id="avImpCtl">Imprimir control de carga</button><span style="flex:1"></span>
+  <div class="acc" style="margin-top:12px"><button class="btn" id="avCopiar">Copiar resumen</button><button class="btn" id="avImprimir">Imprimir hoja</button><span style="flex:1"></span>
     ${cerr?`<button class="btn" id="avReabrir">Reabrir para corregir</button>`:`<button class="btn pri" id="avCerrar">Cerrar cuadre</button>`}</div>
   ${S.av.borrar?`<div class="card" style="margin-top:12px;border-color:var(--danger)"><b>¿Borrar este cuadre?</b> No se puede deshacer.<div class="acc" style="margin-top:8px"><button class="btn del" id="avSiBorrar">Borrar</button><button class="btn" id="avNoBorrar">Cancelar</button></div></div>`:`<div style="margin-top:12px"><button class="btn sm del" id="avBorrar">Borrar cuadre</button></div>`}`;
 }
@@ -1813,7 +1815,7 @@ async function avCopiar(c){
 }
 const avNom=k=>{const p=prod(k);return p?p.n:""};
 function avCtlCard(c){const k=avCtl(c),ct=c.control||{},bj=avBj(c);
-  return `<div class="card av-peso av-ctl" style="margin-top:12px"><div class="pcab"><b>Control carga vehículo</b><span class="pnm">Calidad · FOR PR 08-10</span></div>
+  return `<div class="card av-peso av-ctl"><div class="pcab"><b>Control carga vehículo</b><span class="pnm">Calidad · FOR PR 08-10</span></div>
     <div class="av-ctlg">
       <label>Fecha<input type="date" data-ctl="fecha" value="${k.fecha}"></label>
       <label>Transportista<input value="${esc(k.trans)}" disabled></label>
