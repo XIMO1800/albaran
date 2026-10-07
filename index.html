@@ -188,8 +188,8 @@ body.desk .top-in{max-width:none;padding-inline:28px}
 body.desk nav#nav,body.desk .who{display:none}
 body.desk .bar{display:flex;align-items:center;gap:10px;padding-block:18px 14px}
 .hlogo{display:none}#hZ{display:none}body.desk #hZ{display:inline-block;align-self:flex-start;font-size:18px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:var(--gold);color:#3a0a0f;padding:3px 12px;border-radius:7px;line-height:1.25;margin-bottom:5px}body.desk .bar-t b{font-size:26px}
-.stop{height:var(--hdrH,104px);margin:0 0 10px;padding:8px 10px 14px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:6px;flex:none;border-bottom:1px solid rgba(255,255,255,.15)}
-.stop img{height:38px;width:auto;background:#fff;border-radius:8px;padding:4px 10px}.stop small{font-size:14px;opacity:.92;font-weight:500;line-height:1.2}
+.stop{min-height:var(--hdrH,104px);margin:0 0 10px;padding:10px 10px 14px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;flex:none;border-bottom:1px solid rgba(255,255,255,.15)}
+.stop img{height:50px;width:auto;background:#fff;border-radius:9px;padding:5px 14px}.stop small{font-size:14px;opacity:.92;font-weight:500;line-height:1.2}
 body.desk .brand{display:none}body.desk #nav{display:none}
 .bar-t{flex:1;min-width:0;display:flex;flex-direction:column}
 .bar-t b{font-family:var(--display);font-size:26px;font-weight:700;line-height:1.05}
@@ -505,7 +505,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "79 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "80 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1171,7 +1171,8 @@ function marcoDesk(){
     <div class="sgrp"><div class="lgrp-s">Tienda</div><nav class="snav">${SIDE.map(([k,t,sub])=>`<button data-side="${k}" class="${S.tab===k?"on":""}">${t}${badge[k]?`<span class="badge">${badge[k]}</span>`:""}<small>${sub}</small></button>`).join("")}</nav></div>
     ${S.rol==="ADMIN"?`<div class="sgrp sgrp-av"><div class="lgrp-s">Autoventa</div><nav class="snav">${[["cuadres","Cuadres de camiones","Viaje en curso de cada vendedor"],["hist","Histórico de cuadres","Viajes cerrados y controles"],["gest","Gestión de vendedores y camiones","Altas, bajas y matrículas"],["arts","Gestión de artículos","Artículos de la hoja y su orden"]].map(([k,t,sub])=>`<button data-side="autoventa" data-avsec="${k}" class="${S.tab==="autoventa"&&(S.av.sec||"cuadres")===k?"on":""}">${t}<small>${sub}</small></button>`).join("")}</nav></div>`:""}
     <div style="flex:1"></div><div class="sbot"><button class="navb" id="sideAct">Actualizar</button><button class="navb" id="sideSalir">Salir</button></div>`;
-  {const h=$("#hdr");if(h)sd.style.setProperty("--hdrH",h.offsetHeight+"px")}
+  {const h=$("#hdr");if(h&&h.offsetHeight)sd.style.setProperty("--hdrH",h.offsetHeight+"px");sd.scrollTop=0}
+  if(!marcoDesk.ok){marcoDesk.ok=1;const re=()=>{const h=$("#hdr"),d=$("#side");if(h&&d&&h.offsetHeight)d.style.setProperty("--hdrH",h.offsetHeight+"px")};if(document.fonts)document.fonts.ready.then(re);addEventListener("resize",re);setTimeout(re,300)}
   sd.querySelectorAll("[data-side]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.side;S.scr=null;S.sel.clear();if(b.dataset.avsec){S.av.sec=b.dataset.avsec;S.av.cur=null;S.av.arts=false}if(["historial","albaranes","exportar","difs"].includes(S.tab))S.H.data=null;render();scrollTo(0,0)});
   $("#sideAct").onclick=async()=>{if(["historial","albaranes","exportar","difs"].includes(S.tab)&&!S.scr){cargarHist()}else{await cargar();toast("Datos actualizados")}};
   $("#sideSalir").onclick=async()=>{const c=await confirmar("Salir","¿Cerrar la sesión en este ordenador?");if(c.ok){S.pin="";S.user=null;LS.del("ped_pin");render()}};
