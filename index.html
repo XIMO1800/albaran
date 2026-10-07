@@ -498,7 +498,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "67 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "68 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1708,7 +1708,7 @@ function vAvCuadre(app){
     if(b.dataset.verentre){(S.av.verEntre||(S.av.verEntre={}))[b.dataset.verentre]=true;avRepintar();return}
     if(b.dataset.albok){const bk=b.dataset.albok,w=avPeso(c,bk);if(w.vend===null)return;const p=c.pesos[bk]||(c.pesos[bk]=avPeso0());p.albKg=(avN(p.albKg)!==null&&Math.abs(Math.round((avN(p.albKg)-w.vend)*1000))<=AV_TOL)?null:w.vend;avTocar();avRepintar();return}
     if(b.dataset.entre){const bk=b.dataset.entre,pz=avP($("#avEp-"+bk).value),kg=avP($("#avEk-"+bk).value);if(kg===null)return;const p=c.pesos[bk]||(c.pesos[bk]=avPeso0());(p.entre||(p.entre=[])).push({pz,kg});avTocar();avRepintar();return}
-    if(b.id==="avCerrar"){c.estado="cerrado";c.cierre=hoy();delete c.primero;avTocar();
+    if(b.id==="avCerrar"){c.estado="cerrado";c.cierre=hoy();delete c.primero;avFijarCtl(c);avTocar();
       const sig=Object.entries(S.av.cuadres).find(([i2,x])=>x.origen===id&&x.estado!=="cerrado"), otro=avAbierto(c.vendedor);
       if(sig){avBase(c,sig[1]);avTocar(sig[0])}
       else if(!otro){const n={vendedor:c.vendedor,fecha:hoy(),estado:"abierto",creado:Date.now(),lineas:{},pesos:{grande:avPeso0(),mini:avPeso0()},bandejas:{},nota:"",origen:id};avBase(c,n);const nid="c"+Date.now().toString(36);S.av.cuadres[nid]=n;avTocar(nid)}
@@ -1718,7 +1718,7 @@ function vAvCuadre(app){
     if(b.id==="avNoBorrar"){S.av.borrar=false;render();return}
     if(b.id==="avSiBorrar"){delete S.av.cuadres[id];S.av.pend[id]="borrar";avTocar(id);S.av.cur=null;render();return}
     if(b.id==="avImprimir")return avImprimir(c);
-    if(b.id==="avImpCtl")return avImprimirCtl([c]);
+    if(b.id==="avImpCtl"){avFijarCtl(c);avTocar();return avImprimirCtl([c])}
     if(b.id==="avCopiar")return avCopiar(c);
   };
   app.oninput=e=>{const el=e.target;
@@ -1727,7 +1727,7 @@ function vAvCuadre(app){
     if(el.dataset.tara){(c.pesos[el.dataset.tara]||(c.pesos[el.dataset.tara]=avPeso0())).tara=avP(el.value);avTocar();return}
     if(el.dataset.bj){const bj0=c.bandejas||(c.bandejas={});if(el.dataset.bj==="total")delete bj0.carga;bj0[el.dataset.bj]=avP(el.value);const x=$("#avBjC");if(x)x.textContent=avBj(c).ca??"—";avTocar();return}
     if(el.dataset.ctl){const ct=c.control||(c.control={}),f=el.dataset.ctl;ct.por=ct.por||S.user;ct[f]=el.type==="checkbox"?el.checked:["bultos","kilos","temp"].includes(f)?avP(el.value):f==="mat"?el.value.trim().toUpperCase():el.value;
-      if(f==="mat"){const cf=avCfg();(cf.matriculas||(cf.matriculas={}))[c.vendedor]=el.value.trim().toUpperCase();avGuardarCfg()}avTocar();return}
+      if(f==="mat"){const cf=avCfg();(cf.matriculas||(cf.matriculas={}))[c.vendedor]=el.value.trim().toUpperCase();avGuardarCfg()}avFijarCtl(c);avTocar();return}
     if(el.id==="avNota"){c.nota=el.value;avTocar();return}
   };
   app.onchange=e=>{const el=e.target;
@@ -1857,6 +1857,8 @@ function avFirmaInit(c){const cv=$("#avFirma");if(!cv)return;const g=cv.getConte
   cv.onpointerup=cv.onpointercancel=()=>{if(!tr)return;const k=ct();k.firma=(k.firma?k.firma+"|":"")+tr.map(p=>p.join(",")).join(" ");k.por=S.user;k.firmado=Date.now();tr=null;pinta();avTocar()};
   const bb=$("#avFirmaBorrar");if(bb)bb.onclick=()=>{const k=ct();delete k.firma;delete k.firmado;pinta();avTocar()};
 }
+// Deja escritos en el cuadre los datos del control (los calculados también) para que otras apps (TraceQueso/calidad) los lean tal cual
+function avFijarCtl(c){const k=avCtl(c),ct=c.control||(c.control={});Object.assign(ct,{fecha:k.fecha,trans:k.trans,mat:k.mat,conf:k.conf,bultosAuto:avBj(c).t,kilosAuto:avKgSale(c)});if(!ct.por)ct.por=S.user}
 function avImprimirCtl(lista){
   const blq=c=>{const k=avCtl(c);return `<div class="ctlb">
     <div class="ctlf"><b>FECHA:</b> ${fDia(k.fecha)}</div>
