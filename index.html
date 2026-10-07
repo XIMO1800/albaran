@@ -188,8 +188,8 @@ body.desk .top-in{max-width:none;padding-inline:28px}
 body.desk nav#nav,body.desk .who{display:none}
 body.desk .bar{display:flex;align-items:center;gap:10px;padding-block:18px 14px}
 .hlogo{display:none}#hZ{display:none}body.desk #hZ{display:inline-block;align-self:flex-start;font-size:18px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:var(--gold);color:#3a0a0f;padding:3px 12px;border-radius:7px;line-height:1.25;margin-bottom:5px}body.desk .bar-t b{font-size:26px}
-.stop{height:var(--hdrH,104px);margin:0 -12px 18px;padding:0 12px;background:var(--brand);box-shadow:0 2px 0 var(--brand-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex:none}
-.stop img{height:44px;width:auto;background:#fff;border-radius:9px;padding:5px 12px}.stop small{font-size:13px;opacity:.92;font-weight:500}
+.stop{height:var(--hdrH,104px);margin:0 0 10px;padding:8px 10px 14px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:6px;flex:none;border-bottom:1px solid rgba(255,255,255,.15)}
+.stop img{height:38px;width:auto;background:#fff;border-radius:8px;padding:4px 10px}.stop small{font-size:14px;opacity:.92;font-weight:500;line-height:1.2}
 body.desk .brand{display:none}body.desk #nav{display:none}
 .bar-t{flex:1;min-width:0;display:flex;flex-direction:column}
 .bar-t b{font-family:var(--display);font-size:26px;font-weight:700;line-height:1.05}
@@ -378,7 +378,7 @@ textarea.conObs{background:#fff35c;border:3px solid #e2b900;font-weight:700;font
 .login .ver{margin:4px 0 14px;font-size:13px;font-weight:600;color:rgba(255,255,255,.75)}
 .verh{font-size:11px;opacity:.75;margin-right:4px}
 #side .sbot{display:grid;grid-template-columns:1fr 1fr;gap:6px}#side .sbot .navb{margin:0}
-.snav{gap:4px}.snav button{padding:4px 12px;line-height:1.18;font-size:18px;white-space:normal}.snav button small{font-size:13.5px}.lgrp-s{font-size:20px;padding:5px 10px 4px;margin-bottom:3px}.side-t{padding:0 10px 8px;font-size:21px}#side .sbot .navb{font-size:16px}.sgrp{padding-bottom:4px}#side .sbot .navb{text-align:center;padding:9px 6px}
+.snav{gap:4px}.snav button{padding:4px 12px;line-height:1.18;font-size:18px;white-space:normal}.snav button small{font-size:13.5px}.lgrp-s{font-size:20px;padding:5px 10px 4px;margin-bottom:3px}.side-t{padding:0 10px 6px;font-size:21px;border-bottom:0;margin-bottom:4px}#side .sbot .navb{font-size:16px}.sgrp{padding-bottom:4px}#side .sbot .navb{text-align:center;padding:9px 6px}
 #side .vers{font-size:13.5px;font-weight:600;opacity:.9;text-align:center;margin-top:10px}
 
 /* ---------- Autoventa (cuadre de camiones) ---------- */
@@ -505,7 +505,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "78 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "79 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
