@@ -456,6 +456,7 @@ body.desk table.t.av-hist th,body.desk table.t.av-hist td,table.t.av-hist th,tab
 .av-cv{font-size:12px;color:var(--muted);padding:6px 6px 6px 0;align-self:center}
 .av-ctlg select{font-size:17px}
 .av-firma{margin-top:10px}.av-firma canvas{display:block;width:100%;max-width:520px;aspect-ratio:3/1;border:1.5px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;margin-top:6px;cursor:crosshair}
+.av-bjdet{font-size:13px;color:var(--muted);margin-top:4px}.av-bjdet summary{cursor:pointer}
 .av-conf{display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-size:14px}.av-conf input{width:22px;height:22px;flex:none;margin-top:1px}
 .padd{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.padd .btn{margin-left:4px}
 .av-alb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;margin-bottom:4px}
@@ -505,7 +506,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "81 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "82 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1687,13 +1688,10 @@ function vAvCuadre(app){
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted" data-c="de"></td>${avIn(i,k,"ca",l.ca)}<td class="av-c av-b" data-c="sale"></td></tr>`}).join("")}
     </tbody><tfoot><tr><th>Total</th><td data-t="de"></td><td data-t="ca"></td><td data-t="sale"></td></tr></tfoot></table></div>
     <div class="acc av-pie"><button class="btn" data-avf="pesos">← Pesos</button>${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="hoja">Siguiente: hoja y cierre →</button></div>`}
-  else if(S.av.fase==="pesos"){const bj=avBj(c);
-    cuerpo=`<div class="av-pesos">${avBloquePeso(c,"grande")}${avBloquePeso(c,"mini")}</div><div class="card av-peso"><div class="pcab"><b>Bandejas</b><span class="pnm">${avN((c.bandejas||{}).lleva)!==null?`salió con ${c.bandejas.lleva}`:""}</span></div>
-      <div class="pl"><span class="ps"></span><span class="pt">Bandejas que trae</span><input id="avBjD" class="num pin" data-bj="desc" inputmode="numeric" value="${avF(bj.d)}"></div>
-      <div class="pl"><span class="ps"></span><span class="pt">Bandejas al terminar de cargar</span><input id="avBjT" class="num pin" data-bj="total" inputmode="numeric" value="${avF(bj.t)}"></div>
-      <div class="pl sub"><span class="ps">=</span><span class="pt">CARGADAS HOY</span><b id="avBjC">${bj.ca??"—"}</b></div></div>
+  else if(S.av.fase==="pesos"){
+    cuerpo=`<div class="av-pesos">${avBloquePeso(c,"grande")}${avBloquePeso(c,"mini")}</div>
       <div class="acc av-pie"><button class="btn" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn pri" data-avf="carga">Siguiente: carga →</button></div>`}
-  else if(S.av.fase==="ctl") cuerpo=`<p class="nota">Registro que pide calidad (FOR PR 08-10): se rellena casi solo con los datos del cuadre; tú solo pones la temperatura.</p>${avCtlCard(c)}
+  else if(S.av.fase==="ctl") cuerpo=`<p class="nota">Registro que pide calidad (FOR PR 08-10): se rellena casi solo con los datos del cuadre; tú solo pones la temperatura.</p>${avBjCard(c)}${avCtlCard(c)}
       <div class="acc av-pie"><button class="btn" data-avf="hoja">← Hoja y cierre</button><span style="flex:1"></span><button class="btn pri" id="avImpCtl">Imprimir control de carga</button></div>`;
   else cuerpo=avHoja(c);
   app.innerHTML=`<div class="wrap av-wrap">
@@ -1737,7 +1735,7 @@ function vAvCuadre(app){
     if(el.dataset.f&&el.closest("tr[data-row]")){const k=el.dataset.k,l=c.lineas[k]||(c.lineas[k]={});l[el.dataset.f]=avP(el.value);avRefrescar();avTocar();return}
     if(el.dataset.pk){const[bk,f]=el.dataset.pk.split("|");(c.pesos[bk]||(c.pesos[bk]=avPeso0()))[f]=avP(el.value);avTocar();avPesoVivo(bk);return}
     if(el.dataset.tara){(c.pesos[el.dataset.tara]||(c.pesos[el.dataset.tara]=avPeso0())).tara=avP(el.value);avTocar();return}
-    if(el.dataset.bj){const bj0=c.bandejas||(c.bandejas={});if(el.dataset.bj==="total")delete bj0.carga;bj0[el.dataset.bj]=avP(el.value);const x=$("#avBjC");if(x)x.textContent=avBj(c).ca??"—";avTocar();return}
+    if(el.dataset.bj){const bj0=c.bandejas||(c.bandejas={});if(el.dataset.bj==="total")delete bj0.carga;bj0[el.dataset.bj]=avP(el.value);const x=$("#avBjC");if(x)x.textContent=avBj(c).ca??"—";const y=$("#avBjCmp");if(y)y.innerHTML=avBjCmp(c);avTocar();return}
     if(el.dataset.ctl){const ct=c.control||(c.control={}),f=el.dataset.ctl;ct.por=ct.por||S.user;ct[f]=el.type==="checkbox"?el.checked:["bultos","kilos","temp"].includes(f)?avP(el.value):f==="mat"?el.value.trim().toUpperCase():el.value;
       if(f==="mat"){const cf=avCfg();(cf.matriculas||(cf.matriculas={}))[c.vendedor]=el.value.trim().toUpperCase();avGuardarCfg()}avFijarCtl(c);avTocar();return}
     if(el.id==="avNota"){c.nota=el.value;avTocar();return}
@@ -1839,6 +1837,21 @@ async function avCopiar(c){
   try{await navigator.clipboard.writeText(L.join("\n"));toast("Resumen copiado")}catch(e){toast("No se pudo copiar",true)}
 }
 const avNom=k=>{const p=prod(k);return p?p.n:""};
+// Bandejas: lo cargado en piezas pasado a bandejas (piezas ÷ «Pz/bandeja» del artículo) frente al recuento físico
+function avBjEsp(c){let t=0;const sin=[],det=[];avRefs(c).forEach(k=>{const ca=avCalc(avLin(c,k)).ca;if(!ca)return;const p=prod(k)||{},b=+p.b||1;
+    if(b<=1){sin.push(k);return}const n=ca/b;t+=n;det.push([k,ca,b,n])});return {t:Math.round(t*10)/10,sin,det}}
+function avBjCmp(c){const bj=avBj(c),e=avBjEsp(c);if(bj.ca===null||!e.det.length)return `<span class="muted">${bj.ca===null?"Cuenta las bandejas al descargar y al terminar de cargar":"Sin carga apuntada en piezas"}</span>`;
+  const d=Math.round((bj.ca-e.t)*10)/10;return Math.abs(d)<1?`<span class="chip av-ok">✓ cuadra (${bj.ca} contadas · ≈${String(e.t).replace(".",",")} según la carga)</span>`
+    :`<span class="chip av-mal">⚠ ${bj.ca} contadas, pero la carga en piezas son ≈${String(e.t).replace(".",",")} bandejas (${d>0?"sobran":"faltan"} ${String(Math.abs(d)).replace(".",",")})</span>`}
+function avBjCard(c){const bj=avBj(c),e=avBjEsp(c);
+  return `<div class="card av-peso"><div class="pcab"><b>Bandejas</b><span class="pnm">${avN((c.bandejas||{}).lleva)!==null?`salió con ${c.bandejas.lleva}`:"recuento físico"}</span></div>
+    <div class="pl"><span class="ps"></span><span class="pt">Bandejas que trae</span><input id="avBjD" class="num pin" data-bj="desc" inputmode="numeric" value="${avF(bj.d)}"></div>
+    <div class="pl"><span class="ps"></span><span class="pt">Bandejas al terminar de cargar</span><input id="avBjT" class="num pin" data-bj="total" inputmode="numeric" value="${avF(bj.t)}"></div>
+    <div class="pl sub"><span class="ps">=</span><span class="pt">CARGADAS HOY</span><b id="avBjC">${bj.ca??"—"}</b></div>
+    <div class="pl"><span class="ps"></span><span class="pt">Según la carga en piezas</span><b>${e.det.length?"≈ "+String(e.t).replace(".",","):"—"}</b></div>
+    <div id="avBjCmp" style="margin:4px 0 2px;text-align:right">${avBjCmp(c)}</div>
+    ${e.det.length?`<details class="av-bjdet"><summary>Ver cómo se calcula</summary>${e.det.map(([k,ca,b,n])=>`<div>${esc(nomDe(k))}: ${ca} pz ÷ ${b} = ${String(Math.round(n*10)/10).replace(".",",")}</div>`).join("")}</details>`:""}
+    ${e.sin.length?`<p class="muted" style="margin:6px 0 0;font-size:13px">No cuentan porque no tienen «Pz/bandeja» en Artículos y precios: ${e.sin.map(k=>esc(nomDe(k))).join(", ")}.</p>`:""}</div>`}
 function avCtlCard(c){const k=avCtl(c),ct=c.control||{},bj=avBj(c);
   return `<div class="card av-peso av-ctl"><div class="pcab"><b>Control carga vehículo</b><span class="pnm">Calidad · FOR PR 08-10</span></div>
     <div class="av-ctlg">
