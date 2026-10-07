@@ -446,6 +446,9 @@ tr.av-nada th{color:var(--muted)}
 .av-peso>.pl .pt{text-align:right;padding-right:6px}
 .pav{font-size:14px;font-weight:600;margin:2px 0 4px}.pav.ok{color:#1f8a4c}.pav.mal{color:#fff;background:#b3261e;border-radius:8px;padding:5px 9px;display:inline-block}
 .av-ctlg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}.av-ctlg label{display:flex;flex-direction:column;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);gap:3px}.av-ctlg input{font-size:17px;text-transform:none}
+.av-cv{font-size:12px;color:var(--muted);padding:6px 6px 6px 0;align-self:center}
+.av-ctlg select{font-size:17px}
+.av-firma{margin-top:10px}.av-firma canvas{display:block;width:100%;max-width:520px;aspect-ratio:3/1;border:1.5px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;margin-top:6px;cursor:crosshair}
 .av-conf{display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-size:14px}.av-conf input{width:22px;height:22px;flex:none;margin-top:1px}
 .padd{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.padd .btn{margin-left:4px}
 .av-alb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;margin-bottom:4px}
@@ -495,7 +498,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "66 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "67 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1399,7 +1402,7 @@ const avDia=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNa
 const avDiaC=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"numeric",year:"2-digit"})};
 
 S.av={cargado:false,cargando:false,cuadres:LS.get("av_cache",{}),config:LS.get("av_cfg",null),pend:LS.get("av_pend",{}),
-  vend:LS.get("av_vend",""),cur:null,fase:"desc",todas:false,borrar:false,nuevoVend:false,quitarV:null,ordSel:null,arts:false,fv:"",fd:"",fh:""};
+  vend:LS.get("av_vend",""),cur:null,fase:"desc",todas:false,borrar:false,nuevoVend:false,quitarV:null,quitarC:null,ordSel:null,arts:false,fv:"",fd:"",fh:""};
 function avCfg(){const c=S.av.config||(S.av.config={});c.vendedores=c.vendedores||["Miguel Ángel","Mere"];const iM=c.vendedores.indexOf("Mary");if(iM>=0&&!Object.values(S.av.cuadres).some(x=>x.vendedor==="Mary"))c.vendedores[iM]="Mere";c.taras=c.taras||{grande:0,mini:2.6};
   c.arts=c.arts||[];c.peso=c.peso||{grande:"",mini:""};return c}
 const avCuadre=()=>S.av.cur&&S.av.cuadres[S.av.cur];
@@ -1549,11 +1552,16 @@ function vAutoventa(app){
       <div class="meta">${t.vend} vendidas${t.difs.length?" · dif. en "+t.difs.map(([k,d])=>k+" "+(d>0?"+":"")+d).join(", "):""} · sale con ${t.sale}</div></div>`};
   app.innerHTML=`<div class="wrap">
     <div class="av-vends">${vs.map(tarjVend).join("")}</div>
-    <div class="acc" style="margin:4px 0 10px"><button class="btn sm" id="avNVsi">${S.av.nuevoVend?"Cerrar vendedores":"Vendedores"}</button><button class="btn sm" id="avArts">Artículos de autoventa${cf.arts.length?" ("+cf.arts.length+")":""}</button></div>
+    <div class="acc" style="margin:4px 0 10px"><button class="btn sm" id="avNVsi">${S.av.nuevoVend?"Cerrar vendedores y camiones":"Vendedores y camiones"}</button><button class="btn sm" id="avArts">Artículos de autoventa${cf.arts.length?" ("+cf.arts.length+")":""}</button></div>
     ${S.av.nuevoVend?`<div class="card"><div class="sec" style="margin-top:0">Vendedores</div>
       <div class="av-chips">${vs.map(x=>`<span class="av-w"><b>${esc(x)}</b>${vs.length>1?`<button data-avquitav="${esc(x)}" aria-label="Quitar ${esc(x)}">×</button>`:""}</span>`).join("")}</div>
       ${S.av.quitarV?`<div class="aviso" style="margin:6px 0">¿Quitar a <b>${esc(S.av.quitarV)}</b>? Sus cuadres anteriores se quedan en el histórico.<div class="acc" style="margin-top:8px"><button class="btn del" id="avQVsi">Quitar</button><button class="btn" id="avQVno">Cancelar</button></div></div>`:""}
-      <div class="acc"><input id="avNV" placeholder="Nombre del vendedor nuevo" style="flex:1;max-width:320px"><button class="btn pri" id="avNVok">Añadir</button></div></div>`:""}
+      <div class="acc"><input id="avNV" placeholder="Nombre del vendedor nuevo" style="flex:1;max-width:320px"><button class="btn pri" id="avNVok">Añadir</button></div>
+      <div class="sec">Camiones</div>
+      <div class="av-chips">${(cf.camiones||[]).map(m=>`<span class="av-w"><b>${esc(m)}</b>${Object.entries(cf.matriculas||{}).filter(([,x])=>x===m).map(([v])=>`<span class="av-cv">${esc(v)}</span>`).join("")}<button data-avquitac="${esc(m)}" aria-label="Quitar ${esc(m)}">×</button></span>`).join("")||`<span class="muted">Todavía no hay camiones.</span>`}</div>
+      ${S.av.quitarC?`<div class="aviso" style="margin:6px 0">¿Quitar el camión <b>${esc(S.av.quitarC)}</b>? Los controles de carga ya hechos lo conservan.<div class="acc" style="margin-top:8px"><button class="btn del" id="avQCsi">Quitar</button><button class="btn" id="avQCno">Cancelar</button></div></div>`:""}
+      <div class="acc"><input id="avNC" placeholder="Matrícula (p. ej. 4515-FBH)" style="flex:1;max-width:320px;text-transform:uppercase"><button class="btn pri" id="avNCok">Añadir</button></div>
+      <p class="muted" style="margin:6px 0 0;font-size:13px">En el control de carga eliges el camión de una lista; se propone el último que usó cada vendedor (el nombre que sale junto a la matrícula).</p></div>`:""}
     ${S.av.cargado&&!cf.arts.length?`<div class="aviso">Antes del primer cuadre, entra en <b>Artículos de autoventa</b> y marca los que llevan los camiones. Si falta alguno (tarros, barra, lonchas…), créalo en «Artículos y precios» y déjalo «Oculto» para que la tienda no lo vea.</div>`:""}
     ${!S.av.cargado?`<div class="muted" style="text-align:center;padding:8px">Leyendo cuadres de la hoja…</div>`:""}
     ${carga}
@@ -1576,6 +1584,10 @@ function vAutoventa(app){
     if(b.id==="avArts"){S.av.arts=true;render();scrollTo(0,0);return}
     if(b.id==="avNVsi"){S.av.nuevoVend=!S.av.nuevoVend;S.av.quitarV=null;render();return}
     if(b.dataset.avquitav){S.av.quitarV=b.dataset.avquitav;render();return}
+    if(b.dataset.avquitac){S.av.quitarC=b.dataset.avquitac;render();return}
+    if(b.id==="avQCno"){S.av.quitarC=null;render();return}
+    if(b.id==="avQCsi"){const q=S.av.quitarC;cf.camiones=(cf.camiones||[]).filter(m=>m!==q);Object.keys(cf.matriculas||{}).forEach(v=>{if(cf.matriculas[v]===q)delete cf.matriculas[v]});S.av.quitarC=null;avGuardarCfg();toast("Camión "+q+" quitado");render();return}
+    if(b.id==="avNCok"){const m=$("#avNC").value.trim().toUpperCase().replace(/\s+/g,"-");if(!m)return;cf.camiones=cf.camiones||[];if(!cf.camiones.includes(m))cf.camiones.push(m);avGuardarCfg();toast("Camión "+m+" añadido");render();return}
     if(b.id==="avQVno"){S.av.quitarV=null;render();return}
     if(b.id==="avQVsi"){const q=S.av.quitarV,i=cf.vendedores.indexOf(q);if(i>=0&&cf.vendedores.length>1)cf.vendedores.splice(i,1);S.av.quitarV=null;if(S.av.vend===q)S.av.vend=cf.vendedores[0];avGuardarCfg();toast(q+" quitado");render();return}
     if(b.id==="avNVok"){const n=$("#avNV").value.trim();if(!n)return;if(!cf.vendedores.includes(n))cf.vendedores.push(n);S.av.vend=n;avGuardarCfg();toast(n+" añadido");render();return}
@@ -1678,6 +1690,7 @@ function vAvCuadre(app){
     <div class="av-fases">${F.map(([k,t])=>`<button data-avf="${k}" class="${S.av.fase===k?"on":""}">${t}</button>`).join("")}</div>
     ${cuerpo}</div>`;
   avRefrescar();
+  if(S.av.fase==="ctl")avFirmaInit(c);
   {const fb=document.querySelector(".av-fases .on");if(fb){const bar=fb.parentNode;bar.scrollLeft=Math.max(0,fb.offsetLeft-bar.offsetLeft-(bar.clientWidth-fb.offsetWidth)/2)}}
 
   app.onclick=e=>{const b=e.target.closest("button");if(!b)return;
@@ -1713,7 +1726,7 @@ function vAvCuadre(app){
     if(el.dataset.pk){const[bk,f]=el.dataset.pk.split("|");(c.pesos[bk]||(c.pesos[bk]=avPeso0()))[f]=avP(el.value);avTocar();avPesoVivo(bk);return}
     if(el.dataset.tara){(c.pesos[el.dataset.tara]||(c.pesos[el.dataset.tara]=avPeso0())).tara=avP(el.value);avTocar();return}
     if(el.dataset.bj){const bj0=c.bandejas||(c.bandejas={});if(el.dataset.bj==="total")delete bj0.carga;bj0[el.dataset.bj]=avP(el.value);const x=$("#avBjC");if(x)x.textContent=avBj(c).ca??"—";avTocar();return}
-    if(el.dataset.ctl){const ct=c.control||(c.control={}),f=el.dataset.ctl;ct[f]=el.type==="checkbox"?el.checked:["bultos","kilos","temp"].includes(f)?avP(el.value):f==="mat"?el.value.trim().toUpperCase():el.value;
+    if(el.dataset.ctl){const ct=c.control||(c.control={}),f=el.dataset.ctl;ct.por=ct.por||S.user;ct[f]=el.type==="checkbox"?el.checked:["bultos","kilos","temp"].includes(f)?avP(el.value):f==="mat"?el.value.trim().toUpperCase():el.value;
       if(f==="mat"){const cf=avCfg();(cf.matriculas||(cf.matriculas={}))[c.vendedor]=el.value.trim().toUpperCase();avGuardarCfg()}avTocar();return}
     if(el.id==="avNota"){c.nota=el.value;avTocar();return}
   };
@@ -1819,14 +1832,31 @@ function avCtlCard(c){const k=avCtl(c),ct=c.control||{},bj=avBj(c);
     <div class="av-ctlg">
       <label>Fecha<input type="date" data-ctl="fecha" value="${k.fecha}"></label>
       <label>Transportista<input value="${esc(k.trans)}" disabled></label>
-      <label>Matrícula<input data-ctl="mat" value="${esc(k.mat)}" placeholder="0000-XXX" autocapitalize="characters" style="text-transform:uppercase"></label>
+      <label>Camión (matrícula)${(()=>{const cs=[...(avCfg().camiones||[])];if(k.mat&&!cs.includes(k.mat))cs.push(k.mat);
+        return cs.length?`<select data-ctl="mat"><option value="">— elige —</option>${cs.map(m=>`<option ${m===k.mat?"selected":""}>${esc(m)}</option>`).join("")}</select>`
+        :`<span class="muted" style="text-transform:none;font-weight:500;font-size:14px;padding:8px 0">Da de alta los camiones en «Vendedores y camiones»</span>`})()}</label>
       <label>Bultos<input class="num" data-ctl="bultos" inputmode="numeric" value="${avF(avN(ct.bultos))}" placeholder="${bj.t??""}"></label>
       <label>Kilos aprox.<input class="num" data-ctl="kilos" inputmode="decimal" value="${avF(avN(ct.kilos))}" placeholder="${avKgSale(c)}"></label>
       <label>T (ºC)<input class="num" data-ctl="temp" inputmode="decimal" value="${avF(avN(ct.temp))}" placeholder="ºC"></label>
     </div>
     <label class="av-conf"><input type="checkbox" data-ctl="conf" ${k.conf?"checked":""}> Conforme: higiene, limpieza, mantenimiento correcto, ausencia de plagas, suciedad, humedad y olores en el interior del vehículo y productos</label>
     <input data-ctl="obs" value="${esc(k.obs)}" placeholder="Observaciones" style="width:100%;margin-top:6px">
+    <div class="av-firma"><div class="acc" style="align-items:center"><span class="l" style="margin:0">Controlado por <b style="color:var(--fg);text-transform:none">${esc(ct.por||S.user||"")}</b> · firma</span><span style="flex:1"></span><button class="btn sm" id="avFirmaBorrar">Borrar firma</button></div>
+      <canvas id="avFirma" width="600" height="200" aria-label="Recuadro para firmar"></canvas></div>
     <p class="muted" style="margin:6px 0 0;font-size:13px">Bultos y kilos se rellenan solos (bandejas al terminar de cargar y piezas × peso medio, con el aceite pesado); escribe encima si quieres otro valor.</p></div>`}
+// Firma: trazos guardados como texto compacto "x,y x,y|x,y ..." en un lienzo de 300×100
+function avFirmaSvg(f,w,h){if(!f)return"";return `<svg viewBox="0 0 300 100" width="${w}" height="${h}" style="display:block;margin:0 auto"><g fill="none" stroke="#123" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${f.split("|").map(t=>`<polyline points="${t}"/>`).join("")}</g></svg>`}
+function avFirmaInit(c){const cv=$("#avFirma");if(!cv)return;const g=cv.getContext("2d"),ct=()=>c.control||(c.control={});
+  const pinta=()=>{g.clearRect(0,0,600,200);g.lineWidth=4.4;g.lineCap=g.lineJoin="round";g.strokeStyle="#123";
+    (ct().firma||"").split("|").filter(Boolean).forEach(t=>{const p=t.split(" ").map(q=>q.split(",").map(Number));g.beginPath();p.forEach(([x,y],i)=>i?g.lineTo(x*2,y*2):g.moveTo(x*2,y*2));if(p.length===1)g.lineTo(p[0][0]*2+.5,p[0][1]*2);g.stroke()})};
+  pinta();let tr=null;
+  const pos=e=>{const r=cv.getBoundingClientRect();return [Math.round((e.clientX-r.left)/r.width*300),Math.round((e.clientY-r.top)/r.height*100)]};
+  cv.onpointerdown=e=>{e.preventDefault();cv.setPointerCapture(e.pointerId);tr=[pos(e)]};
+  cv.onpointermove=e=>{if(!tr)return;const p=pos(e),u=tr[tr.length-1];if(Math.abs(p[0]-u[0])+Math.abs(p[1]-u[1])<2)return;tr.push(p);
+    g.lineWidth=4.4;g.lineCap="round";g.strokeStyle="#123";g.beginPath();g.moveTo(u[0]*2,u[1]*2);g.lineTo(p[0]*2,p[1]*2);g.stroke()};
+  cv.onpointerup=cv.onpointercancel=()=>{if(!tr)return;const k=ct();k.firma=(k.firma?k.firma+"|":"")+tr.map(p=>p.join(",")).join(" ");k.por=S.user;k.firmado=Date.now();tr=null;pinta();avTocar()};
+  const bb=$("#avFirmaBorrar");if(bb)bb.onclick=()=>{const k=ct();delete k.firma;delete k.firmado;pinta();avTocar()};
+}
 function avImprimirCtl(lista){
   const blq=c=>{const k=avCtl(c);return `<div class="ctlb">
     <div class="ctlf"><b>FECHA:</b> ${fDia(k.fecha)}</div>
@@ -1834,7 +1864,7 @@ function avImprimirCtl(lista){
     <tbody><tr><td>${esc(k.trans)}</td><td>${esc(k.mat)}</td><td class="n">${k.bultos??""}</td><td class="n">${k.kilos??""}</td></tr></tbody></table>
     <div class="sello"><b>LÁCTEOS CUQUERELLA, S.L.</b><br><b>CONTROL TRANSPORTE PREVIA CARGA</b><br>Higiene, Limpieza, Mantenimiento correcto, Ausencia de plagas, Suciedad, Humedad, Olores en interior del vehículo y Productos.
       <div style="margin-top:2mm">T (ºC): <b>${k.temp!=null?String(k.temp).replace(".",","):"______"}</b> &nbsp;&nbsp; Conforme: <b>${k.conf?"SÍ":"NO"}</b></div>
-      <div>Observaciones: ${esc(k.obs)}</div><div class="sref">FOR PR 09-02/Enero 2015</div></div></div>`};
+      <div>Observaciones: ${esc(k.obs)}</div>${c.control&&c.control.firma?`<div style="margin-top:1mm">${avFirmaSvg(c.control.firma,"60mm","20mm")}</div>`:""}<div>${c.control&&c.control.por?"Controlado por: <b>"+esc(c.control.por)+"</b>":""}</div><div class="sref">FOR PR 09-02/Enero 2015</div></div></div>`};
   const pags=[];for(let i=0;i<lista.length;i+=2)pags.push(lista.slice(i,i+2));
   $("#imp").innerHTML=pags.map(pg=>`<section class="copia ctlp">${cabecera("CONTROL CARGA VEHÍCULOS AUTOVENTAS","","")}${pg.map(blq).join("")}<div class="ctlpie">FOR PR 08-10(1)</div></section>`).join("");
   imprimir("A4 portrait","12mm");
