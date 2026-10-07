@@ -490,7 +490,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "63 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "64 · 07/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1199,7 +1199,7 @@ function detalleDesk(p){
   const filas=ordenLineas(p.lineas).map(l=>{const d=(+servido(l)||0)-(+l.pz||0),pr=prod(l.c)||{b:1};
     return `<tr class="${E!=="ENVIADO"&&esDif(l)?"dif":""}"><td><span class="dot" style="${estiloG(grupoDe(l.c))}"></span><b>${esc(nomDe(l.c,l.n))}</b>${l.extra?" <i>(añadido en fábrica)</i>":""}</td><td class="muted">${esc(l.c)}</td>
       <td class="n">${l.extra?"—":l.pz}${pr.b>1&&l.pz>=pr.b?` <small class="muted">${bandTxt(l.pz,pr.b,pr.g)}</small>`:""}</td><td class="n">${E==="ENVIADO"?"—":servido(l)}</td><td class="n">${E==="ENVIADO"||!d?"":(d>0?"+":"")+d}</td><td class="n">${l.kg?(l.aprox?"≈ ":"")+kgf(num(l.kg)):""}</td><td>${esc(l.obs||"")}</td></tr>`}).join("");
-  const R=S.rol, puedeEditar=["ENVIADO","PREPARANDO"].includes(E), puedePrep=["ENVIADO","PREPARANDO","PREPARADO"].includes(E), puedeAnular=!["ALBARANADO","ANULADO"].includes(E);
+  const R=S.rol, puedeEditar=(R==="TIENDA"&&E==="ENVIADO")||((R==="OFICINA"||R==="ADMIN")&&["ENVIADO","PREPARANDO"].includes(E)), puedePrep=["ENVIADO","PREPARANDO","PREPARADO"].includes(E), puedeAnular=!["ALBARANADO","ANULADO"].includes(E);
   return `<div class="dcard"><div class="dhead"><h2>${fDiaPed(p.creado)}</h2><span class="chip e-${E}">${EST_TXT[E]}</span></div>
     <div class="muted"><b>Pedido ${esc(p.id)}</b> · hecho a las ${fHora(p.creado)} por ${esc(p.creadoPor)}${p.actualizadoPor&&p.actualizado!==p.creado?` · último cambio ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`:""}${p.albaran?` · albarán nº <b>${esc(p.albaran)}</b>`:""}</div>
     <div class="kpis" style="margin-top:12px"><div class="kpi"><span>Artículos</span><b>${p.lineas.length}</b></div><div class="kpi"><span>Piezas pedidas</span><b>${pzPed(p)}</b></div><div class="kpi"><span>Piezas servidas</span><b>${E==="ENVIADO"?"—":pzSer(p)}</b></div><div class="kpi"><span>Kg</span><b>${kgPed(p)?kgf(kgPed(p)):"—"}</b></div>${alb?`<div class="kpi"><span>Importe</span><b>${eur(alb.total)} €</b></div>`:""}${nd&&E!=="ENVIADO"?`<div class="kpi kd"><span>Cambios</span><b>${nd}</b></div>`:""}</div>
