@@ -65,7 +65,10 @@ var DIAS_HISTORIAL = 60;   // pedidos/albaranes cerrados que se mandan a la app
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
-  if (p.tipo) return puente_(p);
+  if (p.tipo) {
+    try { return puente_(p); }
+    catch (err) { return ContentService.createTextOutput('ERROR: ' + (err.message || err)).setMimeType(ContentService.MimeType.TEXT); }
+  }
   return json_({ok: true, app: 'PEDIDOS TIENDA', hora: new Date().toISOString()});
 }
 
@@ -90,11 +93,14 @@ function puente_(p) {
   };
   if (p.tipo === 'pendientes') {
     var desde = Math.max(Number(props.getProperty('PUENTE_DESDE') || 0), Date.now() - PUENTE_DIAS * 864e5);
-    var q = "trashed = false and createdDate > '" + Utilities.formatDate(new Date(desde), 'UTC', "yyyy-MM-dd'T'HH:mm:ss") + "'";
-    var it = carpeta.searchFiles(q), nombres = [];
+    var nombres = [];
+    // Recorre la carpeta sin búsquedas de Drive (cambian de sintaxis según la versión) y se queda con los T*.TXT recientes
+    var it = carpeta.getFiles();
     while (it.hasNext()) {
       var f = it.next(), n = f.getName();
-      if (/^T\d{7}\.TXT$/.test(n) && String(f.getDescription() || '').indexOf('ENTREGADO') !== 0) nombres.push(n);
+      if (!/^T\d{7}\.TXT$/.test(n) || f.isTrashed()) continue;
+      if (f.getDateCreated().getTime() <= desde) continue;
+      if (String(f.getDescription() || '').indexOf('ENTREGADO') !== 0) nombres.push(n);
     }
     nombres.sort();
     return txt(['OK'].concat(nombres).join('\r\n'));
