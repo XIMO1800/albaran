@@ -506,7 +506,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "84 · 08/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "85 · 08/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1369,7 +1369,7 @@ function imprimirAlbaran(a){
     const filas=a.lineas.map(l=>{let s="";if(varios&&l.pedido!==ant){const p=S.pedidos.find(x=>x.id===l.pedido);s=`<tr class="sep"><td colspan="5">Pedido ${esc(l.pedido)}${p?(()=>{const d=new Date(p.creado);return `<span style="margin-left:5mm;font-weight:400">(${d.getDate()}/${d.getMonth()+1}/${String(d.getFullYear()).slice(2)})</span>`})():""}</td></tr>`;ant=l.pedido}
       return s+`<tr><td class="n">${l.pz}</td><td style="${estiloG(grupoDe(l.c))}"><i class="pdot"></i><b>${esc(nomDe(l.c,l.n))}</b> <span style="font-size:8pt;color:#555">${esc(l.c)}</span></td><td class="n">${kgf(l.kg)}</td><td class="n">${eur(l.p)}</td><td class="n">${eur(r2(l.kg*l.p))}</td></tr>`}).join("");
     return `<section class="copia">${cabecera("ALBARÁN",a.num,tag)}
-      <div class="meta"><div><b>Fecha:</b> ${fDia(a.fecha)}</div><div><b>Cliente:</b> ${esc(a.cliente)}</div><div><b>Pedidos:</b> ${esc(a.pedidos)}</div></div>
+      <div class="meta"><div><b>Fecha:</b> ${fDia(a.fecha)}</div><div><b>Cliente:</b> ${esc(a.cliente)}</div>${(()=>{const ns=String(a.pedidos||"").split(/[,;\s]+/).filter(Boolean).map(n=>"nº "+esc(n));return `<div><b>${ns.length>1?"Pedidos":"Pedido"}:</b> ${ns.length>1?ns.slice(0,-1).join(", ")+" y "+ns[ns.length-1]:(ns[0]||"")}</div>`})()}</div>
       <table><thead><tr><th style="width:10%">Piezas</th><th>Concepto</th><th style="width:13%">Kg</th><th style="width:14%">Precio €/kg</th><th style="width:15%">Total €</th></tr></thead>
       <tbody>${filas}</tbody><tfoot><tr><td colspan="2">TOTAL</td><td class="n">${kgf(a.kg)}</td><td></td><td class="n">${eur(a.total)}</td></tr></tfoot></table>
       ${a.obs?`<div class="pobs"><b>Observaciones:</b> ${esc(a.obs)}</div>`:""}
