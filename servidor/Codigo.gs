@@ -63,8 +63,69 @@ var DIAS_HISTORIAL = 60;   // pedidos/albaranes cerrados que se mandan a la app
 
 /* ------------------------------------------------------------------ */
 
-function doGet() {
+function doGet(e) {
+  var p = (e && e.parameter) || {};
+  if (p.tipo) return puente_(p);
   return json_({ok: true, app: 'PEDIDOS TIENDA', hora: new Date().toISOString()});
+}
+
+/* ------------- puente al servidor (ordenador del despacho, Windows 7) -------------
+   El VBS del ordenador de Joaquín pide los albaranes T*.TXT que aún no ha dejado en ALBTIEND:
+     ?tipo=pendientes&clave=…              → «OK» y debajo un nombre por línea
+     ?tipo=fichero&nombre=T0000123.TXT&clave=…  → el fichero tal cual (mismo formato de siempre)
+     ?tipo=entregado&nombre=T0000123.TXT&clave=… → lo marca entregado (descripción del fichero en Drive)
+   Respuestas en texto plano para que el VBS no tenga que leer JSON. La clave NO está en el código:
+   se crea una vez ejecutando INSTALAR_PUENTE() desde el editor y queda en las propiedades del proyecto. */
+var PUENTE_DIAS = 30;   // solo mira ficheros de los últimos 30 días
+function puente_(p) {
+  var txt = function (s) { return ContentService.createTextOutput(s).setMimeType(ContentService.MimeType.TEXT); };
+  var props = PropertiesService.getScriptProperties(), clave = props.getProperty('CLAVE_PUENTE');
+  if (!clave || p.clave !== clave) return txt('ERROR: clave incorrecta');
+  var carpeta = DriveApp.getFolderById(CARPETA_PROGRAMA_ID);
+  var buscar = function (nombre) {
+    if (!/^T\d{7}\.TXT$/.test(nombre || '')) return null;
+    var it = carpeta.getFilesByName(nombre);
+    while (it.hasNext()) { var f = it.next(); if (!f.isTrashed()) return f; }
+    return null;
+  };
+  if (p.tipo === 'pendientes') {
+    var desde = Math.max(Number(props.getProperty('PUENTE_DESDE') || 0), Date.now() - PUENTE_DIAS * 864e5);
+    var q = "trashed = false and createdDate > '" + Utilities.formatDate(new Date(desde), 'UTC', "yyyy-MM-dd'T'HH:mm:ss") + "'";
+    var it = carpeta.searchFiles(q), nombres = [];
+    while (it.hasNext()) {
+      var f = it.next(), n = f.getName();
+      if (/^T\d{7}\.TXT$/.test(n) && String(f.getDescription() || '').indexOf('ENTREGADO') !== 0) nombres.push(n);
+    }
+    nombres.sort();
+    return txt(['OK'].concat(nombres).join('\r\n'));
+  }
+  if (p.tipo === 'fichero') {
+    var f1 = buscar(p.nombre);
+    if (!f1) return txt('ERROR: no existe ' + p.nombre);
+    return txt(f1.getBlob().getDataAsString());
+  }
+  if (p.tipo === 'entregado') {
+    var f2 = buscar(p.nombre);
+    if (!f2) return txt('ERROR: no existe ' + p.nombre);
+    f2.setDescription('ENTREGADO ' + Utilities.formatDate(new Date(), 'Europe/Madrid', 'dd/MM/yyyy HH:mm') + ' · ALBTIEND');
+    return txt('OK');
+  }
+  return txt('ERROR: tipo desconocido');
+}
+// Ejecutar UNA vez desde el editor (botón ▶ con esta función elegida). Crea la clave y la enseña en el registro.
+// Solo da como pendientes los albaranes emitidos A PARTIR de este momento (los de antes ya los llevó el puente viejo).
+function INSTALAR_PUENTE() {
+  var props = PropertiesService.getScriptProperties();
+  var clave = props.getProperty('CLAVE_PUENTE');
+  if (!clave) { clave = Utilities.getUuid().replace(/-/g, ''); props.setProperty('CLAVE_PUENTE', clave); }
+  if (!props.getProperty('PUENTE_DESDE')) props.setProperty('PUENTE_DESDE', String(Date.now()));
+  Logger.log('CLAVE para el VBS: ' + clave);
+  Logger.log('Pendientes desde: ' + new Date(Number(props.getProperty('PUENTE_DESDE'))));
+}
+// Si alguna vez hiciera falta volver a mandar un albarán: quitarle la marca y el puente lo vuelve a dejar.
+function REENVIAR_ALBARAN(num) {
+  var it = DriveApp.getFolderById(CARPETA_PROGRAMA_ID).getFilesByName(nombreAlbaranProg_(num));
+  while (it.hasNext()) it.next().setDescription('');
 }
 
 function doPost(e) {
