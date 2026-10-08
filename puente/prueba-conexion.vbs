@@ -2,7 +2,7 @@
 ' Doble clic. No escribe nada en el servidor ni cambia nada en Google.
 Option Explicit
 Const URL = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec"
-Const DESTINO = "\\Servidor-i7\V\SERVIDORW10\ALBTIEND"   ' <-- CAMBIAR por la ruta real (ver instrucciones)
+Const DESTINO = "\\Servidor-i7\servidor\SERVIDORW10\ALBTIEND"   ' <-- CAMBIAR por la ruta real (ver instrucciones)
 
 Dim h, fso, r1, r2
 On Error Resume Next

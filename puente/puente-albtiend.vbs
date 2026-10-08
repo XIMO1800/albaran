@@ -4,7 +4,7 @@
 Option Explicit
 Const URL = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec"
 Const CLAVE = "PEGAR_AQUI_LA_CLAVE"                        ' <-- la que da INSTALAR_PUENTE() en el Apps Script
-Const DESTINO = "\\Servidor-i7\V\SERVIDORW10\ALBTIEND"     ' <-- la misma ruta que funcionó en la prueba
+Const DESTINO = "\\Servidor-i7\servidor\SERVIDORW10\ALBTIEND"     ' <-- la misma ruta que funcionó en la prueba
 
 Dim fso, carpeta, logPath, gTxt, gBytes
 Set fso = CreateObject("Scripting.FileSystemObject")
