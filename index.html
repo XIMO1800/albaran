@@ -414,6 +414,7 @@ table.av-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
 /* primera columna (artículo) fija al desplazar la tabla a los lados */
 .av-t thead th:first-child,.av-t tbody th,.av-t tfoot th{position:sticky;left:0;z-index:2;background:var(--card);box-shadow:2px 0 0 var(--line)}
 .av-t thead th:first-child{background:var(--brand);z-index:3}
+.av-pda{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px;border-left:4px solid var(--brand)}.av-pda.ok{border-left-color:#2e7d32}.av-pda .pav{margin-top:4px}
 .av-t tfoot th{background:var(--card)}
 @media (max-width:699px){.av-t tbody th{min-width:0;width:118px;max-width:130px;font-size:14px;padding-left:8px}.av-t thead th:first-child,.av-t tfoot th{padding-left:8px}
   .av-t td{min-width:88px}}
@@ -506,7 +507,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "86 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "87 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1451,8 +1452,8 @@ function avPeso(c,b){
   return {p,tara,total,d,cg,vend,alb,difG:vend===null||alb===null?null:Math.round((alb-vend)*1000),sale:d.n||cg.n?avR3(d.neto+cg.neto):null};
 }
 function avTot(c){
-  const t={lleva:0,ll:0,en:0,de:0,vend:0,ca:0,sale:0,pend:0,mal:0,ok:0,difs:[]};
-  avRefs(c).forEach(k=>{const l0=avLin(c,k),x=avCalc(l0);t.lleva+=x.lleva;t.ll+=avN(l0.ll)||0;t.en+=avN(l0.en)||0;if(x.de!==null)t.de+=x.de;if(x.vend!==null)t.vend+=x.vend;t.ca+=x.ca;if(x.sale!==null)t.sale+=x.sale;
+  const t={lleva:0,ll:0,en:0,de:0,vend:0,ca:0,sale:0,al:0,pend:0,mal:0,ok:0,difs:[]};
+  avRefs(c).forEach(k=>{const l0=avLin(c,k),x=avCalc(l0);t.lleva+=x.lleva;t.ll+=avN(l0.ll)||0;t.en+=avN(l0.en)||0;if(x.de!==null)t.de+=x.de;if(x.vend!==null)t.vend+=x.vend;t.ca+=x.ca;if(x.sale!==null)t.sale+=x.sale;if(x.al!==null)t.al+=x.al;
     if(x.vend){if(x.al===null)t.pend++;else if(x.dif===0)t.ok++;else{t.mal++;t.difs.push([k,x.dif])}}});
   return t;
 }
@@ -1661,6 +1662,76 @@ function vAvArts(app){
     if(id==="avTaraG"||id==="avTaraM"){cf.taras[id==="avTaraG"?"grande":"mini"]=avP(e.target.value)||0;avGuardarCfg()}};
 }
 
+/* ---- albaranes de la PDA: «Resumen de Kilos» impreso como XPS ---- */
+const AV_TERM={"01":"Miguel Ángel","02":"Mere"};
+async function avZipPaginas(buf){
+  const dv=new DataView(buf),u8=new Uint8Array(buf),td=new TextDecoder();let e=-1;
+  for(let i=buf.byteLength-22;i>=Math.max(0,buf.byteLength-70000);i--){if(dv.getUint32(i,true)===0x06054b50){e=i;break}}
+  if(e<0)throw new Error("Ese fichero no es un XPS");
+  const n=dv.getUint16(e+10,true),out=[];let q=dv.getUint32(e+16,true);
+  for(let k=0;k<n;k++){if(dv.getUint32(q,true)!==0x02014b50)break;
+    const met=dv.getUint16(q+10,true),cs=dv.getUint32(q+20,true),nl=dv.getUint16(q+28,true),xl=dv.getUint16(q+30,true),cl=dv.getUint16(q+32,true),lo=dv.getUint32(q+42,true);
+    const name=td.decode(u8.subarray(q+46,q+46+nl));q+=46+nl+xl+cl;
+    const m=/Pages\/(\d+)\.fpage$/i.exec(name);if(!m)continue;
+    const ini=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true),d=u8.subarray(ini,ini+cs);let b;
+    if(met===0)b=d;else if(met===8)b=new Uint8Array(await new Response(new Blob([d]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());else continue;
+    const txt=b[0]===0xFF&&b[1]===0xFE?new TextDecoder("utf-16le").decode(b):td.decode(b);
+    out.push([+m[1],txt])}
+  return out.sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+}
+function avLeerPDA(paginas){
+  const des=t=>t.replace(/&#x([0-9a-f]+);/gi,(_,h)=>String.fromCharCode(parseInt(h,16))).replace(/&#(\d+);/g,(_,d)=>String.fromCharCode(+d)).replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&");
+  const toks=[];
+  paginas.forEach((s,pi)=>{const re=/<Glyphs\b([^>]*)>/g;let m;
+    while((m=re.exec(s))){const a=m[1],g=k=>{const r=new RegExp('\\b'+k+'="([^"]*)"').exec(a);return r?r[1]:null};
+      let u=g("UnicodeString");if(u==null)continue;u=des(u).replace(/^\{\}/,"");
+      const em=+g("FontRenderingEmSize")||12,y=+g("OriginY")+pi*1e5,ind=(g("Indices")||"").split(";");let x=+g("OriginX"),cx=x,cur="";
+      // las columnas de una misma fila vienen pegadas en un solo texto: se separan donde hay un salto grande
+      for(let i=0;i<u.length;i++){cur+=u[i];const v=String(ind[i]||"").replace(/^\(.*?\)/,"").split(",")[1],adv=v===undefined||v===""?null:+v;
+        x+=(adv===null?55:adv)*em/100;if(adv!==null&&adv>150&&i<u.length-1){if(cur.trim())toks.push({x:cx,y,t:cur.trim()});cur="";cx=x}}
+      if(cur.trim())toks.push({x:cx,y,t:cur.trim()})}});
+  const todo=toks.map(t=>t.t).join(" "),r={terminal:"",desde:"",hasta:"",lin:{},total:null};
+  const f=/Del\s+(\d{1,2})\/(\d{1,2})\/(\d{4})\s+al\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(todo),iso=(d,m2,a)=>`${a}-${String(m2).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  if(f){r.desde=iso(f[1],f[2],f[3]);r.hasta=iso(f[4],f[5],f[6])}
+  const tm=/Terminal\s+(\d+)/i.exec(todo);if(tm)r.terminal=tm[1].padStart(2,"0");
+  const filas=[];toks.sort((a,b)=>a.y-b.y||a.x-b.x).forEach(t=>{const fl=filas.find(z=>Math.abs(z.y-t.y)<4);if(fl)fl.t.push(t);else filas.push({y:t.y,t:[t]})});
+  const esN=t=>/^-?\d+(?:[.,]\d+)?$/.test(t),nv=t=>parseFloat(t.replace(/\./g,"").replace(",","."));
+  filas.forEach(fl=>{const ts=fl.t.sort((a,b)=>a.x-b.x),cod=ts[0]&&ts[0].x<150&&/^[A-Za-z0-9]{3,14}$/.test(ts[0].t)&&!esN(ts[0].t)?ts[0].t.toUpperCase():null;
+    const ns=ts.filter((t,i)=>!(cod&&i===0)&&esN(t.t)&&t.x>250),kg=ns.find(t=>/,/.test(t.t)),pz=ns.find(t=>!/,/.test(t.t));if(!kg&&!pz)return;
+    const v={pz:pz?nv(pz.t):0,kg:kg?avR3(nv(kg.t)):0,n:ts.filter((t,i)=>i>0&&!esN(t.t)).map(t=>t.t).join(" ")};
+    if(cod){const o=r.lin[cod]||(r.lin[cod]={pz:0,kg:0,n:v.n});o.pz+=v.pz;o.kg=avR3(o.kg+v.kg)}else if(kg)r.total={pz:v.pz,kg:v.kg}});
+  if(!Object.keys(r.lin).length)throw new Error("No encuentro artículos en ese fichero");
+  r.suma={pz:Object.values(r.lin).reduce((a,o)=>a+o.pz,0),kg:avR3(Object.values(r.lin).reduce((a,o)=>a+o.kg,0))};
+  return r;
+}
+// Pone lo de la PDA en «Según albaranes» (y en los kilos de albaranes de la pestaña Pesos). No pisa lo que hayas escrito a mano.
+function avAplicarPDA(c,r,archivo){
+  c.pda={archivo,terminal:r.terminal,desde:r.desde,hasta:r.hasta,lin:r.lin,total:r.total,suma:r.suma,cargado:Date.now(),por:S.user};
+  avRefs(c).concat(Object.keys(r.lin)).forEach(k=>avPdaLinea(c,k));
+  ["grande","mini"].forEach(b=>{const code=avCfg().peso[b];if(!code)return;const pp=c.pesos[b]||(c.pesos[b]=avPeso0());if(avN(pp.albKg)===null||pp.albKgP){pp.albKg=r.lin[code]?r.lin[code].kg:0;pp.albKgP=1}});
+}
+function avPdaLinea(c,k){if(!c.pda)return;const en=c.pda.lin[k],l=c.lineas[k];
+  if(!en&&!(l&&avN(l.de)!==null))return; // lo que no está en la PDA solo cuenta como 0 vendidos cuando ya lo habéis contado
+  const ln=l||(c.lineas[k]={});if(ln.al==null||ln.alP){ln.al=en?en.pz:0;ln.alP=1;delete ln.no}}
+function avQuitarPDA(c){delete c.pda;Object.values(c.lineas||{}).forEach(l=>{if(l.alP){l.al=null;delete l.alP}});
+  ["grande","mini"].forEach(b=>{const pp=c.pesos&&c.pesos[b];if(pp&&pp.albKgP){pp.albKg=null;delete pp.albKgP}})}
+const avSumaDia=(iso,n)=>{const d=new Date(iso+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+const avFc=iso=>iso?iso.slice(8,10)+"/"+iso.slice(5,7):"";
+function avPdaCard(c){const P=c.pda;
+  if(!P)return `<div class="card av-pda"><div><b>Albaranes de la PDA</b><div class="muted">Carga el «Resumen de Kilos» (.xps) de la carpeta AUTOVENT y verás la diferencia en cada artículo mientras contáis.</div></div><button class="btn pri" id="avPdaBtn">Cargar resumen de la PDA</button><input type="file" id="avPdaF" accept=".xps,.oxps" hidden></div>`;
+  const av=[],quien=AV_TERM[P.terminal],ini=avSumaDia(c.fecha,1),fin=c.cierre||hoy();
+  if(quien&&avNorm(quien)!==avNorm(c.vendedor))av.push(`El terminal ${P.terminal} es de ${quien}, no de ${esc(c.vendedor)}`);
+  if(P.desde&&(P.desde!==ini||P.hasta!==fin))av.push(`Este viaje va del ${avFc(ini)} al ${avFc(fin)}`);
+  if(P.total&&(P.total.pz!==P.suma.pz||Math.abs(P.total.kg-P.suma.kg)>0.005))av.push(`La suma de líneas (${P.suma.pz} pz · ${avKg(P.suma.kg)} kg) no da el total del papel (${P.total.pz} pz · ${avKg(P.total.kg)} kg)`);
+  const fuera=Object.keys(P.lin).filter(k=>!avCfg().arts.includes(k));if(fuera.length)av.push(`No están en los artículos de autoventa: ${fuera.map(esc).join(", ")} (salen igualmente en la hoja)`);
+  return `<div class="card av-pda ok"><div><b>Albaranes de la PDA</b> · terminal ${esc(P.terminal||"?")}${quien?" ("+esc(quien)+")":""} · del ${avFc(P.desde)} al ${avFc(P.hasta)} · <b>${P.suma.pz} pz · ${avKg(P.suma.kg)} kg</b>
+    <div class="muted">${esc(P.archivo||"")} · ya está puesto en «Según albaranes» y en los kilos de albaranes</div>${av.map(t=>`<div class="pav mal">⚠ ${t}</div>`).join("")}</div>
+    <div class="acc"><button class="btn sm" id="avPdaBtn">Cambiar fichero</button><button class="btn sm del" id="avPdaQuita">Quitar</button></div><input type="file" id="avPdaF" accept=".xps,.oxps" hidden></div>`;
+}
+async function avCargarPDA(file){const c=avCuadre();if(!c||!file)return;
+  try{const r=avLeerPDA(await avZipPaginas(await file.arrayBuffer()));avAplicarPDA(c,r,file.name);avTocar();render();toast(`PDA: ${r.suma.pz} pz · ${avKg(r.suma.kg)} kg`)}
+  catch(e){toast("No he podido leer el fichero: "+e.message,true)}}
+
 /* ---- el cuadre ---- */
 function avFilas(c,filtro){return avRefs(c,S.av.todas).filter(k=>S.av.todas||!filtro||filtro(avCalc(avLin(c,k))))}
 function avIn(i,k,f,v,cls){return `<td><input class="av-n ${cls||""}" inputmode="decimal" autocomplete="off" id="av${f}${i}" data-k="${esc(k)}" data-f="${f}" value="${avF(avN(v))}" placeholder="·" aria-label="${f}"></td>`}
@@ -1677,10 +1748,10 @@ function vAvCuadre(app){
   const F=[["desc","1 · Descarga"],["pesos","2 · Pesos"],["carga","3 · Carga"],["hoja","4 · Hoja y cierre"],["ctl","5 · Control carga"]];
   let cuerpo="";
   if(S.av.fase==="desc"){const fs=avFilas(c);
-    cuerpo=`${avAyudaPapel(c)}<p class="nota"><b>Descargó</b> y <b>Cargó</b> son del día que salió (${avDia(c.fecha)}); vienen solos del cuadre anterior. Cuenta lo que trae hoy y apúntalo en <b>Descarga hoy</b>. Vendidos = Descargó + Cargó − Descarga hoy. Con Intro pasas al siguiente.</p>
-    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Descargó ${avDiaV(c.fecha)}</th><th>Cargó ${avDiaV(c.fecha)}</th><th>Descarga hoy</th><th>Vendidos</th></tr></thead><tbody>
-    ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th>${avIn(i,k,"ll",l.ll,"soft")}${avIn(i,k,"en",l.en,"soft")}${avIn(i,k,"de",l.de)}<td class="av-c av-b" data-c="vend"></td></tr>`}).join("")||`<tr><td colspan="5" class="vacio">No hay artículos. Márcalos en «Artículos de autoventa» o pulsa «Ver todo el catálogo».</td></tr>`}
-    </tbody><tfoot><tr><th>Total</th><td data-t="ll"></td><td data-t="en"></td><td data-t="de"></td><td data-t="vend"></td></tr></tfoot></table></div>
+    cuerpo=`${avAyudaPapel(c)}${avPdaCard(c)}<p class="nota"><b>Descargó</b> y <b>Cargó</b> son del día que salió (${avDia(c.fecha)}); vienen solos del cuadre anterior. Cuenta lo que trae hoy y apúntalo en <b>Descarga hoy</b>. Vendidos = Descargó + Cargó − Descarga hoy. Con Intro pasas al siguiente.</p>
+    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Descargó ${avDiaV(c.fecha)}</th><th>Cargó ${avDiaV(c.fecha)}</th><th>Descarga hoy</th><th>Vendidos</th><th>Albaranes</th><th>Dif.</th></tr></thead><tbody>
+    ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th>${avIn(i,k,"ll",l.ll,"soft")}${avIn(i,k,"en",l.en,"soft")}${avIn(i,k,"de",l.de)}<td class="av-c av-b" data-c="vend"></td><td class="av-c" data-c="al"></td><td class="av-c av-b" data-c="dif"></td></tr>`}).join("")||`<tr><td colspan="7" class="vacio">No hay artículos. Márcalos en «Artículos de autoventa» o pulsa «Ver todo el catálogo».</td></tr>`}
+    </tbody><tfoot><tr><th>Total</th><td data-t="ll"></td><td data-t="en"></td><td data-t="de"></td><td data-t="vend"></td><td data-t="al"></td><td></td></tr></tfoot></table></div>
     <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="pesos">Siguiente: pesos →</button></div>`}
   else if(S.av.fase==="carga"){const fs=avFilas(c);
     cuerpo=`<p class="nota"><b>Descarga</b> es lo que trajo (lo apuntado en la descarga). En <b>Carga</b> lo que carga hoy. <b>Sale con</b> es lo que lleva el próximo día de ruta y será el «Lleva» del siguiente cuadre.</p>
@@ -1707,16 +1778,18 @@ function vAvCuadre(app){
     if(b.id==="avVolver"){avSubir();S.av.cur=null;render();scrollTo(0,0);return}
     if(b.dataset.avf){S.av.fase=b.dataset.avf;S.av.borrar=false;render();scrollTo(0,0);return}
     if(b.id==="avTodas"){S.av.todas=!S.av.todas;render();return}
+    if(b.id==="avPdaBtn"){const f=$("#avPdaF");if(f){f.value="";f.click()}return}
+    if(b.id==="avPdaQuita"){avQuitarPDA(c);avTocar();render();return}
     if(b.dataset.tick){const k=b.dataset.tick,l=c.lineas[k]||(c.lineas[k]={}),x=avCalc(l);if(x.vend===null)return;
-      l.al=(x.al!==null&&x.dif===0)?null:x.vend;delete l.no;const i=b.closest("tr").querySelector('input[data-f="al"]');if(i)i.value=avF(l.al);avRefrescar();avTocar();return}
+      l.al=(x.al!==null&&x.dif===0)?null:x.vend;delete l.no;delete l.alP;const i=b.closest("tr").querySelector('input[data-f="al"]');if(i)i.value=avF(l.al);avRefrescar();avTocar();return}
     if(b.dataset.notick){const k=b.dataset.notick,l=c.lineas[k]||(c.lineas[k]={}),x=avCalc(l);if(x.vend===null)return;
-      const i=b.closest("tr").querySelector('input[data-f="al"]');if(x.al!==null&&x.dif===0){l.al=null;if(i)i.value=""}l.no=true;avRefrescar();avTocar();if(i){i.focus();i.select()}return}
+      const i=b.closest("tr").querySelector('input[data-f="al"]');if(x.al!==null&&x.dif===0){l.al=null;if(i)i.value=""}l.no=true;delete l.alP;avRefrescar();avTocar();if(i){i.focus();i.select()}return}
     if(b.id==="avTodoOk"){avRefs(c).forEach(k=>{const l=c.lineas[k];if(!l)return;const x=avCalc(l);if(x.vend!==null&&x.al===null)l.al=x.vend});avTocar();render();return}
     if(b.dataset.addp)return avAddPeso(b.dataset.addp);
     if(b.dataset.tog){const[bk,ls,i]=b.dataset.tog.split("|"),e2=c.pesos[bk][ls][+i];e2.t=!e2.t;avTocar();avRepintar();return}
     if(b.dataset.quita){const[bk,ls,i]=b.dataset.quita.split("|");c.pesos[bk][ls].splice(+i,1);avTocar();avRepintar();return}
     if(b.dataset.verentre){(S.av.verEntre||(S.av.verEntre={}))[b.dataset.verentre]=true;avRepintar();return}
-    if(b.dataset.albok){const bk=b.dataset.albok,w=avPeso(c,bk);if(w.vend===null)return;const p=c.pesos[bk]||(c.pesos[bk]=avPeso0());p.albKg=(avN(p.albKg)!==null&&Math.abs(Math.round((avN(p.albKg)-w.vend)*1000))<=AV_TOL)?null:w.vend;avTocar();avRepintar();return}
+    if(b.dataset.albok){const bk=b.dataset.albok,w=avPeso(c,bk);if(w.vend===null)return;const p=c.pesos[bk]||(c.pesos[bk]=avPeso0());p.albKg=(avN(p.albKg)!==null&&Math.abs(Math.round((avN(p.albKg)-w.vend)*1000))<=AV_TOL)?null:w.vend;delete p.albKgP;avTocar();avRepintar();return}
     if(b.dataset.entre){const bk=b.dataset.entre,pz=avP($("#avEp-"+bk).value),kg=avP($("#avEk-"+bk).value);if(kg===null)return;const p=c.pesos[bk]||(c.pesos[bk]=avPeso0());(p.entre||(p.entre=[])).push({pz,kg});avTocar();avRepintar();return}
     if(b.id==="avCerrar"){c.estado="cerrado";c.cierre=hoy();delete c.primero;avFijarCtl(c);avTocar();
       const sig=Object.entries(S.av.cuadres).find(([i2,x])=>x.origen===id&&x.estado!=="cerrado"), otro=avAbierto(c.vendedor);
@@ -1732,8 +1805,8 @@ function vAvCuadre(app){
     if(b.id==="avCopiar")return avCopiar(c);
   };
   app.oninput=e=>{const el=e.target;
-    if(el.dataset.f&&el.closest("tr[data-row]")){const k=el.dataset.k,l=c.lineas[k]||(c.lineas[k]={});l[el.dataset.f]=avP(el.value);avRefrescar();avTocar();return}
-    if(el.dataset.pk){const[bk,f]=el.dataset.pk.split("|");(c.pesos[bk]||(c.pesos[bk]=avPeso0()))[f]=avP(el.value);avTocar();avPesoVivo(bk);return}
+    if(el.dataset.f&&el.closest("tr[data-row]")){const k=el.dataset.k,l=c.lineas[k]||(c.lineas[k]={});l[el.dataset.f]=avP(el.value);if(el.dataset.f==="al")delete l.alP;if(el.dataset.f==="de")avPdaLinea(c,k);avRefrescar();avTocar();return}
+    if(el.dataset.pk){const[bk,f]=el.dataset.pk.split("|"),pp0=c.pesos[bk]||(c.pesos[bk]=avPeso0());pp0[f]=avP(el.value);if(f==="albKg")delete pp0.albKgP;avTocar();avPesoVivo(bk);return}
     if(el.dataset.tara){(c.pesos[el.dataset.tara]||(c.pesos[el.dataset.tara]=avPeso0())).tara=avP(el.value);avTocar();return}
     if(el.dataset.bj){const bj0=c.bandejas||(c.bandejas={});if(el.dataset.bj==="total")delete bj0.carga;bj0[el.dataset.bj]=avP(el.value);const x=$("#avBjC");if(x)x.textContent=avBj(c).ca??"—";const y=$("#avBjCmp");if(y)y.innerHTML=avBjCmp(c);avTocar();return}
     if(el.dataset.ctl){const ct=c.control||(c.control={}),f=el.dataset.ctl;ct.por=ct.por||S.user;ct[f]=el.type==="checkbox"?el.checked:["bultos","kilos","temp"].includes(f)?avP(el.value):f==="mat"?el.value.trim().toUpperCase():el.value;
@@ -1741,6 +1814,7 @@ function vAvCuadre(app){
     if(el.id==="avNota"){c.nota=el.value;avTocar();return}
   };
   app.onchange=e=>{const el=e.target;
+    if(el.id==="avPdaF"){avCargarPDA(el.files&&el.files[0]);return}
     if(el.id==="avFecha"){c.fecha=el.value;avTocar();return}
     if(el.dataset.tara)setTimeout(avRepintar,0); // la tara cambia todos los netos
   };
@@ -1800,7 +1874,7 @@ function avHoja(c){
   const fs=avRefs(c).filter(k=>avCalc(avLin(c,k)).usada);
   const tick=x=>!x.vend&&x.al===null?"":x.al===null?`<span class="muted">?</span>`:x.dif===0?`<span class="av-ok">✓</span>`:`<span class="av-mal">${x.dif>0?"+":""}${x.dif}</span>`;
   return `<div class="acc" style="margin-bottom:8px"><span class="chip ${avDifCls(g.difG)}">Grande: ${avDifTxt(g.difG)}</span><span class="chip ${avDifCls(m.difG)}">Minis: ${avDifTxt(m.difG)}</span></div>
-  <p class="nota">Ve diciendo los vendidos con el listado de la oficina: si coincide toca <b>✓</b>; si no, toca <b>✗</b> y escribe en <b>Según albaranes</b> lo que dice el listado para que salga la diferencia.</p>
+  ${c.pda?`<p class="nota"><b>Según albaranes</b> viene de la PDA (${avFc(c.pda.desde)} al ${avFc(c.pda.hasta)}). Si algo no cuadra, recuenta; si el papel dice otra cosa, escríbelo encima.</p>`:""}<p class="nota">Ve diciendo los vendidos con el listado de la oficina: si coincide toca <b>✓</b>; si no, toca <b>✗</b> y escribe en <b>Según albaranes</b> lo que dice el listado para que salga la diferencia.</p>
   <div class="acc" style="align-items:center;margin-bottom:8px"><button class="btn sm" id="avTodoOk">Marcar todo como cuadrado</button><span style="flex:1"></span><span id="avRes"></span></div>
   <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Llevaba</th><th>Descarga</th><th>Vendidos</th><th>Cuadra</th><th>Según albaranes</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>
   ${fs.map((k,i)=>{const x=avCalc(avLin(c,k)),l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted">${x.lleva}</td><td class="av-c">${x.de??""}</td><td class="av-c av-b" data-c="vend">${x.vend??""}</td><td class="av-cq" data-c="tick"><button class="av-sí" data-tick="${esc(k)}" title="Cuadra">✓</button><button class="av-no" data-notick="${esc(k)}" title="No cuadra">✗</button></td>${avIn(i,k,"al",l.al)}<td class="av-c">${x.ca||""}</td><td class="av-c av-b" data-c="sale">${x.sale??""}</td></tr>`}).join("")}
@@ -1821,6 +1895,8 @@ function avRefrescar(){
       if(f==="vend"){el.textContent=x.vend??"";el.classList.toggle("av-mal",x.vend!==null&&x.vend<0)}
       if(f==="de")el.textContent=x.de??"—";
       if(f==="sale")el.textContent=x.sale??"";
+      if(f==="al")el.textContent=x.al??"";
+      if(f==="dif"){el.textContent=x.dif===null?"":x.dif===0?"✓":(x.dif>0?"+":"")+x.dif;el.className="av-c av-b "+(x.dif===null?"":x.dif===0?"av-ok":"av-mal")}
       if(f==="tick"){const l0=avLin(c,tr.dataset.row),ok=x.al!==null&&x.dif===0,mal=(x.al!==null&&x.dif!==0)||(x.al===null&&l0.no);
         el.classList.toggle("vacio-q",x.vend===null);el.querySelector(".av-sí").classList.toggle("on",ok);const n=el.querySelector(".av-no");n.classList.toggle("on",mal);
         n.textContent=x.al!==null&&x.dif!==0?"✗ "+(x.dif>0?"+":"")+x.dif:"✗"}});
