@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "107 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "108 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1581,7 +1581,7 @@ function avNuevo(v){
   const id="c"+Date.now().toString(36);
   S.av.cuadres[id]=c; avAbrir(id); avTocar(id);
 }
-function avAbrir(id){const c=S.av.cuadres[id];S.av.cur=id;S.av.fase=c&&c.estado==="cerrado"?"hoja":"desc";S.av.todas=false;S.av.borrar=false;S.av.arts=false;render();scrollTo(0,0)}
+function avAbrir(id){const c=S.av.cuadres[id];S.av.cur=id;S.av.fase=c&&c.estado==="cerrado"?"hoja":"desc";S.av.todas=false;S.av.borrar=false;S.av.arts=false;S.av.exVista=false;render();scrollTo(0,0)}
 function avRefTxt(k){const p=prod(k);return `<span class="av-bar" style="${p?estiloG(p.g):"--c:var(--otros)"}"></span><b>${esc(nomDe(k))}</b>`}
 
 /* ---- pantalla principal: vendedores + histórico ---- */
@@ -1800,11 +1800,16 @@ function avIn(i,k,f,v,cls,extra){return `<td${extra?' class="av-conex"':""}><inp
 // Lo cargado después del día de salida, en azul junto a lo cargado ese día: 40 +20 +20 (cada carga por separado)
 function avExBadge(l){const ex=(l.ex||[]).filter(e=>avN(e.pz));if(!ex.length)return"";const fs=ex.length>3?12:ex.length>1?14:16;
   return `<span class="av-exb" style="font-size:${fs}px">${ex.map(e=>`<span title="${esc(avDM(e.f))}">+${e.pz}</span>`).join(" ")}</span>`}
-function avExCard(c){const arts=avRefs(c),lista=[];arts.forEach(k=>(avLin(c,k).ex||[]).forEach((e,i)=>lista.push({k,i,...e})));lista.sort((a,b)=>String(a.f).localeCompare(String(b.f)));
-  const abierto=S.av.exAbre||false;
-  return `<div class="card av-exc"><div class="acc" style="align-items:center"><b>Cargas entre medias</b>${lista.length?`<span class="muted">${lista.length} apunte${lista.length>1?"s":""}</span>`:""}<span style="flex:1"></span><button class="btn sm" id="avExTog">${abierto?"Cerrar":"+ Añadir carga"}</button></div>
-    ${abierto?`<div class="av-exf"><select id="avExK">${arts.map(k=>`<option value="${esc(k)}">${esc(nomDe(k))}</option>`).join("")}</select><input id="avExPz" class="num" inputmode="numeric" placeholder="Pz"><input id="avExF" type="date" value="${hoy()}"><button class="btn sm pri" id="avExAdd">Añadir</button></div>`:""}
-    ${lista.length?`<div class="av-exl">${lista.map(e=>`<span class="av-w"><b>${avDM(e.f)} · ${esc(nomDe(e.k))} +${e.pz}</b><button data-exdel="${esc(e.k)}|${e.i}" aria-label="Quitar">×</button></span>`).join("")}</div>`:""}</div>`}
+function avExLista(c){const lista=[];avRefs(c).forEach(k=>(avLin(c,k).ex||[]).forEach((e,i)=>lista.push({k,i,...e})));return lista.sort((a,b)=>String(a.f).localeCompare(String(b.f))||String(a.k).localeCompare(String(b.k)))}
+// En la descarga solo una línea; la lista completa y el formulario se abren a pantalla completa
+function avExCard(c){const n=avExLista(c).length;
+  return `<div class="card av-exc"><div class="acc" style="align-items:center"><b>Cargas entre medias</b><span class="muted">${n?n+" apunte"+(n>1?"s":""):"ninguna"}</span><span style="flex:1"></span><button class="btn sm" id="avExVer">${n?"Ver y añadir":"+ Añadir carga"}</button></div></div>`}
+function avExVista(c){const lista=avExLista(c),arts=avRefs(c),dias={};lista.forEach(e=>(dias[e.f]||(dias[e.f]=[])).push(e));
+  return `<div class="acc" style="align-items:center;margin-bottom:8px"><button class="btn sm" id="avExCerrar">← Volver al cuadre</button><span style="flex:1"></span><b>Cargas entre medias</b></div>
+    <div class="card"><div class="av-exf" style="margin-top:0"><select id="avExK">${arts.map(k=>`<option value="${esc(k)}"${S.av.exK===k?" selected":""}>${esc(nomDe(k))}</option>`).join("")}</select><input id="avExPz" class="num" inputmode="numeric" placeholder="Pz"><input id="avExF" type="date" value="${S.av.exF||hoy()}"><button class="btn sm pri" id="avExAdd">Añadir</button></div></div>
+    ${Object.keys(dias).length?Object.keys(dias).sort().map(f=>`<div class="sec">${esc(avDia(f))} · ${dias[f].reduce((a,e)=>a+(avN(e.pz)||0),0)} pz</div>
+      <div class="av-tw"><table class="av-t"><tbody>${dias[f].map(e=>`<tr><th>${avRefTxt(e.k)}</th><td class="av-c" style="color:#1f5fbf">+${e.pz}</td><td style="width:56px;text-align:center"><button class="x" data-exdel="${esc(e.k)}|${e.i}" aria-label="Quitar">×</button></td></tr>`).join("")}</tbody></table></div>`).join("")
+      :`<div class="vacio">Todavía no hay cargas entre medias en este viaje.</div>`}`}
 const avBtnTodas=()=>`<button class="btn sm" id="avTodas">${S.av.todas?"Solo los de autoventa":"Ver todo el catálogo"}</button>`;
 function avAyudaPapel(c){
   if(!c.primero||c.vendedor!==AV_PAPEL.vend)return"";
@@ -1817,7 +1822,8 @@ function vAvCuadre(app){
   if(S.av.fase==="alb")S.av.fase="hoja";
   const F=[["desc","1 · Descarga"],["pesos","2 · Pesos"],["carga","3 · Carga"],["hoja","4 · Hoja y cierre"],["ctl","5 · Control carga"]];
   let cuerpo="";
-  if(S.av.fase==="desc"){const fs=avFilas(c);
+  if(S.av.exVista){cuerpo=avExVista(c)}
+  else if(S.av.fase==="desc"){const fs=avFilas(c);
     cuerpo=`${avAyudaPapel(c)}${avPdaCard(c)}${avExCard(c)}
     <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Descargó<br>${avDM(c.fecha)}</th><th>Cargó<br>${avDM(c.fecha)}</th><th>Descarga hoy</th><th>Vendidos</th><th>Albaranes</th><th>Dif.</th></tr></thead><tbody>
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th>${avIn(i,k,"ll",l.ll,"soft")}${avIn(i,k,"en",l.en,"soft",avExBadge(l))}${avIn(i,k,"de",l.de)}<td class="av-c av-b" data-c="vend"></td><td class="av-c" data-c="al"></td><td class="av-c av-b" data-c="dif"></td></tr>`}).join("")||`<tr><td colspan="7" class="vacio">No hay artículos. Márcalos en «Artículos de autoventa» o pulsa «Ver todo el catálogo».</td></tr>`}
@@ -1846,11 +1852,12 @@ function vAvCuadre(app){
 
   app.onclick=e=>{const b=e.target.closest("button");if(!b)return;
     if(b.id==="avVolver"){avSubir();S.av.cur=null;render();scrollTo(0,0);return}
-    if(b.dataset.avf){S.av.fase=b.dataset.avf;S.av.borrar=false;render();scrollTo(0,0);return}
+    if(b.dataset.avf){S.av.fase=b.dataset.avf;S.av.borrar=false;S.av.exVista=false;render();scrollTo(0,0);return}
     if(b.id==="avTodas"){S.av.todas=!S.av.todas;render();return}
-    if(b.id==="avExTog"){S.av.exAbre=!S.av.exAbre;avRepintar();return}
+    if(b.id==="avExVer"){S.av.exVista=true;render();scrollTo(0,0);return}
+    if(b.id==="avExCerrar"){S.av.exVista=false;render();scrollTo(0,0);return}
     if(b.id==="avExAdd"){const k=$("#avExK").value,pz=avP($("#avExPz").value),f=$("#avExF").value||hoy();if(!k||!pz){$("#avExPz").focus();return}
-      const l=c.lineas[k]||(c.lineas[k]={});(l.ex||(l.ex=[])).push({f,pz});avTocar();toast(`+${pz} ${nomDe(k)} (${avDM(f)})`);avRepintar();return}
+      const l=c.lineas[k]||(c.lineas[k]={});(l.ex||(l.ex=[])).push({f,pz});S.av.exF=f;S.av.exK=k;avTocar();toast(`+${pz} ${nomDe(k)} (${avDM(f)})`);avRepintar();const z=$("#avExPz");if(z)z.focus();return}
     if(b.dataset.exdel){const[k,i]=b.dataset.exdel.split("|"),l=c.lineas[k];if(l&&l.ex){l.ex.splice(+i,1);if(!l.ex.length)delete l.ex}avTocar();avRepintar();return}
     if(b.id==="avPdaBtn"){const f=$("#avPdaF");if(f){f.value="";f.click()}return}
     if(b.id==="avPdaNube"){avPdaNube();return}
