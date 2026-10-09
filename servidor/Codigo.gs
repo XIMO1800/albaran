@@ -135,6 +135,10 @@ function REENVIAR_ALBARAN(num) {
 }
 
 function doPost(e) {
+  if (e && e.parameter && e.parameter.tipo) {   // puente del despacho (subida de ficheros de la PDA)
+    try { return puenteSubir_(e); }
+    catch (err) { return ContentService.createTextOutput('ERROR: ' + (err.message || err)).setMimeType(ContentService.MimeType.TEXT); }
+  }
   var req;
   try { req = JSON.parse(e.postData.contents); }
   catch (err) { return json_({ok: false, error: 'Petición no válida'}); }
@@ -561,3 +565,46 @@ function resumen_(ls, conKg) {
 function log_(u, accion, ref, detalle) {
   hoja_('LOG').appendRow([new Date(), u.nombre, accion, ref, detalle]);
 }
+
+/* ------------- PDA de autoventa: resúmenes «.xps» que deja el programa en V:\SERVIDORW10\AUTOVENT -------------
+   El puente del despacho los sube aquí (POST ?tipo=subirPda&nombre=…&clave=…, cuerpo = fichero en base64) y se
+   guardan en la carpeta de Drive «AUTOVENT PDA». La app los lista y los lee ella misma (pdaLista / pdaFichero). */
+function carpetaPda_() {
+  var props = PropertiesService.getScriptProperties(), id = props.getProperty('CARPETA_PDA');
+  if (id) { try { return DriveApp.getFolderById(id); } catch (e) {} }
+  var f = DriveApp.createFolder('AUTOVENT PDA');
+  props.setProperty('CARPETA_PDA', f.getId());
+  return f;
+}
+function puenteSubir_(e) {
+  var txt = function (s) { return ContentService.createTextOutput(s).setMimeType(ContentService.MimeType.TEXT); };
+  var p = e.parameter, clave = PropertiesService.getScriptProperties().getProperty('CLAVE_PUENTE');
+  if (!clave || p.clave !== clave) return txt('ERROR: clave incorrecta');
+  if (p.tipo !== 'subirPda') return txt('ERROR: tipo desconocido');
+  var nombre = String(p.nombre || '').replace(/[\\/:*?"<>|]/g, '_');
+  if (!/\.o?xps$/i.test(nombre)) return txt('ERROR: solo ficheros .xps');
+  var b64 = String((e.postData && e.postData.contents) || '').replace(/\s/g, '');
+  if (!b64) return txt('ERROR: fichero vacío');
+  var bytes = Utilities.base64Decode(b64);
+  var carpeta = carpetaPda_(), viejos = carpeta.getFilesByName(nombre);
+  while (viejos.hasNext()) viejos.next().setTrashed(true);
+  carpeta.createFile(Utilities.newBlob(bytes, 'application/vnd.ms-xpsdocument', nombre));
+  return txt('OK');
+}
+ACCIONES.pdaLista = function (req, u) {
+  permitir_(u, ['ADMIN']);
+  var it = carpetaPda_().getFiles(), l = [];
+  while (it.hasNext()) {
+    var f = it.next();
+    if (f.isTrashed()) continue;
+    l.push({id: f.getId(), nombre: f.getName(), fecha: f.getDateCreated().toISOString(), tam: f.getSize()});
+  }
+  l.sort(function (a, b) { return a.fecha < b.fecha ? 1 : -1; });
+  return {ficheros: l.slice(0, 15)};
+};
+ACCIONES.pdaFichero = function (req, u) {
+  permitir_(u, ['ADMIN']);
+  var f = DriveApp.getFileById(String(req.id || ''));
+  if (f.getParents().next().getId() !== carpetaPda_().getId()) throw new Error('Ese fichero no es de la PDA');
+  return {nombre: f.getName(), b64: Utilities.base64Encode(f.getBlob().getBytes())};
+};
