@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "115 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "116 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1841,6 +1841,7 @@ function vAvCuadre(app){
   if(S.av.fase==="alb")S.av.fase="hoja";
   const F=[["desc","1 · Descarga"],["pesos","2 · Pesos"],["carga","3 · Carga"],["hoja","4 · Hoja y cierre"],["ctl","5 · Control carga"]];
   let cuerpo="";
+  if(c.estado!=="cerrado")avExNorm(c);
   if(S.av.exVista){cuerpo=avExVista(c)}
   else if(S.av.fase==="desc"){const fs=avFilas(c);
     cuerpo=`${avAyudaPapel(c)}${avPdaCard(c)}${avExCard(c)}
@@ -1947,7 +1948,12 @@ function avBarra(){
 }
 function avRepintar(){const y=scrollY,a=document.activeElement&&document.activeElement.id;render();scrollTo(0,y);if(a){const el=document.getElementById(a);if(el)el.focus({preventScroll:true})}}
 // piezas de una carga entre medias con pesadas: en el aceite grande cada pesada son AV_PZCAJA piezas (salvo que las cambies a mano)
-function avExPzAuto(k,x){const b=avBDe(k),n=AV_PZCAJA[b];if(n&&!x.pzM)x.pz=x.ps.length?x.ps.length*n:null}
+// En las cargas entre medias las cajas van completas: grande 2 pz por pesada, mini una bandeja de 20 (o lo puesto en «pz/band.»)
+const AV_PZENTRE={grande:2,mini:20};
+function avPzEntre(k){const b=avBDe(k);return AV_PZCAJA[b]||avN((avCfg().pzb||{})[k])||AV_PZENTRE[b]||null}
+function avExPzAuto(k,x){const n=avPzEntre(k);if(!n||x.pzM||!Array.isArray(x.ps))return false;const v=x.ps.length?x.ps.length*n:null;if(v===x.pz)return false;x.pz=v;return true}
+// pone las piezas a las cargas entre medias de aceite que se apuntaron sin ellas
+function avExNorm(c){let ch=false;["grande","mini"].forEach(b=>{const k=(avCfg().peso||{})[b];if(k)(avLin(c,k).ex||[]).forEach(x=>{if(avExPzAuto(k,x))ch=true})});if(ch)avTocar()}
 function avIrPesadas(k,i){S.av.exVista=false;S.av.fase="pesos";render();const b=avBDe(k),bl=$(`#avExBl-${b}-${i}`);
   if(bl){bl.scrollIntoView({block:"center"});bl.classList.add("av-flash");const n=$(`#avAddEx-${b}-${i}`);if(n)n.focus({preventScroll:true})}}
 function avAddEx(key){const c=avCuadre(),[b,k,i]=key.split("|"),el=$(`#avAddEx-${b}-${i}`),v=avP(el&&el.value),x=((c.lineas[k]||{}).ex||[])[+i];
