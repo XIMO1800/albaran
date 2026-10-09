@@ -507,7 +507,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "94 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "95 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1636,7 +1636,7 @@ function vAvArts(app){
   const ord=cf.arts.map((c,i)=>{const p=prod(c)||{c,n:"",g:"X"};
     const sel=S.av.ordSel===i, des=S.av.ordSel!=null&&!sel;
     return `<div class="av-ord ${sel?"sel":""} ${des?"dest":""}" style="${estiloG(p.g)}"><input class="av-pos" data-avpos="${i}" value="${i+1}" inputmode="numeric" aria-label="Posición de ${esc(c)}"><span class="dot"></span><div class="av-onm" data-avpick="${i}" role="button" tabindex="0"><b>${esc(prod(c)?nomDe(c,p.n):c)}</b> ${prod(c)?`<span class="muted">${esc(c)}</span>`:`<span class="av-fuera">ya no está en el catálogo</span>`}${sel?` <span class="chip e-ENVIADO">moviendo</span>`:""}</div>
-      <button class="mvb" data-avmv="${i}" data-d="-1" ${i?"":"disabled"} aria-label="Subir">↑</button><button class="mvb" data-avmv="${i}" data-d="1" ${i<cf.arts.length-1?"":"disabled"} aria-label="Bajar">↓</button><button class="x" data-avquita="${esc(c)}" aria-label="Quitar ${esc(c)} de la hoja" title="Quitar de la hoja">×</button></div>`}).join("");
+      <button class="mvb" data-avmv="${i}" data-d="-1" ${i?"":"disabled"} aria-label="Subir">↑</button><button class="mvb" data-avmv="${i}" data-d="1" ${i<cf.arts.length-1?"":"disabled"} aria-label="Bajar">↓</button></div>`}).join("");
   const sinPapel=AV_PAPEL.pz.filter(([x])=>!S.productos.some(p=>{const k=avNorm(x);return avNorm(p.n)===k||avNorm(p.c)===k})).map(([x])=>x);
   for(const p of ordenProds(S.productos).filter(p=>!qA||p.c.toUpperCase().includes(qA)||String(p.n).toUpperCase().includes(qA))){const k=seccion(p);if(k!==k0){h+=cabSecc(k);k0=k}
     h+=`<div class="av-art ${en.has(p.c)?"on":""}" style="${estiloG(p.g)}"><button class="chk ${en.has(p.c)?"on":""}" data-art="${esc(p.c)}" aria-label="Llevar ${esc(p.c)} en autoventa">${en.has(p.c)?"✓":""}</button>
@@ -1645,8 +1645,8 @@ function vAvArts(app){
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="justify-content:space-between;align-items:center">${esDesk()&&S.av.sec==="arts"?"<span></span>":`<button class="btn sm" id="avArtV">← Autoventa</button>`}<span class="muted" id="avSt"></span></div>
     <div class="av-fases" style="margin-bottom:10px"><button id="avIrArts">Artículos · tienda y autoventa</button><button class="on">Orden de la hoja de autoventa</button></div>
-    <p class="nota">Orden en que salen los artículos en la hoja del cuadre; solo afecta al cuadre (la tienda usa el suyo). Qué artículos van en autoventa lo eliges en la pestaña «Artículos», junto a la tienda; también puedes marcarlos abajo. Los artículos nuevos se crean en «Artículos».</p>
-    <div class="card"><div class="sec" style="margin-top:0">Orden en la hoja de cuadre</div>
+    <p class="nota">Orden en que salen los artículos en la hoja del cuadre; solo afecta al cuadre (la tienda tiene el suyo en «Artículos»). Para <b>añadir o quitar</b> un artículo de autoventa, o crear uno nuevo, ve a la pestaña <b>«Artículos · tienda y autoventa»</b> y usa su botón «Autoventa: Activo / No activo». Los nuevos se ponen al final de esta lista; luego los colocas aquí.</p>
+    <div class="card"><div class="sec" style="margin-top:0">Orden en la hoja de cuadre · ${cf.arts.length} artículos</div>
       <p class="muted" style="margin:0 0 8px">Para mover uno lejos: <b>toca su nombre</b> y luego <b>toca el artículo</b> en cuyo sitio quieres ponerlo. O escribe directamente el número de posición. ↑ ↓ para ajustes de uno en uno.</p>
       ${S.av.ordSel!=null&&cf.arts[S.av.ordSel]?`<div class="av-movaviso">Moviendo <b>${esc(cf.arts[S.av.ordSel])}</b>: toca dónde ponerlo. <button class="btn sm" id="avOrdNo">Cancelar</button></div>`:""}
       ${fuera.length?`<div class="aviso">${fuera.length} artículo(s) de la hoja ya no están en el catálogo (les cambiaste el código). <button class="btn sm" id="avQuitaFuera">Quitarlos de la hoja</button></div>`:""}
@@ -1656,10 +1656,7 @@ function vAvArts(app){
       <div class="av-g2"><div><label class="l" for="avPeso-grande">Aceite grande</label>${opt("grande")}</div><div><label class="l" for="avPeso-mini">Minis de aceite (bandejas)</label>${opt("mini")}</div></div>
       <div class="av-g2" style="margin-top:8px"><div><label class="l" for="avTaraG">Tara caja aceite grande (kg)</label><input id="avTaraG" class="num" inputmode="decimal" value="${avF(cf.taras.grande)}"></div>
         <div><label class="l" for="avTaraM">Tara bandeja minis (kg)</label><input id="avTaraM" class="num" inputmode="decimal" value="${avF(cf.taras.mini)}"></div></div></div>
-    <div class="card" id="avAddCard"><div class="sec" style="margin-top:0">Añadir artículos a la hoja</div>
-      <p class="muted" style="margin:0 0 8px">Toca <b>✓</b> en el artículo que lleva el camión: se añade al <b>final</b> de la hoja. Luego colócalo arriba escribiendo su número de posición. Tocando otra vez el ✓ se quita.</p>
-      <input id="avQArt" placeholder="Buscar artículo por nombre o código" value="${esc(S.av.qArt||"")}" style="width:100%;margin-bottom:6px"></div>
-    ${h||`<div class="vacio">Ningún artículo con «${esc(S.av.qArt||"")}».</div>`}</div>`;
+    </div>`;
   barra(S.av.ordSel!=null&&cf.arts[S.av.ordSel]?`<span>Moviendo <b>${esc(cf.arts[S.av.ordSel])}</b>: toca dónde ponerlo</span><button class="btn" id="avOrdNo2">Cancelar</button>`:`<span class="muted">${cf.arts.length} artículos en la hoja de autoventa</span>`);
   const mover=(a,z)=>{z=Math.max(0,Math.min(cf.arts.length-1,z));if(a===z)return;const [x]=cf.arts.splice(a,1);cf.arts.splice(z,0,x);avGuardarCfg()};
   const repinta=()=>{const y=scrollY;render();scrollTo(0,y)};
