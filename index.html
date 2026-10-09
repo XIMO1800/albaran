@@ -418,7 +418,8 @@ table.av-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
 /* primera columna (artículo) fija al desplazar la tabla a los lados */
 .av-t thead th:first-child,.av-t tbody th,.av-t tfoot th{position:sticky;left:0;z-index:2;background:var(--card);box-shadow:2px 0 0 var(--line)}
 .av-t thead th:first-child{background:var(--brand);z-index:3}
-.av-pda{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px;border-left:4px solid var(--brand)}.av-pda.ok{border-left-color:#2e7d32}.av-pda .pav{margin-top:4px}.av-pdal{display:flex;flex-wrap:wrap;gap:8px;width:100%}.av-pdal .btn{display:flex;flex-direction:column;align-items:flex-start;text-align:left}.av-pdal small{font-weight:400;color:var(--muted)}
+.av-pda{display:flex;gap:8px 12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px;padding:8px 12px;border-left:4px solid var(--brand)}.av-pda small{font-size:12px}
+.av-ventas{font-weight:700;color:var(--fg);font-size:15px}.av-pda.ok{border-left-color:#2e7d32}.av-pda .pav{margin-top:4px}.av-pdal{display:flex;flex-wrap:wrap;gap:8px;width:100%}.av-pdal .btn{display:flex;flex-direction:column;align-items:flex-start;text-align:left}.av-pdal small{font-weight:400;color:var(--muted)}
 .av-t tfoot th{background:var(--card)}
 @media (max-width:699px){.av-t tbody th{min-width:0;width:128px;max-width:140px;font-size:16px;padding-left:12px}.av-t thead th:first-child,.av-t tfoot th{padding-left:8px}
   .av-t td{min-width:0}.av-t thead th{font-size:11px;letter-spacing:.02em}input.av-n{min-width:46px}.av-c{min-width:40px;padding:0 3px}}
@@ -512,7 +513,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "101 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "102 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1759,16 +1760,15 @@ function avPdaListaHtml(){const L=S.av.pdaLista;if(!L)return"";
   const otros=S.av.pdaTodos?"":`<button class="lnk" id="avPdaTodos">Ver también los anteriores</button>`;
   if(!L.length)return `<div class="muted" style="width:100%">No hay ningún resumen nuevo para este viaje. Si Bernardo acaba de guardarlo, espera 2 minutos y vuelve a pulsar. ${otros}</div>`;
   return `<div class="av-pdal">${L.map(f=>`<button class="btn sm" data-pdaid="${esc(f.id)}"><b>${esc(f.nombre)}</b><small>subido ${fCorta(f.fecha)}</small></button>`).join("")}${otros}</div>`}
-const avPdaBotones=pri=>`<div class="acc"><button class="btn ${pri?"pri":"sm"}" id="avPdaNube">${pri?"Coger de la carpeta AUTOVENT":"Otro de AUTOVENT"}</button>${pri?"":`<button class="btn sm del" id="avPdaQuita">Quitar</button>`}</div>`;
+const avPdaBotones=pri=>`<div class="acc"><button class="btn sm ${pri?"pri":""}" id="avPdaNube">${pri?"Coger de AUTOVENT":"Otro"}</button>${pri?"":`<button class="btn sm del" id="avPdaQuita">Quitar</button>`}</div>`;
 function avPdaCard(c){const P=c.pda;
-  if(!P)return `<div class="card av-pda"><div><b>Albaranes de la PDA</b><div class="muted">Coge el «Resumen de Kilos» (.xps) que deja el programa en la carpeta AUTOVENT y verás la diferencia en cada artículo mientras contáis.</div></div>${avPdaBotones(true)}${avPdaListaHtml()}</div>`;
+  if(!P)return `<div class="card av-pda"><b>Albaranes PDA</b>${avPdaBotones(true)}${avPdaListaHtml()}</div>`;
   const av=[],quien=AV_TERM[P.terminal],ini=avSumaDia(c.fecha,1),fin=c.cierre||hoy();
-  if(quien&&avNorm(quien)!==avNorm(c.vendedor))av.push(`El terminal ${P.terminal} es de ${quien}, no de ${esc(c.vendedor)}`);
+  if(quien&&avNorm(quien)!==avNorm(c.vendedor))av.push(`Este resumen es de ${quien}, no de ${esc(c.vendedor)}`);
   if(P.desde&&(P.desde!==ini||P.hasta!==fin))av.push(`Este viaje va del ${avFc(ini)} al ${avFc(fin)}`);
-  if(P.total&&(P.total.pz!==P.suma.pz||Math.abs(P.total.kg-P.suma.kg)>0.05)) /* el programa redondea cada línea: unos gramos de diferencia no cuentan */av.push(`La suma de líneas (${P.suma.pz} pz · ${avKg(P.suma.kg)} kg) no da el total del papel (${P.total.pz} pz · ${avKg(P.total.kg)} kg)`);
-  const fuera=Object.keys(P.lin).filter(k=>!avCfg().arts.includes(k));if(fuera.length)av.push(`No están en los artículos de autoventa: ${fuera.map(esc).join(", ")} (salen igualmente en la hoja)`);
-  return `<div class="card av-pda ok"><div><b>Albaranes de la PDA</b> · terminal ${esc(P.terminal||"?")}${quien?" ("+esc(quien)+")":""} · del ${avFc(P.desde)} al ${avFc(P.hasta)} · <b>${P.suma.pz} pz · ${avKg(P.suma.kg)} kg</b>
-    <div class="muted">${esc(P.archivo||"")} · ya está puesto en «Según albaranes» y en los kilos de albaranes</div>${av.map(t=>`<div class="pav mal">⚠ ${t}</div>`).join("")}</div>
+  if(P.total&&(P.total.pz!==P.suma.pz||Math.abs(P.total.kg-P.suma.kg)>0.05)) /* el programa redondea cada línea: unos gramos de diferencia no cuentan */av.push(`La suma de líneas no da el total del papel`);
+  const fuera=Object.keys(P.lin).filter(k=>!avCfg().arts.includes(k));if(fuera.length)av.push(`No están en autoventa: ${fuera.map(esc).join(", ")}`);
+  return `<div class="card av-pda ok"><div><b>Albaranes PDA · ${esc(quien||"terminal "+(P.terminal||"?"))} · del ${avFc(P.desde)} al ${avFc(P.hasta)}</b> <small class="muted">${esc(P.archivo||"")}</small>${av.map(t=>`<div class="pav mal">⚠ ${t}</div>`).join("")}</div>
     ${avPdaBotones(false)}${avPdaListaHtml()}</div>`;
 }
 async function avCargarPDA(file){if(!file)return;try{await avPdaBuf(await file.arrayBuffer(),file.name)}catch(e){toast("No he podido leer el fichero: "+e.message,true)}}
@@ -1799,13 +1799,13 @@ function vAvCuadre(app){
   const F=[["desc","1 · Descarga"],["pesos","2 · Pesos"],["carga","3 · Carga"],["hoja","4 · Hoja y cierre"],["ctl","5 · Control carga"]];
   let cuerpo="";
   if(S.av.fase==="desc"){const fs=avFilas(c);
-    cuerpo=`${avAyudaPapel(c)}${avPdaCard(c)}<p class="nota"><b>Descargó</b> y <b>Cargó</b> son del día que salió (${avDia(c.fecha)}); vienen solos del cuadre anterior. Cuenta lo que trae hoy y apúntalo en <b>Descarga hoy</b>. Vendidos = Descargó + Cargó − Descarga hoy. Con Intro pasas al siguiente.</p>
+    cuerpo=`${avAyudaPapel(c)}${avPdaCard(c)}
     <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Descargó<br>${avDM(c.fecha)}</th><th>Cargó<br>${avDM(c.fecha)}</th><th>Descarga hoy</th><th>Vendidos</th><th>Albaranes</th><th>Dif.</th></tr></thead><tbody>
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th>${avIn(i,k,"ll",l.ll,"soft")}${avIn(i,k,"en",l.en,"soft")}${avIn(i,k,"de",l.de)}<td class="av-c av-b" data-c="vend"></td><td class="av-c" data-c="al"></td><td class="av-c av-b" data-c="dif"></td></tr>`}).join("")||`<tr><td colspan="7" class="vacio">No hay artículos. Márcalos en «Artículos de autoventa» o pulsa «Ver todo el catálogo».</td></tr>`}
     </tbody><tfoot><tr><th>Total</th><td data-t="ll"></td><td data-t="en"></td><td data-t="de"></td><td data-t="vend"></td><td data-t="al"></td><td></td></tr></tfoot></table></div>
     <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="pesos">Siguiente: pesos →</button></div>`}
   else if(S.av.fase==="carga"){const fs=avFilas(c);
-    cuerpo=`<p class="nota"><b>Descarga</b> es lo que trajo (lo apuntado en la descarga). En <b>Carga</b> lo que carga hoy. <b>Sale con</b> es lo que lleva el próximo día de ruta y será el «Lleva» del siguiente cuadre.</p>
+    cuerpo=`
     <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Descarga</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted" data-c="de"></td>${avIn(i,k,"ca",l.ca)}<td class="av-c av-b" data-c="sale"></td></tr>`}).join("")}
     </tbody><tfoot><tr><th>Total</th><td data-t="de"></td><td data-t="ca"></td><td data-t="sale"></td></tr></tfoot></table></div>
@@ -1818,7 +1818,7 @@ function vAvCuadre(app){
   else cuerpo=avHoja(c);
   app.innerHTML=`<div class="wrap av-wrap">
     <div class="acc" style="justify-content:space-between;align-items:center"><button class="btn sm" id="avVolver">← Autoventa</button><span class="muted" id="avSt" style="font-size:13px">${Object.keys(S.av.pend).length?"Pendiente de guardar":"Guardado en la hoja"}</span></div>
-    <div class="av-cab"><b>${esc(c.vendedor)}</b><span class="muted">salió el</span><input type="date" id="avFecha" value="${c.fecha||""}" aria-label="Día que salió">${cerr&&avHasta(c)?`<span class="muted">viaje ${avViaje(c)}</span>`:""}${cerr?`<span class="chip e-PREPARADO">Cerrado</span>`:`<span class="chip e-PREPARANDO">Abierto</span>`}</div>
+    <div class="av-cab"><b>${esc(c.vendedor)}</b><span class="muted">último cuadre</span><input type="date" id="avFecha" value="${c.fecha||""}" aria-label="Día del último cuadre">${c.fecha?`<span class="av-ventas">ventas del ${avDM(avSumaDia(c.fecha,1))} al ${avDM(c.cierre||avHasta(c)||hoy())}</span>`:""}${cerr?`<span class="chip e-PREPARADO">Cerrado</span>`:`<span class="chip e-PREPARANDO">Abierto</span>`}</div>
     <div class="av-fases">${F.map(([k,t])=>`<button data-avf="${k}" class="${S.av.fase===k?"on":""}">${t}</button>`).join("")}</div>
     ${cuerpo}</div>`;
   avRefrescar();
@@ -1929,7 +1929,7 @@ function avHoja(c){
   const fs=avRefs(c).filter(k=>avCalc(avLin(c,k)).usada);
   const tick=x=>!x.vend&&x.al===null?"":x.al===null?`<span class="muted">?</span>`:x.dif===0?`<span class="av-ok">✓</span>`:`<span class="av-mal">${x.dif>0?"+":""}${x.dif}</span>`;
   return `<div class="acc" style="margin-bottom:8px"><span class="chip ${avDifCls(g.difG)}">Grande: ${avDifTxt(g.difG)}</span><span class="chip ${avDifCls(m.difG)}">Minis: ${avDifTxt(m.difG)}</span></div>
-  ${c.pda?`<p class="nota"><b>Según albaranes</b> viene de la PDA (${avFc(c.pda.desde)} al ${avFc(c.pda.hasta)}). Si algo no cuadra, recuenta; si el papel dice otra cosa, escríbelo encima.</p>`:""}<p class="nota">Ve diciendo los vendidos con el listado de la oficina: si coincide toca <b>✓</b>; si no, toca <b>✗</b> y escribe en <b>Según albaranes</b> lo que dice el listado para que salga la diferencia.</p>
+  
   <div class="acc" style="align-items:center;margin-bottom:8px"><button class="btn sm" id="avTodoOk">Marcar todo como cuadrado</button><span style="flex:1"></span><span id="avRes"></span></div>
   <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Llevaba</th><th>Descarga</th><th>Vendidos</th><th>Cuadra</th><th>Según albaranes</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>
   ${fs.map((k,i)=>{const x=avCalc(avLin(c,k)),l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted">${x.lleva}</td><td class="av-c">${x.de??""}</td><td class="av-c av-b" data-c="vend">${x.vend??""}</td><td class="av-cq" data-c="tick"><button class="av-sí" data-tick="${esc(k)}" title="Cuadra">✓</button><button class="av-no" data-notick="${esc(k)}" title="No cuadra">✗</button></td>${avIn(i,k,"al",l.al)}<td class="av-c">${x.ca||""}</td><td class="av-c av-b" data-c="sale">${x.sale??""}</td></tr>`}).join("")}
