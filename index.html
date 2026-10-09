@@ -507,7 +507,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "90 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "91 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1457,7 +1457,8 @@ function avTot(c){
     if(x.vend){if(x.al===null)t.pend++;else if(x.dif===0)t.ok++;else{t.mal++;t.difs.push([k,x.dif])}}});
   return t;
 }
-const avDifTxt=g=>g===null?"pendiente":g===0?"exacto":g>0?`sobran ${g} g`:`faltan ${-g} g`;
+const avGkg=g=>avKg(Math.abs(g)/1000)+" kg", avDifKg=g=>g===null?"":(g>0?"+":g<0?"−":"")+avGkg(g);
+const avDifTxt=g=>g===null?"pendiente":g===0?"exacto":g>0?`sobran ${avGkg(g)}`:`faltan ${avGkg(g)}`;
 const avDifCls=g=>g===null?"av-neu":Math.abs(g)<=AV_TOL?"av-ok":"av-mal";
 function avMal(c){return avTot(c).mal+["grande","mini"].filter(b=>{const g=avPeso(c,b).difG;return g!==null&&Math.abs(g)>AV_TOL}).length}
 
@@ -1898,7 +1899,7 @@ function avHoja(c){
   </tbody><tfoot><tr><th>Total</th><td>${t.lleva}</td><td>${t.de}</td><td data-t="vend">${t.vend}</td><td></td><td></td><td>${t.ca}</td><td>${t.sale}</td></tr></tfoot></table></div>
   <div class="sec">Pesos (kg)</div>
   <div class="av-tw"><table class="av-t"><thead><tr><th></th><th>Llevaba</th><th>Descarga</th><th>Vendido</th><th>Albarán</th><th>Dif.</th><th>Sale</th></tr></thead><tbody>
-  ${[["Aceite grande",g],["Minis",m]].map(([n,w])=>`<tr><th>${n}</th><td class="av-c">${avKg(w.total)}</td><td class="av-c">${w.d.n?avKg(w.d.neto):"—"}</td><td class="av-c av-b">${avKg(w.vend)}</td><td class="av-c">${avKg(w.alb)}</td><td class="av-c ${avDifCls(w.difG)}">${w.difG===null?"":(w.difG>0?"+":"")+w.difG+" g"}</td><td class="av-c av-b">${avKg(w.sale)}</td></tr>`).join("")}
+  ${[["Aceite grande",g],["Minis",m]].map(([n,w])=>`<tr><th>${n}</th><td class="av-c">${avKg(w.total)}</td><td class="av-c">${w.d.n?avKg(w.d.neto):"—"}</td><td class="av-c av-b">${avKg(w.vend)}</td><td class="av-c">${avKg(w.alb)}</td><td class="av-c ${avDifCls(w.difG)}">${avDifKg(w.difG)}</td><td class="av-c av-b">${avKg(w.sale)}</td></tr>`).join("")}
   </tbody></table></div>
   <div class="sec">Notas</div><textarea id="avNota" placeholder="Incidencias, devoluciones, fallos de cuadres anteriores…">${esc(c.nota||"")}</textarea>
   <div class="acc" style="margin-top:12px"><button class="btn" id="avCopiar">Copiar resumen</button><button class="btn" id="avImprimir">Imprimir hoja</button><span style="flex:1"></span>
@@ -1993,7 +1994,7 @@ function avImprimir(c){
   const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini");
   const filas=avRefs(c).filter(k=>avCalc(avLin(c,k)).usada).map(k=>{const x=avCalc(avLin(c,k)),d=x.al===null?"":x.dif===0?"✓":(x.dif>0?"+":"")+x.dif;
     return `<tr><td><b>${esc(nomDe(k))}</b></td><td class="n">${x.lleva}</td><td class="n">${x.de??""}</td><td class="n"><b>${x.vend??""}</b></td><td class="n">${d}</td><td class="n">${x.ca||""}</td><td class="n"><b>${x.sale??""}</b></td></tr>`}).join("");
-  const pes=(n,w)=>`<tr><td>${n}</td><td class="n">${avKg(w.total)}</td><td class="n">${w.d.n?avKg(w.d.neto):""}</td><td class="n"><b>${avKg(w.vend)}</b></td><td class="n">${avKg(w.alb)}</td><td class="n">${w.difG===null?"":(w.difG>0?"+":"")+w.difG+" g"}</td><td class="n"><b>${avKg(w.sale)}</b></td></tr>`;
+  const pes=(n,w)=>`<tr><td>${n}</td><td class="n">${avKg(w.total)}</td><td class="n">${w.d.n?avKg(w.d.neto):""}</td><td class="n"><b>${avKg(w.vend)}</b></td><td class="n">${avKg(w.alb)}</td><td class="n">${avDifKg(w.difG)}</td><td class="n"><b>${avKg(w.sale)}</b></td></tr>`;
   $("#imp").innerHTML=`<section class="copia">${cabecera("CUADRE AUTOVENTA","",esc(c.vendedor)+" · viaje "+avViaje(c))}
     <table><thead><tr><th>Artículo</th><th>Llevaba</th><th>Descarga</th><th>Vendidos</th><th>Albarán</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>${filas}</tbody>
     <tfoot><tr><td>TOTAL</td><td class="n">${t.lleva}</td><td class="n">${t.de}</td><td class="n">${t.vend}</td><td></td><td class="n">${t.ca}</td><td class="n">${t.sale}</td></tr></tfoot></table>
