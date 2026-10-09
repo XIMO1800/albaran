@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "109 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "110 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1563,7 +1563,7 @@ const avDiaV=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isN
 // Un cuadre es un viaje: empieza el día de su fecha (sale cargado) y termina el día que se cuadra y se cierra.
 function avHasta(c){if(c.estado!=="cerrado")return null;if(c.cierre)return c.cierre;let r=null;Object.values(S.av.cuadres).forEach(x=>{if(x!==c&&x.vendedor===c.vendedor&&x.fecha&&c.fecha&&x.fecha>c.fecha&&(!r||x.fecha<r))r=x.fecha});return r}
 const avDM=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.getDate()+"/"+(d.getMonth()+1)};
-function avViaje(c){const h=avHasta(c);return `${avDiaV(c.fecha)} → ${h?avDiaV(h):c.estado==="cerrado"?"?":"en ruta"}`}
+function avViaje(c){const h=avHasta(c);return `${avDiaV(c.fecha?avSumaDia(c.fecha,1):"")} → ${h?avDiaV(h):c.estado==="cerrado"?"?":"en ruta"}`}
 // Al cerrar un viaje, el siguiente empieza con lo que descargó y lo que cargó ese día
 function avBase(a,c){c.lineas=c.lineas||{};avRefs(a).forEach(k=>{const x=avCalc(avLin(a,k));if(!x.sale){if(c.lineas[k]){delete c.lineas[k].ll;delete c.lineas[k].en}return}
     const l=c.lineas[k]||(c.lineas[k]={});const ll=x.sale-(x.ca||0);if(ll)l.ll=ll;else delete l.ll;if(x.ca)l.en=x.ca;else delete l.en});
