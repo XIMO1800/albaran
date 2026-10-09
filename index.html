@@ -435,7 +435,10 @@ input.av-n::placeholder{color:#cbbfc1;font-weight:400}
 input.av-n:focus{background:var(--gold-soft);outline:2px solid var(--gold);outline-offset:-2px}
 tr.av-nada th{color:var(--muted)}
 .av-cq{white-space:nowrap;text-align:center}.av-cq.vacio-q button{visibility:hidden}
-.av-falta{background:#fbe3e1}.av-cq.sinde button{display:none}.av-cq.sinde::after{content:"✗ falta descarga";display:inline-block;background:var(--danger);color:#fff;border-radius:10px;padding:8px 10px;font-weight:800;font-size:14px;margin:3px 0}
+.av-falta{background:#fbe3e1}
+.av-exc{padding:8px 12px;margin-bottom:10px}.av-exf{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.av-exf select{flex:1 1 180px}.av-exf input.num{width:80px}.av-exf input[type=date]{width:auto}
+.av-exl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+td.av-conex{position:relative}.av-exb{position:absolute;left:0;right:0;bottom:1px;text-align:center;font-size:11px;font-weight:700;color:#1f5fbf;pointer-events:none}.av-cq.sinde button{display:none}.av-cq.sinde::after{content:"✗ falta descarga";display:inline-block;background:var(--danger);color:#fff;border-radius:10px;padding:8px 10px;font-weight:800;font-size:14px;margin:3px 0}
 .av-cq button{min-width:46px;height:40px;margin:3px 2px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:18px;font-weight:800;color:#c9bcbe;cursor:pointer}
 .av-cq .av-sí.on{background:#1f8a4c;border-color:#1f8a4c;color:#fff}.av-cq .av-no.on{background:var(--danger);border-color:var(--danger);color:#fff;font-size:15px}
 .av-tick{width:100%;height:46px;border:0;background:none;font-size:16px;font-weight:700;color:#cbbfc1;cursor:pointer}
@@ -517,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "105 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "106 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1462,8 +1465,10 @@ const avCuadre=()=>S.av.cur&&S.av.cuadres[S.av.cur];
 
 /* ---- cálculo ---- */
 const avLin=(c,k)=>(c&&c.lineas&&c.lineas[k])||{};
+// Cargas entre medias (días después de salir): se guardan con su fecha y se suman a lo que llevaba
+const avExtra=l=>(l&&l.ex||[]).reduce((a,e)=>a+(avN(e.pz)||0),0);
 function avCalc(l){
-  const lleva=(avN(l.ll)||0)+(avN(l.en)||0), de=avN(l.de), al=avN(l.al), ca=avN(l.ca)||0;
+  const lleva=(avN(l.ll)||0)+(avN(l.en)||0)+avExtra(l), de=avN(l.de), al=avN(l.al), ca=avN(l.ca)||0;
   const vend=de===null?null:lleva-de, dif=vend===null||al===null?null:al-vend;
   const base=de===null?(lleva===0?0:null):de;
   return {lleva,de,vend,al,dif,ca,sale:base===null?null:base+ca,usada:lleva>0||de!==null||ca!==0||al!==null};
@@ -1494,7 +1499,7 @@ function avPeso(c,b){
 }
 function avTot(c){
   const t={lleva:0,ll:0,en:0,de:0,vend:0,ca:0,sale:0,al:0,pend:0,mal:0,ok:0,difs:[]};
-  avRefs(c).forEach(k=>{const l0=avLin(c,k),x=avCalc(l0);t.lleva+=x.lleva;t.ll+=avN(l0.ll)||0;t.en+=avN(l0.en)||0;if(x.de!==null)t.de+=x.de;if(x.vend!==null)t.vend+=x.vend;t.ca+=x.ca;if(x.sale!==null)t.sale+=x.sale;if(x.al!==null)t.al+=x.al;
+  avRefs(c).forEach(k=>{const l0=avLin(c,k),x=avCalc(l0);t.lleva+=x.lleva;t.ll+=avN(l0.ll)||0;t.en+=(avN(l0.en)||0)+avExtra(l0);if(x.de!==null)t.de+=x.de;if(x.vend!==null)t.vend+=x.vend;t.ca+=x.ca;if(x.sale!==null)t.sale+=x.sale;if(x.al!==null)t.al+=x.al;
     if(x.de===null&&x.lleva>0){t.mal++;t.sinDe=(t.sinDe||0)+1;t.difs.push([k,"sin descarga"])}
     else if(x.vend){if(x.al===null)t.pend++;else if(x.dif===0)t.ok++;else{t.mal++;t.difs.push([k,x.dif])}}});
   return t;
@@ -1791,7 +1796,13 @@ async function avPdaDe(id){try{toast("Cargando…");const j=await api("pdaFicher
 
 /* ---- el cuadre ---- */
 function avFilas(c,filtro){return avRefs(c,S.av.todas).filter(k=>S.av.todas||!filtro||filtro(avCalc(avLin(c,k))))}
-function avIn(i,k,f,v,cls){return `<td><input class="av-n ${cls||""}" inputmode="decimal" autocomplete="off" id="av${f}${i}" data-k="${esc(k)}" data-f="${f}" value="${avF(avN(v))}" placeholder="·" aria-label="${f}"></td>`}
+function avIn(i,k,f,v,cls,extra){return `<td${extra?' class="av-conex"':""}><input class="av-n ${cls||""}" inputmode="decimal" autocomplete="off" id="av${f}${i}" data-k="${esc(k)}" data-f="${f}" value="${avF(avN(v))}" placeholder="·" aria-label="${f}">${extra||""}</td>`}
+function avExBadge(l){const n=avExtra(l);return n?`<span class="av-exb" title="${esc((l.ex||[]).map(e=>avDM(e.f)+": "+e.pz+" pz").join(" · "))}">+${n} después</span>`:""}
+function avExCard(c){const arts=avRefs(c),lista=[];arts.forEach(k=>(avLin(c,k).ex||[]).forEach((e,i)=>lista.push({k,i,...e})));lista.sort((a,b)=>String(a.f).localeCompare(String(b.f)));
+  const abierto=S.av.exAbre||false;
+  return `<div class="card av-exc"><div class="acc" style="align-items:center"><b>Cargas entre medias</b>${lista.length?`<span class="muted">${lista.length} apunte${lista.length>1?"s":""}</span>`:""}<span style="flex:1"></span><button class="btn sm" id="avExTog">${abierto?"Cerrar":"+ Añadir carga"}</button></div>
+    ${abierto?`<div class="av-exf"><select id="avExK">${arts.map(k=>`<option value="${esc(k)}">${esc(nomDe(k))}</option>`).join("")}</select><input id="avExPz" class="num" inputmode="numeric" placeholder="Pz"><input id="avExF" type="date" value="${hoy()}"><button class="btn sm pri" id="avExAdd">Añadir</button></div>`:""}
+    ${lista.length?`<div class="av-exl">${lista.map(e=>`<span class="av-w"><b>${avDM(e.f)} · ${esc(nomDe(e.k))} +${e.pz}</b><button data-exdel="${esc(e.k)}|${e.i}" aria-label="Quitar">×</button></span>`).join("")}</div>`:""}</div>`}
 const avBtnTodas=()=>`<button class="btn sm" id="avTodas">${S.av.todas?"Solo los de autoventa":"Ver todo el catálogo"}</button>`;
 function avAyudaPapel(c){
   if(!c.primero||c.vendedor!==AV_PAPEL.vend)return"";
@@ -1805,9 +1816,9 @@ function vAvCuadre(app){
   const F=[["desc","1 · Descarga"],["pesos","2 · Pesos"],["carga","3 · Carga"],["hoja","4 · Hoja y cierre"],["ctl","5 · Control carga"]];
   let cuerpo="";
   if(S.av.fase==="desc"){const fs=avFilas(c);
-    cuerpo=`${avAyudaPapel(c)}${avPdaCard(c)}
+    cuerpo=`${avAyudaPapel(c)}${avPdaCard(c)}${avExCard(c)}
     <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Descargó<br>${avDM(c.fecha)}</th><th>Cargó<br>${avDM(c.fecha)}</th><th>Descarga hoy</th><th>Vendidos</th><th>Albaranes</th><th>Dif.</th></tr></thead><tbody>
-    ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th>${avIn(i,k,"ll",l.ll,"soft")}${avIn(i,k,"en",l.en,"soft")}${avIn(i,k,"de",l.de)}<td class="av-c av-b" data-c="vend"></td><td class="av-c" data-c="al"></td><td class="av-c av-b" data-c="dif"></td></tr>`}).join("")||`<tr><td colspan="7" class="vacio">No hay artículos. Márcalos en «Artículos de autoventa» o pulsa «Ver todo el catálogo».</td></tr>`}
+    ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th>${avIn(i,k,"ll",l.ll,"soft")}${avIn(i,k,"en",l.en,"soft",avExBadge(l))}${avIn(i,k,"de",l.de)}<td class="av-c av-b" data-c="vend"></td><td class="av-c" data-c="al"></td><td class="av-c av-b" data-c="dif"></td></tr>`}).join("")||`<tr><td colspan="7" class="vacio">No hay artículos. Márcalos en «Artículos de autoventa» o pulsa «Ver todo el catálogo».</td></tr>`}
     </tbody><tfoot><tr><th>Total</th><td data-t="ll"></td><td data-t="en"></td><td data-t="de"></td><td data-t="vend"></td><td data-t="al"></td><td></td></tr></tfoot></table></div>
     <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn sm" data-avf="pesos">Siguiente: pesos →</button></div>`}
   else if(S.av.fase==="carga"){const fs=avFilas(c);
@@ -1835,6 +1846,10 @@ function vAvCuadre(app){
     if(b.id==="avVolver"){avSubir();S.av.cur=null;render();scrollTo(0,0);return}
     if(b.dataset.avf){S.av.fase=b.dataset.avf;S.av.borrar=false;render();scrollTo(0,0);return}
     if(b.id==="avTodas"){S.av.todas=!S.av.todas;render();return}
+    if(b.id==="avExTog"){S.av.exAbre=!S.av.exAbre;avRepintar();return}
+    if(b.id==="avExAdd"){const k=$("#avExK").value,pz=avP($("#avExPz").value),f=$("#avExF").value||hoy();if(!k||!pz){$("#avExPz").focus();return}
+      const l=c.lineas[k]||(c.lineas[k]={});(l.ex||(l.ex=[])).push({f,pz});avTocar();toast(`+${pz} ${nomDe(k)} (${avDM(f)})`);avRepintar();return}
+    if(b.dataset.exdel){const[k,i]=b.dataset.exdel.split("|"),l=c.lineas[k];if(l&&l.ex){l.ex.splice(+i,1);if(!l.ex.length)delete l.ex}avTocar();avRepintar();return}
     if(b.id==="avPdaBtn"){const f=$("#avPdaF");if(f){f.value="";f.click()}return}
     if(b.id==="avPdaNube"){avPdaNube();return}
     if(b.id==="avPdaTodos"){avPdaNube(true);return}
