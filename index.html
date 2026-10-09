@@ -402,9 +402,11 @@ textarea.conObs{background:#fff35c;border:3px solid #e2b900;font-weight:700;font
 .av-fases{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px}
 .av-fases button{flex:1 0 auto;border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:9px 12px;font-family:var(--display);font-size:18px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
 .av-fases button.on{background:var(--brand);border-color:var(--brand);color:#fff}
-.av-tw{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.av-tw{overflow:clip;background:var(--card);border:1px solid var(--line);border-radius:12px}
+@media (max-width:559px){.av-tw{overflow-x:auto}}
+.av-t thead th{z-index:2}.av-t thead th:first-child{z-index:4}
 table.av-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-.av-t thead th{background:var(--brand);color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;padding:8px 6px;text-align:center;position:sticky;top:0;white-space:nowrap}
+.av-t thead th{background:var(--brand);color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:8px 4px;text-align:center;position:sticky;top:var(--hdrAlto,0px);line-height:1.15}
 .av-t thead th:first-child{text-align:left;padding-left:12px}
 .av-t tbody th{text-align:left;font-weight:500;padding:4px 8px 4px 12px;font-size:15px;line-height:1.15;min-width:120px}
 .av-t tbody th b{font-weight:700}.av-t tbody th small{display:block;color:var(--muted);font-size:12.5px;margin-left:16px}
@@ -417,7 +419,7 @@ table.av-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
 .av-pda{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px;border-left:4px solid var(--brand)}.av-pda.ok{border-left-color:#2e7d32}.av-pda .pav{margin-top:4px}.av-pdal{display:flex;flex-wrap:wrap;gap:8px;width:100%}.av-pdal .btn{display:flex;flex-direction:column;align-items:flex-start;text-align:left}.av-pdal small{font-weight:400;color:var(--muted)}
 .av-t tfoot th{background:var(--card)}
 @media (max-width:699px){.av-t tbody th{min-width:0;width:118px;max-width:130px;font-size:14px;padding-left:8px}.av-t thead th:first-child,.av-t tfoot th{padding-left:8px}
-  .av-t td{min-width:88px}}
+  .av-t td{min-width:0}.av-t thead th{font-size:11px;letter-spacing:.02em}input.av-n{min-width:46px}.av-c{min-width:40px;padding:0 3px}}
 .av-c{text-align:center;padding:0 6px;font-size:17px;min-width:52px}
 .av-b{font-weight:700}
 input.av-n{width:100%;min-width:58px;height:46px;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;text-align:center;font-family:var(--display);font-size:22px;font-weight:700;color:var(--brand);padding:0 2px}
@@ -507,7 +509,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "97 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "99 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -626,9 +628,12 @@ document.addEventListener("click",async e=>{ if(e.target.id==="bSalir"){const c=
 
 /* =================== render principal =================== */
 function barra(html){const b=$("#barra");b.hidden=!html;$("#barraIn").innerHTML=html||""}
+// Alto de la cabecera fija: las tablas del cuadre se desplazan dentro de su caja para que sus títulos de columna no se pierdan
+function altoCab(){const h=$("#hdr"),b=document.querySelector(".barra");if(h&&h.offsetHeight)document.documentElement.style.setProperty("--hdrAlto",h.offsetHeight+"px");if(b)document.documentElement.style.setProperty("--barAlto",(b.hidden?0:b.offsetHeight)+"px")}
+addEventListener("resize",()=>altoCab());
 function render(){
   document.body.classList.toggle("desk",!!S.user&&esDesk());document.documentElement.classList.toggle("desk",document.body.classList.contains("desk"));
-  renderHeader(); marcoDesk();
+  renderHeader(); marcoDesk(); setTimeout(altoCab,0);
   const app=$("#app"); app.onclick=app.oninput=app.onchange=app.onkeydown=app.onfocusin=null; app.classList.toggle("scr",!!S.scr);
   if(!S.api) return vConfig(app);
   if(!S.pin||!S.user) return vLogin(app);
@@ -1869,6 +1874,7 @@ function vAvCuadre(app){
 }
 function avBarra(){
   const c=avCuadre();if(!c||S.tab!=="autoventa")return;
+  if(S.av.fase==="desc"||S.av.fase==="carga"){barra("");setTimeout(altoCab,0);return} // en descarga y carga, todo el sitio para la tabla
   const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini");
   barra(`<div class="tot"><small>${t.vend} vendidas · ${t.mal?t.mal+" con diferencia":t.pend?t.pend+" sin comprobar":"todo cuadra"}</small>Sale con ${t.sale} pz</div>
     <div style="text-align:right;font-size:14px;line-height:1.35;font-weight:600"><span class="${avDifCls(g.difG)}">Grande: ${avDifTxt(g.difG)}</span><br><span class="${avDifCls(m.difG)}">Minis: ${avDifTxt(m.difG)}</span></div>`);
