@@ -507,7 +507,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "88 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "89 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1719,8 +1719,9 @@ const avSumaDia=(iso,n)=>{const d=new Date(iso+"T12:00:00");d.setDate(d.getDate(
 const avFc=iso=>iso?iso.slice(8,10)+"/"+iso.slice(5,7):"";
 function avPdaListaHtml(){const L=S.av.pdaLista;if(!L)return"";
   if(L==="cargando")return `<div class="muted" style="width:100%">Buscando en la carpeta AUTOVENT…</div>`;
-  if(!L.length)return `<div class="muted" style="width:100%">No hay ningún resumen subido todavía. Si Bernardo acaba de guardarlo, espera 2 minutos y vuelve a pulsar.</div>`;
-  return `<div class="av-pdal">${L.map(f=>`<button class="btn sm" data-pdaid="${esc(f.id)}"><b>${esc(f.nombre)}</b><small>subido ${fCorta(f.fecha)}</small></button>`).join("")}</div>`}
+  const otros=S.av.pdaTodos?"":`<button class="lnk" id="avPdaTodos">Ver también los anteriores</button>`;
+  if(!L.length)return `<div class="muted" style="width:100%">No hay ningún resumen nuevo para este viaje. Si Bernardo acaba de guardarlo, espera 2 minutos y vuelve a pulsar. ${otros}</div>`;
+  return `<div class="av-pdal">${L.map(f=>`<button class="btn sm" data-pdaid="${esc(f.id)}"><b>${esc(f.nombre)}</b><small>subido ${fCorta(f.fecha)}</small></button>`).join("")}${otros}</div>`}
 const avPdaBotones=pri=>`<div class="acc"><button class="btn ${pri?"pri":"sm"}" id="avPdaNube">${pri?"Coger de la carpeta AUTOVENT":"Otro de AUTOVENT"}</button><button class="btn sm" id="avPdaBtn">Desde este aparato</button>${pri?"":`<button class="btn sm del" id="avPdaQuita">Quitar</button>`}</div><input type="file" id="avPdaF" hidden>`;
 function avPdaCard(c){const P=c.pda;
   if(!P)return `<div class="card av-pda"><div><b>Albaranes de la PDA</b><div class="muted">Coge el «Resumen de Kilos» (.xps) que deja el programa en la carpeta AUTOVENT y verás la diferencia en cada artículo mientras contáis.</div></div>${avPdaBotones(true)}${avPdaListaHtml()}</div>`;
@@ -1736,8 +1737,13 @@ function avPdaCard(c){const P=c.pda;
 async function avCargarPDA(file){if(!file)return;try{await avPdaBuf(await file.arrayBuffer(),file.name)}catch(e){toast("No he podido leer el fichero: "+e.message,true)}}
 async function avPdaBuf(buf,nombre){const c=avCuadre();if(!c)return;
   const r=avLeerPDA(await avZipPaginas(buf));avAplicarPDA(c,r,nombre);S.av.pdaLista=null;avTocar();render();toast(`PDA: ${r.suma.pz} pz · ${avKg(r.suma.kg)} kg`)}
-async function avPdaNube(){S.av.pdaLista="cargando";avRepintar();
-  try{const j=await api("pdaLista");S.av.pdaLista=j.ficheros||[]}catch(e){S.av.pdaLista=null;toast(/desconocida/i.test(e.message)?"Falta pegar el último Código.gs en el servidor":e.message,true)}avRepintar()}
+// Solo ofrece los resúmenes nuevos para este viaje: subidos desde el día que salió y que no se hayan usado en otro cuadre.
+// Si hay uno solo, lo carga directamente.
+async function avPdaNube(todos){const c=avCuadre(),id=S.av.cur;S.av.pdaLista="cargando";S.av.pdaTodos=!!todos;avRepintar();
+  try{const j=await api("pdaLista"),usados=new Set(Object.entries(S.av.cuadres).filter(([k,x])=>k!==id&&x&&x.pda).map(([k,x])=>x.pda.archivo));
+    const L=j.ficheros||[],nuevos=L.filter(f=>!usados.has(f.nombre)&&f.fecha.slice(0,10)>=String(c.fecha||""));
+    if(!todos&&nuevos.length===1){S.av.pdaLista=null;return avPdaDe(nuevos[0].id)}
+    S.av.pdaLista=todos?L:nuevos}catch(e){S.av.pdaLista=null;toast(/desconocida/i.test(e.message)?"Falta pegar el último Código.gs en el servidor":e.message,true)}avRepintar()}
 async function avPdaDe(id){try{toast("Cargando…");const j=await api("pdaFichero",{id});const bin=Uint8Array.from(atob(j.b64),ch=>ch.charCodeAt(0));await avPdaBuf(bin.buffer,j.nombre)}catch(e){toast("No he podido leer el fichero: "+e.message,true)}}
 
 /* ---- el cuadre ---- */
@@ -1788,6 +1794,7 @@ function vAvCuadre(app){
     if(b.id==="avTodas"){S.av.todas=!S.av.todas;render();return}
     if(b.id==="avPdaBtn"){const f=$("#avPdaF");if(f){f.value="";f.click()}return}
     if(b.id==="avPdaNube"){avPdaNube();return}
+    if(b.id==="avPdaTodos"){avPdaNube(true);return}
     if(b.dataset.pdaid){avPdaDe(b.dataset.pdaid);return}
     if(b.id==="avPdaQuita"){avQuitarPDA(c);avTocar();render();return}
     if(b.dataset.tick){const k=b.dataset.tick,l=c.lineas[k]||(c.lineas[k]={}),x=avCalc(l);if(x.vend===null)return;
