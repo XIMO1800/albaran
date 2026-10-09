@@ -274,6 +274,7 @@ body.desk .sumf{max-width:640px}
 #cObs{margin-top:10px}
 .av-ord{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}
 .av-ord:first-of-type{border-top:0}
+.av-pzb{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);white-space:nowrap}.av-pzb input{width:54px;padding:6px 4px;text-align:center;font-size:16px}
 .av-pos{width:52px;text-align:center;font-family:var(--display);font-size:20px;font-weight:700;padding:6px 2px;color:var(--muted)}
 .av-onm{flex:1;min-width:0;cursor:pointer;padding:6px 4px;border-radius:8px}
 .av-ord.sel{background:var(--gold-soft);border-radius:10px}
@@ -408,7 +409,8 @@ textarea.conObs{background:#fff35c;border:3px solid #e2b900;font-weight:700;font
 table.av-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .av-t thead th{background:var(--brand);color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:8px 4px;text-align:center;position:sticky;top:var(--hdrAlto,0px);line-height:1.15}
 .av-t thead th:first-child{text-align:left;padding-left:12px}
-.av-t tbody th{text-align:left;font-weight:500;padding:4px 8px 4px 12px;font-size:15px;line-height:1.15;min-width:120px}
+.av-t tbody th{text-align:left;font-weight:500;padding:4px 8px 4px 14px;font-size:17px;line-height:1.15;min-width:120px}
+.av-bar{position:absolute;left:0;top:3px;bottom:3px;width:6px;border-radius:0 4px 4px 0;background:var(--c)}
 .av-t tbody th b{font-weight:700}.av-t tbody th small{display:block;color:var(--muted);font-size:12.5px;margin-left:16px}
 .av-t td,.av-t tbody th{border-top:1px solid var(--line)}
 .av-t tfoot td,.av-t tfoot th{border-top:2px solid var(--brand);font-weight:700;text-align:center;padding:8px 6px}
@@ -418,16 +420,17 @@ table.av-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
 .av-t thead th:first-child{background:var(--brand);z-index:3}
 .av-pda{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px;border-left:4px solid var(--brand)}.av-pda.ok{border-left-color:#2e7d32}.av-pda .pav{margin-top:4px}.av-pdal{display:flex;flex-wrap:wrap;gap:8px;width:100%}.av-pdal .btn{display:flex;flex-direction:column;align-items:flex-start;text-align:left}.av-pdal small{font-weight:400;color:var(--muted)}
 .av-t tfoot th{background:var(--card)}
-@media (max-width:699px){.av-t tbody th{min-width:0;width:118px;max-width:130px;font-size:14px;padding-left:8px}.av-t thead th:first-child,.av-t tfoot th{padding-left:8px}
+@media (max-width:699px){.av-t tbody th{min-width:0;width:128px;max-width:140px;font-size:16px;padding-left:12px}.av-t thead th:first-child,.av-t tfoot th{padding-left:8px}
   .av-t td{min-width:0}.av-t thead th{font-size:11px;letter-spacing:.02em}input.av-n{min-width:46px}.av-c{min-width:40px;padding:0 3px}}
-.av-c{text-align:center;padding:0 6px;font-size:17px;min-width:52px}
+.av-c{text-align:center;padding:0 6px;font-family:var(--display);font-size:20px;font-weight:600;min-width:52px}
 .av-b{font-weight:700}
-input.av-n{width:100%;min-width:58px;height:46px;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;text-align:center;font-family:var(--display);font-size:22px;font-weight:700;color:var(--brand);padding:0 2px}
+input.av-n{width:100%;min-width:58px;height:46px;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;text-align:center;font-family:var(--display);font-size:20px;font-weight:700;color:var(--brand);padding:0 2px}
 input.av-n.soft{color:var(--fg);font-weight:600}
 input.av-n::placeholder{color:#cbbfc1;font-weight:400}
 input.av-n:focus{background:var(--gold-soft);outline:2px solid var(--gold);outline-offset:-2px}
 tr.av-nada th{color:var(--muted)}
 .av-cq{white-space:nowrap;text-align:center}.av-cq.vacio-q button{visibility:hidden}
+.av-cq.sinde button{display:none}.av-cq.sinde::after{content:"✗ falta descarga";display:inline-block;background:var(--danger);color:#fff;border-radius:10px;padding:8px 10px;font-weight:800;font-size:14px;margin:3px 0}
 .av-cq button{min-width:46px;height:40px;margin:3px 2px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:18px;font-weight:800;color:#c9bcbe;cursor:pointer}
 .av-cq .av-sí.on{background:#1f8a4c;border-color:#1f8a4c;color:#fff}.av-cq .av-no.on{background:var(--danger);border-color:var(--danger);color:#fff;font-size:15px}
 .av-tick{width:100%;height:46px;border:0;background:none;font-size:16px;font-weight:700;color:#cbbfc1;cursor:pointer}
@@ -458,7 +461,7 @@ tr.av-nada th{color:var(--muted)}
 body.desk table.t.av-hist th,body.desk table.t.av-hist td,table.t.av-hist th,table.t.av-hist td{padding-left:7px;padding-right:7px}.av-hist .av-borra{padding:4px 8px}
 .av-cv{font-size:12px;color:var(--muted);padding:6px 6px 6px 0;align-self:center}
 .av-ctlg select{font-size:17px}
-.av-firma{margin-top:10px}.av-firma canvas{display:block;width:100%;max-width:520px;aspect-ratio:3/1;border:1.5px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;margin-top:6px;cursor:crosshair}
+.av-firma{margin-top:10px}.av-firma canvas{display:block;width:calc(100% - 80px);max-width:520px;aspect-ratio:3/1;border:1.5px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;margin-top:6px;cursor:crosshair}
 .av-bjdet{font-size:13px;color:var(--muted);margin-top:4px}.av-bjdet summary{cursor:pointer}
 .av-conf{display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-size:14px}.av-conf input{width:22px;height:22px;flex:none;margin-top:1px}
 .padd{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.padd .btn{margin-left:4px}
@@ -509,7 +512,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "99 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "100 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1485,7 +1488,8 @@ function avPeso(c,b){
 function avTot(c){
   const t={lleva:0,ll:0,en:0,de:0,vend:0,ca:0,sale:0,al:0,pend:0,mal:0,ok:0,difs:[]};
   avRefs(c).forEach(k=>{const l0=avLin(c,k),x=avCalc(l0);t.lleva+=x.lleva;t.ll+=avN(l0.ll)||0;t.en+=avN(l0.en)||0;if(x.de!==null)t.de+=x.de;if(x.vend!==null)t.vend+=x.vend;t.ca+=x.ca;if(x.sale!==null)t.sale+=x.sale;if(x.al!==null)t.al+=x.al;
-    if(x.vend){if(x.al===null)t.pend++;else if(x.dif===0)t.ok++;else{t.mal++;t.difs.push([k,x.dif])}}});
+    if(x.de===null&&x.lleva>0){t.mal++;t.sinDe=(t.sinDe||0)+1;t.difs.push([k,"sin descarga"])}
+    else if(x.vend){if(x.al===null)t.pend++;else if(x.dif===0)t.ok++;else{t.mal++;t.difs.push([k,x.dif])}}});
   return t;
 }
 const avGkg=g=>avKg(Math.abs(g)/1000)+" kg", avDifKg=g=>g===null?"":(g>0?"+":g<0?"−":"")+avGkg(g);
@@ -1546,6 +1550,7 @@ const avDiaV=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isN
 // viaje: desde el cuadre anterior del mismo vendedor (día que salió cargado) hasta este (día que vuelve y se cuadra)
 // Un cuadre es un viaje: empieza el día de su fecha (sale cargado) y termina el día que se cuadra y se cierra.
 function avHasta(c){if(c.estado!=="cerrado")return null;if(c.cierre)return c.cierre;let r=null;Object.values(S.av.cuadres).forEach(x=>{if(x!==c&&x.vendedor===c.vendedor&&x.fecha&&c.fecha&&x.fecha>c.fecha&&(!r||x.fecha<r))r=x.fecha});return r}
+const avDM=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.getDate()+"/"+(d.getMonth()+1)};
 function avViaje(c){const h=avHasta(c);return `${avDiaV(c.fecha)} → ${h?avDiaV(h):c.estado==="cerrado"?"?":"en ruta"}`}
 // Al cerrar un viaje, el siguiente empieza con lo que descargó y lo que cargó ese día
 function avBase(a,c){c.lineas=c.lineas||{};avRefs(a).forEach(k=>{const x=avCalc(avLin(a,k));if(!x.sale){if(c.lineas[k]){delete c.lineas[k].ll;delete c.lineas[k].en}return}
@@ -1565,7 +1570,7 @@ function avNuevo(v){
   S.av.cuadres[id]=c; avAbrir(id); avTocar(id);
 }
 function avAbrir(id){const c=S.av.cuadres[id];S.av.cur=id;S.av.fase=c&&c.estado==="cerrado"?"hoja":"desc";S.av.todas=false;S.av.borrar=false;S.av.arts=false;render();scrollTo(0,0)}
-function avRefTxt(k){const p=prod(k);return `<span class="dot" style="${p?estiloG(p.g):"--c:var(--otros)"}"></span><b>${esc(nomDe(k))}</b>`}
+function avRefTxt(k){const p=prod(k);return `<span class="av-bar" style="${p?estiloG(p.g):"--c:var(--otros)"}"></span><b>${esc(nomDe(k))}</b>`}
 
 /* ---- pantalla principal: vendedores + histórico ---- */
 function vAutoventa(app){
@@ -1649,7 +1654,7 @@ function vAvArts(app){
   const ord=cf.arts.map((c,i)=>{const p=prod(c)||{c,n:"",g:"X"};
     const sel=S.av.ordSel===i, des=S.av.ordSel!=null&&!sel;
     return `<div class="av-ord ${sel?"sel":""} ${des?"dest":""}" style="${estiloG(p.g)}"><input class="av-pos" data-avpos="${i}" value="${i+1}" inputmode="numeric" aria-label="Posición de ${esc(c)}"><span class="dot"></span><div class="av-onm" data-avpick="${i}" role="button" tabindex="0"><b>${esc(prod(c)?nomDe(c,p.n):c)}</b> ${prod(c)?`<span class="muted">${esc(c)}</span>`:`<span class="av-fuera">ya no está en el catálogo</span>`}${sel?` <span class="chip e-ENVIADO">moviendo</span>`:""}</div>
-      <button class="mvb" data-avmv="${i}" data-d="-1" ${i?"":"disabled"} aria-label="Subir">↑</button><button class="mvb" data-avmv="${i}" data-d="1" ${i<cf.arts.length-1?"":"disabled"} aria-label="Bajar">↓</button></div>`}).join("");
+      <label class="av-pzb" title="Piezas por bandeja en el camión">pz/band.<input class="num" inputmode="numeric" data-avpzb="${esc(c)}" value="${avPzB(c)}"></label><button class="mvb" data-avmv="${i}" data-d="-1" ${i?"":"disabled"} aria-label="Subir">↑</button><button class="mvb" data-avmv="${i}" data-d="1" ${i<cf.arts.length-1?"":"disabled"} aria-label="Bajar">↓</button></div>`}).join("");
   const sinPapel=AV_PAPEL.pz.filter(([x])=>!S.productos.some(p=>{const k=avNorm(x);return avNorm(p.n)===k||avNorm(p.c)===k})).map(([x])=>x);
   for(const p of ordenProds(S.productos).filter(p=>!qA||p.c.toUpperCase().includes(qA)||String(p.n).toUpperCase().includes(qA))){const k=seccion(p);if(k!==k0){h+=cabSecc(k);k0=k}
     h+=`<div class="av-art ${en.has(p.c)?"on":""}" style="${estiloG(p.g)}"><button class="chk ${en.has(p.c)?"on":""}" data-art="${esc(p.c)}" aria-label="Llevar ${esc(p.c)} en autoventa">${en.has(p.c)?"✓":""}</button>
@@ -1658,7 +1663,7 @@ function vAvArts(app){
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="justify-content:space-between;align-items:center">${esDesk()&&S.av.sec==="arts"?"<span></span>":`<button class="btn sm" id="avArtV">← Autoventa</button>`}<span class="muted" id="avSt"></span></div>
     <div class="av-fases" style="margin-bottom:10px"><button id="avIrArts">Artículos · tienda y autoventa</button><button class="on">Orden de la hoja de autoventa</button></div>
-    <p class="nota">Orden en que salen los artículos en la hoja del cuadre; solo afecta al cuadre (la tienda tiene el suyo en «Artículos»). Para <b>añadir o quitar</b> un artículo de autoventa, o crear uno nuevo, ve a la pestaña <b>«Artículos · tienda y autoventa»</b> y usa su botón «Autoventa: Activo / No activo». Los nuevos se ponen al final de esta lista; luego los colocas aquí.</p>
+    <p class="nota">«pz/band.» son las piezas que van en cada bandeja <b>en el camión</b> (aceite grande 2, cuñas 80…); se usa para comprobar las bandejas en «Control carga». Orden en que salen los artículos en la hoja del cuadre; solo afecta al cuadre (la tienda tiene el suyo en «Artículos»). Para <b>añadir o quitar</b> un artículo de autoventa, o crear uno nuevo, ve a la pestaña <b>«Artículos · tienda y autoventa»</b> y usa su botón «Autoventa: Activo / No activo». Los nuevos se ponen al final de esta lista; luego los colocas aquí.</p>
     <div class="card"><div class="sec" style="margin-top:0">Orden en la hoja de cuadre · ${cf.arts.length} artículos</div>
       <p class="muted" style="margin:0 0 8px">Para mover uno lejos: <b>toca su nombre</b> y luego <b>toca el artículo</b> en cuyo sitio quieres ponerlo. O escribe directamente el número de posición. ↑ ↓ para ajustes de uno en uno.</p>
       ${S.av.ordSel!=null&&cf.arts[S.av.ordSel]?`<div class="av-movaviso">Moviendo <b>${esc(cf.arts[S.av.ordSel])}</b>: toca dónde ponerlo. <button class="btn sm" id="avOrdNo">Cancelar</button></div>`:""}
@@ -1690,6 +1695,7 @@ function vAvArts(app){
   app.onchange=e=>{const id=e.target.id;
     if(e.target.dataset.avpos!=null){const a=+e.target.dataset.avpos,z=parseInt(e.target.value,10)-1;if(!isNaN(z)){S.av.ordSel=null;mover(a,z);toast(cf.arts[Math.max(0,Math.min(cf.arts.length-1,z))]+" → posición "+(Math.max(0,Math.min(cf.arts.length-1,z))+1))}setTimeout(repinta,0);return}
     if(id==="avPeso-grande"||id==="avPeso-mini"){cf.peso[id.slice(7)]=e.target.value;avGuardarCfg();return}
+    if(e.target.dataset.avpzb!=null){(cf.pzb||(cf.pzb={}))[e.target.dataset.avpzb]=avP(e.target.value);avGuardarCfg();toast("Piezas por bandeja guardadas");return}
     if(id==="avTaraG"||id==="avTaraM"){cf.taras[id==="avTaraG"?"grande":"mini"]=avP(e.target.value)||0;avGuardarCfg()}};
 }
 
@@ -1794,7 +1800,7 @@ function vAvCuadre(app){
   let cuerpo="";
   if(S.av.fase==="desc"){const fs=avFilas(c);
     cuerpo=`${avAyudaPapel(c)}${avPdaCard(c)}<p class="nota"><b>Descargó</b> y <b>Cargó</b> son del día que salió (${avDia(c.fecha)}); vienen solos del cuadre anterior. Cuenta lo que trae hoy y apúntalo en <b>Descarga hoy</b>. Vendidos = Descargó + Cargó − Descarga hoy. Con Intro pasas al siguiente.</p>
-    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Descargó ${avDiaV(c.fecha)}</th><th>Cargó ${avDiaV(c.fecha)}</th><th>Descarga hoy</th><th>Vendidos</th><th>Albaranes</th><th>Dif.</th></tr></thead><tbody>
+    <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Descargó<br>${avDM(c.fecha)}</th><th>Cargó<br>${avDM(c.fecha)}</th><th>Descarga hoy</th><th>Vendidos</th><th>Albaranes</th><th>Dif.</th></tr></thead><tbody>
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th>${avIn(i,k,"ll",l.ll,"soft")}${avIn(i,k,"en",l.en,"soft")}${avIn(i,k,"de",l.de)}<td class="av-c av-b" data-c="vend"></td><td class="av-c" data-c="al"></td><td class="av-c av-b" data-c="dif"></td></tr>`}).join("")||`<tr><td colspan="7" class="vacio">No hay artículos. Márcalos en «Artículos de autoventa» o pulsa «Ver todo el catálogo».</td></tr>`}
     </tbody><tfoot><tr><th>Total</th><td data-t="ll"></td><td data-t="en"></td><td data-t="de"></td><td data-t="vend"></td><td data-t="al"></td><td></td></tr></tfoot></table></div>
     <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="pesos">Siguiente: pesos →</button></div>`}
@@ -1947,7 +1953,8 @@ function avRefrescar(){
       if(f==="al")el.textContent=x.al??"";
       if(f==="dif"){el.textContent=x.dif===null?"":x.dif===0?"✓":(x.dif>0?"+":"")+x.dif;el.className="av-c av-b "+(x.dif===null?"":x.dif===0?"av-ok":"av-mal")}
       if(f==="tick"){const l0=avLin(c,tr.dataset.row),ok=x.al!==null&&x.dif===0,mal=(x.al!==null&&x.dif!==0)||(x.al===null&&l0.no);
-        el.classList.toggle("vacio-q",x.vend===null);el.querySelector(".av-sí").classList.toggle("on",ok);const n=el.querySelector(".av-no");n.classList.toggle("on",mal);
+        const sinDe=x.de===null&&x.lleva>0;el.classList.toggle("sinde",sinDe);
+        el.classList.toggle("vacio-q",x.vend===null&&!sinDe);el.querySelector(".av-sí").classList.toggle("on",ok);const n=el.querySelector(".av-no");n.classList.toggle("on",mal);
         n.textContent=x.al!==null&&x.dif!==0?"✗ "+(x.dif>0?"+":"")+x.dif:"✗"}});
     tr.classList.toggle("av-nada",!x.usada)});
   const t=avTot(c);document.querySelectorAll("#app [data-t]").forEach(el=>el.textContent=t[el.dataset.t]);
@@ -1963,7 +1970,10 @@ async function avCopiar(c){
 }
 const avNom=k=>{const p=prod(k);return p?p.n:""};
 // Bandejas: lo cargado en piezas pasado a bandejas (piezas ÷ «Pz/bandeja» del artículo) frente al recuento físico
-function avBjEsp(c){let t=0;const sin=[],det=[];avRefs(c).forEach(k=>{const ca=avCalc(avLin(c,k)).ca;if(!ca)return;const p=prod(k)||{},b=+p.b||1;
+// Piezas por bandeja EN AUTOVENTA: lo puesto en «Orden de la hoja»; si no, aceite grande 2, cuñas/porciones 80; si no, el de la tienda
+function avPzB(k){const cf=avCfg(),v=avN((cf.pzb||{})[k]);if(v!==null)return v;const p=prod(k)||{};
+  if(/^.AG/i.test(k)||k===cf.peso.grande)return 2;if(p.c&&esPorcion(p,S.productos))return 80;return +p.b||1}
+function avBjEsp(c){let t=0;const sin=[],det=[];avRefs(c).forEach(k=>{const ca=avCalc(avLin(c,k)).ca;if(!ca)return;const b=avPzB(k);
     if(b<=1){sin.push(k);return}const n=ca/b;t+=n;det.push([k,ca,b,n])});return {t:Math.round(t*10)/10,sin,det}}
 function avBjCmp(c){const bj=avBj(c),e=avBjEsp(c);if(bj.ca===null||!e.det.length)return `<span class="muted">${bj.ca===null?"Cuenta las bandejas al descargar y al terminar de cargar":"Sin carga apuntada en piezas"}</span>`;
   const d=Math.round((bj.ca-e.t)*10)/10;return Math.abs(d)<1?`<span class="chip av-ok">✓ cuadra (${bj.ca} contadas · ≈${String(e.t).replace(".",",")} según la carga)</span>`
@@ -1975,8 +1985,8 @@ function avBjCard(c){const bj=avBj(c),e=avBjEsp(c);
     <div class="pl sub"><span class="ps">=</span><span class="pt">CARGADAS HOY</span><b id="avBjC">${bj.ca??"—"}</b></div>
     <div class="pl"><span class="ps"></span><span class="pt">Según la carga en piezas</span><b>${e.det.length?"≈ "+String(e.t).replace(".",","):"—"}</b></div>
     <div id="avBjCmp" style="margin:4px 0 2px;text-align:right">${avBjCmp(c)}</div>
-    ${e.det.length?`<details class="av-bjdet"><summary>Ver cómo se calcula</summary>${e.det.map(([k,ca,b,n])=>`<div>${esc(nomDe(k))}: ${ca} pz ÷ ${b} = ${String(Math.round(n*10)/10).replace(".",",")}</div>`).join("")}</details>`:""}
-    ${e.sin.length?`<p class="muted" style="margin:6px 0 0;font-size:13px">No cuentan porque no tienen «Pz/bandeja» en Artículos y precios: ${e.sin.map(k=>esc(nomDe(k))).join(", ")}.</p>`:""}</div>`}
+    ${e.det.length?`<details class="av-bjdet"><summary>Ver cómo se calcula</summary>${e.det.map(([k,ca,b,n])=>`<div>${esc(nomDe(k))}: ${ca} pz ÷ ${b} pz por bandeja = <b>${String(Math.round(n*10)/10).replace(".",",")}</b> bandeja${Math.round(n*10)/10===1?"":"s"}</div>`).join("")}</details>`:""}
+    ${e.sin.length?`<p class="muted" style="margin:6px 0 0;font-size:13px">No cuentan porque van sueltos (1 pz por bandeja); cámbialo en «Orden de la hoja de autoventa» si van en bandeja: ${e.sin.map(k=>esc(nomDe(k))).join(", ")}.</p>`:""}</div>`}
 function avCtlCard(c){const k=avCtl(c),ct=c.control||{},bj=avBj(c);
   return `<div class="card av-peso av-ctl"><div class="pcab"><b>Control carga vehículo</b><span class="pnm">Calidad · FOR PR 08-10</span></div>
     <div class="av-ctlg">
