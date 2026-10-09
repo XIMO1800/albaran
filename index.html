@@ -517,7 +517,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "104 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "105 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1809,18 +1809,18 @@ function vAvCuadre(app){
     <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Descargó<br>${avDM(c.fecha)}</th><th>Cargó<br>${avDM(c.fecha)}</th><th>Descarga hoy</th><th>Vendidos</th><th>Albaranes</th><th>Dif.</th></tr></thead><tbody>
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th>${avIn(i,k,"ll",l.ll,"soft")}${avIn(i,k,"en",l.en,"soft")}${avIn(i,k,"de",l.de)}<td class="av-c av-b" data-c="vend"></td><td class="av-c" data-c="al"></td><td class="av-c av-b" data-c="dif"></td></tr>`}).join("")||`<tr><td colspan="7" class="vacio">No hay artículos. Márcalos en «Artículos de autoventa» o pulsa «Ver todo el catálogo».</td></tr>`}
     </tbody><tfoot><tr><th>Total</th><td data-t="ll"></td><td data-t="en"></td><td data-t="de"></td><td data-t="vend"></td><td data-t="al"></td><td></td></tr></tfoot></table></div>
-    <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="pesos">Siguiente: pesos →</button></div>`}
+    <div class="acc av-pie">${avBtnTodas()}<span style="flex:1"></span><button class="btn sm" data-avf="pesos">Siguiente: pesos →</button></div>`}
   else if(S.av.fase==="carga"){const fs=avFilas(c);
     cuerpo=`
     <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Descarga</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted" data-c="de"></td>${avIn(i,k,"ca",l.ca)}<td class="av-c av-b" data-c="sale"></td></tr>`}).join("")}
     </tbody><tfoot><tr><th>Total</th><td data-t="de"></td><td data-t="ca"></td><td data-t="sale"></td></tr></tfoot></table></div>
-    <div class="acc av-pie"><button class="btn" data-avf="pesos">← Pesos</button>${avBtnTodas()}<span style="flex:1"></span><button class="btn pri" data-avf="hoja">Siguiente: hoja y cierre →</button></div>`}
+    <div class="acc av-pie"><button class="btn sm" data-avf="pesos">← Pesos</button>${avBtnTodas()}<span style="flex:1"></span><button class="btn sm" data-avf="hoja">Siguiente: hoja y cierre →</button></div>`}
   else if(S.av.fase==="pesos"){
     cuerpo=`<div class="av-pesos">${avBloquePeso(c,"grande")}${avBloquePeso(c,"mini")}</div>
-      <div class="acc av-pie"><button class="btn" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn pri" data-avf="carga">Siguiente: carga →</button></div>`}
+      <div class="acc av-pie"><button class="btn sm" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn sm" data-avf="carga">Siguiente: carga →</button></div>`}
   else if(S.av.fase==="ctl") cuerpo=`<p class="nota">Registro que pide calidad (FOR PR 08-10): se rellena casi solo con los datos del cuadre; tú solo pones la temperatura.</p>${avCtlCard(c)}<div class="sec">Comprobación de bandejas · solo para ti, no va al registro de calidad</div>${avBjCard(c)}
-      <div class="acc av-pie"><button class="btn" data-avf="hoja">← Hoja y cierre</button><span style="flex:1"></span><button class="btn pri" id="avImpCtl">Imprimir control de carga</button></div>`;
+      <div class="acc av-pie"><button class="btn sm" data-avf="hoja">← Hoja y cierre</button><span style="flex:1"></span><button class="btn pri" id="avImpCtl">Imprimir control de carga</button></div>`;
   else cuerpo=avHoja(c);
   app.innerHTML=`<div class="wrap av-wrap">
     <div class="acc" style="justify-content:space-between;align-items:center"><button class="btn sm" id="avVolver">← Autoventa</button><span class="muted" id="avSt" style="font-size:13px">${Object.keys(S.av.pend).length?"Pendiente de guardar":"Guardado en la hoja"}</span></div>
