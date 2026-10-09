@@ -507,7 +507,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "92 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "93 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -617,7 +617,11 @@ function renderHeader(){
   const tabs=tabsDeRol(); if(!S.tab||!tabs.some(t=>t[0]===S.tab)) S.tab=tabs[0][0];
   $("#nav").innerHTML=tabs.map(t=>`<button data-tab="${t[0]}" class="${S.tab===t[0]&&(!S.scr||(t[0]==="nuevo"&&S.scr.t==="editar"&&!S.scr.ped.id))?"on":""}">${t[1]}${t[2]?`<span class="badge">${t[2]}</span>`:""}</button>`).join("");
 }
-$("#nav").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(!b)return;S.tab=b.dataset.tab;S.scr=null;S.sel.clear();render();scrollTo(0,0)});
+// Si se sale de «Artículos y precios» con cambios sin guardar, se avisa
+async function salirPrecios(){if(S.tab!=="precios"||!S.precEd||JSON.stringify(S.precEd)===JSON.stringify(S.productos))return true;
+  const c=await confirmar("Cambios sin guardar","Has cambiado artículos y precios y no lo has guardado. ¿Salir sin guardar?");
+  if(c.ok){S.precEd=null;S.precAviso=0;return true}return false}
+$("#nav").addEventListener("click",async e=>{const b=e.target.closest("[data-tab]");if(!b)return;if(!(await salirPrecios()))return;S.tab=b.dataset.tab;S.scr=null;S.sel.clear();render();scrollTo(0,0)});
 document.addEventListener("click",async e=>{ if(e.target.id==="bSalir"){const c=await confirmar("Salir","¿Cerrar la sesión en este móvil?");if(c.ok){S.pin="";S.user=null;LS.del("ped_pin");render()}} });
 
 /* =================== render principal =================== */
@@ -1118,7 +1122,7 @@ function vPrecios(app){
   const selG=(p,i)=>`<select data-i="${i}" data-f="g" aria-label="Especie o grupo">${OPC_G.map(([g,t])=>`<option value="${g}"${p.g===g?" selected":""}>${t}</option>`).join("")}</select>`;
   const mov=(p,i)=>`<button class="mvb" data-mv="${i}" data-d="-1" ${vecino(p,-1)?"":"disabled"} aria-label="Subir">↑</button><button class="mvb" data-mv="${i}" data-d="1" ${vecino(p,1)?"":"disabled"} aria-label="Bajar">↓</button>`;
   const enAv=new Set(((S.av&&S.av.config)||{}).arts||[]);
-  const tog=(p,i)=>`<button class="tog ${p.activo===false?"off":""}" data-act="${i}" title="Si sale en los pedidos de la tienda">${p.activo===false?"No en tienda":"En tienda"}</button>${enAv.has(p.c)?` <span class="chip av-neu" title="Está en la hoja de autoventa">autoventa</span>`:""}`;
+  const tog=(p,i)=>`<button class="tog ${p.activo===false?"off":""}" data-act="${i}" title="Si sale en los pedidos de la tienda">${p.activo===false?"No activo":"Activo"}</button>${enAv.has(p.c)?` <span class="chip av-neu" title="Está en la hoja de autoventa">autoventa</span>`:""}`;
   let h="",k0=null;
   if(desk){
     for(const p of lista){const i=idx(p),k=seccion(p,P);
@@ -1153,7 +1157,7 @@ function vPrecios(app){
   app.onclick=async e=>{const t=e.target.closest("button");if(!t)return;
     if(t.dataset.act!=null){P[t.dataset.act].activo=P[t.dataset.act].activo===false;render()}
     else if(t.dataset.mv!=null){const a=P[t.dataset.mv],b=vecino(a,+t.dataset.d);if(b){const ia=idx(a),ib=idx(b);P[ia]=b;P[ib]=a;render()}}
-    else if(t.dataset.del!=null){const c=await confirmar("Borrar artículo","¿Borrar "+P[t.dataset.del].c+"? Si solo quieres que la tienda no lo vea, pulsa «Activo» para dejarlo «Oculto».");if(c.ok){P.splice(+t.dataset.del,1);render()}}};
+    else if(t.dataset.del!=null){const c=await confirmar("Borrar artículo","¿Borrar "+P[t.dataset.del].c+"? Si solo quieres que la tienda no lo vea, pulsa «Activo» para dejarlo «No activo».");if(c.ok){P.splice(+t.dataset.del,1);render()}}};
   $("#bAddP").onclick=()=>{P.push({c:"",n:"",g:"X",p:0,b:1,pm:0,activo:true});render();const ins=app.querySelectorAll('[data-f="c"]');for(const x of ins)if(!x.value){x.scrollIntoView({block:"center"});x.focus();break}};
   $("#bDesh").onclick=()=>{S.precEd=null;S.precAviso=0;render()};
   $("#bGP").onclick=async()=>{
@@ -1176,7 +1180,7 @@ function marcoDesk(){
     <div style="flex:1"></div><div class="sbot"><button class="navb" id="sideAct">Actualizar</button><button class="navb" id="sideSalir">Salir</button></div>`;
   {const h=$("#hdr");if(h&&h.offsetHeight)sd.style.setProperty("--hdrH",h.offsetHeight+"px");sd.scrollTop=0}
   if(!marcoDesk.ok){marcoDesk.ok=1;const re=()=>{const h=$("#hdr"),d=$("#side");if(h&&d&&h.offsetHeight)d.style.setProperty("--hdrH",h.offsetHeight+"px")};if(document.fonts)document.fonts.ready.then(re);addEventListener("resize",re);setTimeout(re,300)}
-  sd.querySelectorAll("[data-side]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.side;S.scr=null;S.sel.clear();if(b.dataset.avsec){S.av.sec=b.dataset.avsec;S.av.cur=null;S.av.arts=false}if(["historial","albaranes","exportar","difs"].includes(S.tab))S.H.data=null;render();scrollTo(0,0)});
+  sd.querySelectorAll("[data-side]").forEach(b=>b.onclick=async()=>{if(!(await salirPrecios()))return;S.tab=b.dataset.side;S.scr=null;S.sel.clear();if(b.dataset.avsec){S.av.sec=b.dataset.avsec;S.av.cur=null;S.av.arts=false}if(["historial","albaranes","exportar","difs"].includes(S.tab))S.H.data=null;render();scrollTo(0,0)});
   $("#sideAct").onclick=async()=>{if(["historial","albaranes","exportar","difs"].includes(S.tab)&&!S.scr){cargarHist()}else{await cargar();toast("Datos actualizados")}};
   $("#sideSalir").onclick=async()=>{const c=await confirmar("Salir","¿Cerrar la sesión en este ordenador?");if(c.ok){S.pin="";S.user=null;LS.del("ped_pin");render()}};
   // título grande en la cabecera
