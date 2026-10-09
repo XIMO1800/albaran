@@ -438,7 +438,7 @@ tr.av-nada th{color:var(--muted)}
 .av-falta{background:#fbe3e1}
 .av-exc{padding:8px 12px;margin-bottom:10px}.av-exf{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.av-exf select{flex:1 1 180px}.av-exf input.num{width:80px}.av-exf input[type=date]{width:auto}
 .av-exl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-td.av-conex{vertical-align:middle;padding-bottom:4px}td.av-conex input.av-n{height:34px}td.av-conex.vac input.av-n{height:16px}td.av-conex.vac input.av-n::placeholder{color:transparent}.av-exb{display:block;text-align:center;font-family:var(--display);font-weight:700;color:#1f5fbf;line-height:1.1;word-spacing:2px}.av-cq.sinde button{display:none}.av-cq.sinde::after{content:"✗ falta descarga";display:inline-block;background:var(--danger);color:#fff;border-radius:10px;padding:8px 10px;font-weight:800;font-size:14px;margin:3px 0}
+td.av-conex{position:relative;padding:0;vertical-align:middle;border-left:1px solid var(--line);text-align:center;white-space:nowrap}td.av-conex input.av-n{border-left:0}.av-exb{font-family:var(--display);font-weight:700;color:#1f5fbf;line-height:1.15;pointer-events:none}.av-exb span+span{margin-left:4px}td.av-conex.vac input.av-n::placeholder{color:transparent}td.av-conex.vac .av-exb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;align-content:center;padding:0 2px;white-space:normal}td.av-conex.vac .av-exb span+span{margin-left:0}td.av-conex.vac .av-exb{column-gap:4px}td.av-conex.vac:focus-within .av-exb{visibility:hidden}td.av-conex.k2:not(.vac) input.av-n{display:inline-block;width:50%;min-width:0;text-align:right;padding-right:3px;font-size:17px;vertical-align:middle}td.av-conex.k2:not(.vac) .av-exb{display:inline-block;width:48%;text-align:left;vertical-align:middle}td.av-conex.k3:not(.vac) input.av-n{height:30px;font-size:17px}td.av-conex.k3:not(.vac) .av-exb{white-space:normal;padding:0 2px 4px}td.av-conex.k3:not(.vac) .av-exb span+span{margin-left:0}td.av-conex.k3 .av-exb{display:grid;grid-template-columns:auto auto;justify-content:center;align-content:center;column-gap:7px}td.av-conex.k5 .av-exb{grid-template-columns:auto auto auto}td.av-conex.k3 .av-exb span{margin-left:0;text-align:center}.av-cq.sinde button{display:none}.av-cq.sinde::after{content:"✗ falta descarga";display:inline-block;background:var(--danger);color:#fff;border-radius:10px;padding:8px 10px;font-weight:800;font-size:14px;margin:3px 0}
 .av-cq button{min-width:46px;height:40px;margin:3px 2px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:18px;font-weight:800;color:#c9bcbe;cursor:pointer}
 .av-cq .av-sí.on{background:#1f8a4c;border-color:#1f8a4c;color:#fff}.av-cq .av-no.on{background:var(--danger);border-color:var(--danger);color:#fff;font-size:15px}
 .av-tick{width:100%;height:46px;border:0;background:none;font-size:16px;font-weight:700;color:#cbbfc1;cursor:pointer}
@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "111 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "112 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1798,12 +1798,15 @@ async function avPdaDe(id){try{toast("Cargando…");const j=await api("pdaFicher
 
 /* ---- el cuadre ---- */
 function avFilas(c,filtro){return avRefs(c,S.av.todas).filter(k=>S.av.todas||!filtro||filtro(avCalc(avLin(c,k))))}
-function avIn(i,k,f,v,cls,extra){return `<td${extra?` class="av-conex${avN(v)===null?" vac":""}"`:""}><input class="av-n ${cls||""}" inputmode="decimal" autocomplete="off" id="av${f}${i}" data-k="${esc(k)}" data-f="${f}" value="${avF(avN(v))}" placeholder="·" aria-label="${f}">${extra||""}</td>`}
+function avIn(i,k,f,v,cls,extra){const cx=!!extra;return `<td${cx?` class="${avConexCls(avN(v),extra)}"`:""}><input class="av-n ${cls||""}" inputmode="decimal" autocomplete="off" id="av${f}${i}" data-k="${esc(k)}" data-f="${f}" value="${avF(avN(v))}" placeholder="·" aria-label="${f}">${extra||""}</td>`}
 // Lo cargado después del día de salida, en azul junto a lo cargado ese día: 40 +20 +20 (cada carga por separado)
+// Un dato solo: igual que el resto (tamaño y centrado). Dos: en la misma línea, algo más pequeños. Tres o más: en dos filas.
+function avExN(en,nEx){return nEx+(en===null?0:1)}
+function avExFs(n){return n<=1?20:n===2?17:n<=4?16:13}
+function avConexCls(en,extra){const nEx=(String(extra||"").match(/<span title/g)||[]).length,n=avExN(en,nEx);
+  return `av-conex${en===null?" vac":""}${n>=3?" k3":n===2?" k2":""}${nEx>4?" k5":""}`}
 function avExBadge(l){const ex=(l.ex||[]).filter(e=>avN(e.pz));if(!ex.length)return"";
-  // si ese día no cargó nada, lo de después ocupa el sitio del número (mismo tamaño que el resto si es uno solo)
-  const solo=avN(l.en)===null,fs=solo?(ex.length===1?20:ex.length===2?17:ex.length===3?14:12):(ex.length>3?12:ex.length>1?14:16);
-  return `<span class="av-exb" style="font-size:${fs}px">${ex.map(e=>`<span title="${esc(avDM(e.f))}">+${e.pz}</span>`).join(" ")}</span>`}
+  return `<span class="av-exb" style="font-size:${avExFs(avExN(avN(l.en),ex.length))}px">${ex.map(e=>`<span title="${esc(avDM(e.f))}">+${e.pz}</span>`).join("")}</span>`}
 function avExLista(c){const lista=[];avRefs(c).forEach(k=>(avLin(c,k).ex||[]).forEach((e,i)=>lista.push({k,i,...e})));return lista.sort((a,b)=>String(a.f).localeCompare(String(b.f))||String(a.k).localeCompare(String(b.k)))}
 // En la descarga solo una línea; la lista completa y el formulario se abren a pantalla completa
 function avExCard(c){const n=avExLista(c).length;
@@ -1893,7 +1896,7 @@ function vAvCuadre(app){
     if(b.id==="avCopiar")return avCopiar(c);
   };
   app.oninput=e=>{const el=e.target;
-    if(el.dataset.f&&el.closest("tr[data-row]")){const k=el.dataset.k,l=c.lineas[k]||(c.lineas[k]={});l[el.dataset.f]=avP(el.value);if(el.dataset.f==="al")delete l.alP;if(el.dataset.f==="de")avPdaLinea(c,k);avRefrescar();avTocar();return}
+    if(el.dataset.f&&el.closest("tr[data-row]")){const k=el.dataset.k,l=c.lineas[k]||(c.lineas[k]={});l[el.dataset.f]=avP(el.value);if(el.dataset.f==="en"){const td=el.closest("td.av-conex"),b=td&&td.querySelector(".av-exb");if(td){td.className=avConexCls(avN(l.en),td.innerHTML);if(b)b.style.fontSize=avExFs(avExN(avN(l.en),b.children.length))+"px"}}if(el.dataset.f==="al")delete l.alP;if(el.dataset.f==="de")avPdaLinea(c,k);avRefrescar();avTocar();return}
     if(el.dataset.pk){const[bk,f]=el.dataset.pk.split("|"),pp0=c.pesos[bk]||(c.pesos[bk]=avPeso0());pp0[f]=avP(el.value);if(f==="albKg")delete pp0.albKgP;avTocar();avPesoVivo(bk);return}
     if(el.dataset.tara){(c.pesos[el.dataset.tara]||(c.pesos[el.dataset.tara]=avPeso0())).tara=avP(el.value);avTocar();return}
     if(el.dataset.bj){const bj0=c.bandejas||(c.bandejas={});if(el.dataset.bj==="total")delete bj0.carga;bj0[el.dataset.bj]=avP(el.value);const x=$("#avBjC");if(x)x.textContent=avBj(c).ca??"—";const y=$("#avBjCmp");if(y)y.innerHTML=avBjCmp(c);avTocar();return}
