@@ -507,7 +507,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "95 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "96 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1125,6 +1125,7 @@ function vPrecios(app){
   const idx=p=>P.indexOf(p);
   const vecino=(p,d)=>{const k=lista.indexOf(p)+d,q=lista[k];return q&&seccion(q,P)===seccion(p,P)?q:null};
   const selG=(p,i)=>`<select data-i="${i}" data-f="g" aria-label="Especie o grupo">${OPC_G.map(([g,t])=>`<option value="${g}"${p.g===g?" selected":""}>${t}</option>`).join("")}</select>`;
+  const pos=p=>`<input class="av-pos" data-ppos="${idx(p)}" value="${lista.indexOf(p)+1}" inputmode="numeric" aria-label="Posición de ${esc(p.c)}" title="Escribe el número de posición">`;
   const mov=(p,i)=>`<button class="mvb" data-mv="${i}" data-d="-1" ${vecino(p,-1)?"":"disabled"} aria-label="Subir">↑</button><button class="mvb" data-mv="${i}" data-d="1" ${vecino(p,1)?"":"disabled"} aria-label="Bajar">↓</button>`;
   const avOk=precEsAdmin()&&S.av.cargado;
   const tog=(p,i)=>`<button class="tog ${p.activo===false?"off":""}" data-act="${i}" title="Si sale en los pedidos de la tienda">${desk?"":"Tienda: "}${p.activo===false?"No activo":"Activo"}</button>`;
@@ -1133,7 +1134,7 @@ function vPrecios(app){
   if(desk){
     for(const p of lista){const i=idx(p),k=seccion(p,P);
       if(k!==k0){h+=`<tr><td colspan="10" style="padding:0;border:0"><div class="grupo s-${k}" style="margin:0;border-radius:0">${seccTit(k)}</div></td></tr>`;k0=k}
-      h+=`<tr class="pr" style="${estiloG(p.g)}"><td style="white-space:nowrap">${mov(p,i)}</td>
+      h+=`<tr class="pr" style="${estiloG(p.g)}"><td style="white-space:nowrap">${pos(p)}${mov(p,i)}</td>
         <td class="cc"><span class="dot"></span><input class="pcode" value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" style="width:7.5em"></td>
         <td><input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre" style="width:100%;min-width:10em"></td>
         <td>${tog(p,i)}</td>${precEsAdmin()?`<td>${togAv(p)}</td>`:""}
@@ -1149,19 +1150,26 @@ function vPrecios(app){
       h+=`<div class="pcard ${p.activo===false?"off":""}" style="${estiloG(p.g)}">
         <div class="pc1"><input class="pcode" value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" placeholder="Código"><input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre" placeholder="Nombre"></div>
         <div class="pc2"><label>Especie ${selG(p,i)}</label><label>€/kg<input class="num" inputmode="decimal" value="${esc(dec(p.p))}" data-i="${i}" data-f="p"></label><label>Pz/band.<input class="num" inputmode="numeric" value="${p.b}" data-i="${i}" data-f="b"></label><label>Kg/pz aprox.<input class="num" inputmode="decimal" value="${p.pm?esc(dec(p.pm)):""}" data-i="${i}" data-f="pm" placeholder="—"></label></div>
-        <div class="pc3">${tog(p,i)}${togAv(p)}${mov(p,i)}<button class="x" data-del="${i}" aria-label="Borrar producto">×</button></div></div>`}
+        <div class="pc3">${pos(p)}${tog(p,i)}${togAv(p)}${mov(p,i)}<button class="x" data-del="${i}" aria-label="Borrar producto">×</button></div></div>`}
   }
   app.innerHTML=`<div class="wrap">
     ${S.precAviso?`<div class="aviso">He marcado como «Porción …» ${S.precAviso} artículo(s) cuyo código lleva P en la 3ª letra. Revísalos y pulsa «Guardar artículos y precios» para que quede fijado.</div>`:""}
     ${precEsAdmin()?`<div class="av-fases" style="margin-bottom:10px"><button class="on">Artículos · tienda y autoventa</button><button id="bOrdAv">Orden de la hoja de autoventa</button></div>
-    <p class="nota">Aquí están <b>todos los artículos</b>. En cada uno eliges si sale en <b>Tienda</b> (pedidos de la tienda) y si va en <b>Autoventa</b> (hoja del cuadre). Con ↑ ↓ ordenas cómo lo ve la tienda; el orden de la hoja de autoventa se cambia en la otra pestaña. Nada se guarda hasta pulsar «Guardar».</p>`:""}<p class="nota">Precio €/kg que ve la tienda y sale en el albarán. «Pz/bandeja» es cuántas piezas lleva una bandeja, o cuántas cuñas lleva una bolsa en las porciones (1 si se pide suelto). «Kg/pz aprox.» es el peso medio de una pieza o cuña: si en fábrica no se pesa, el pedido y el albarán calculan los kilos con él. Para que un artículo vaya al bloque de <b>porciones</b>, elige en «Especie» la opción «Porción mezcla», «Porción oveja», «Porción D.O.» o «Porción cabra»; mantiene el color de su especie. Con ↑ ↓ cambias el orden dentro de cada grupo; es el orden en que lo ven la tienda y quien prepara. Nada se guarda hasta pulsar «Guardar».</p>
+    <p class="nota">Aquí están <b>todos los artículos</b>. En cada uno eliges si sale en <b>Tienda</b> (pedidos de la tienda) y si va en <b>Autoventa</b> (hoja del cuadre). Con el <b>número</b> (escribe la posición) o con ↑ ↓ ordenas cómo lo ve la tienda, siempre dentro de su grupo; el orden de la hoja de autoventa se cambia en la otra pestaña. Nada se guarda hasta pulsar «Guardar».</p>`:""}<p class="nota">Precio €/kg que ve la tienda y sale en el albarán. «Pz/bandeja» es cuántas piezas lleva una bandeja, o cuántas cuñas lleva una bolsa en las porciones (1 si se pide suelto). «Kg/pz aprox.» es el peso medio de una pieza o cuña: si en fábrica no se pesa, el pedido y el albarán calculan los kilos con él. Para que un artículo vaya al bloque de <b>porciones</b>, elige en «Especie» la opción «Porción mezcla», «Porción oveja», «Porción D.O.» o «Porción cabra»; mantiene el color de su especie. Con ↑ ↓ cambias el orden dentro de cada grupo; es el orden en que lo ven la tienda y quien prepara. Nada se guarda hasta pulsar «Guardar».</p>
     ${h}</div>`;
   const cambios=precHayCambios();
   barra(desk?`<span class="muted">${cambios?"<b style=\"color:var(--warn)\">Hay cambios sin guardar</b>":P.length+" artículos"}</span><div class="acc"><button class="btn" id="bAddP">+ Nuevo artículo</button><button class="btn" id="bDesh" ${cambios?"":"disabled"}>Deshacer cambios</button><button class="btn pri" id="bGP" ${cambios?"":"disabled"}>Guardar artículos y precios</button></div>`
     :`<div class="b3"><button class="btn" id="bAddP">+ Nuevo</button><button class="btn" id="bDesh" ${cambios?"":"disabled"}>Deshacer</button><button class="btn pri" id="bGP" ${cambios?"":"disabled"}>Guardar</button></div>`);
   const marcaCambios=()=>{const g=$("#bGP"),d=$("#bDesh");if(g){g.disabled=false;d.disabled=false;const m=$("#barraIn .muted");if(m)m.innerHTML='<b style="color:var(--warn)">Hay cambios sin guardar</b>'}};
   app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null||f==="g")return;P[i][f]=f==="c"?e.target.value.trim():e.target.value;marcaCambios()};
-  app.onchange=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;if(f==="g"){P[i].g=e.target.value;render()}else if(f==="c")render()};
+  app.onchange=e=>{
+    if(e.target.dataset.ppos!=null){const a=P[+e.target.dataset.ppos],cur=lista.indexOf(a);let z=parseInt(e.target.value,10)-1;
+      if(isNaN(z)){render();return}z=Math.max(0,Math.min(lista.length-1,z));
+      const k=seccion(a,P),del=lista.filter(q=>seccion(q,P)===k),ini=lista.indexOf(del[0]),fin=lista.indexOf(del[del.length-1]);
+      if(z<ini||z>fin){toast(`Solo se mueve dentro de su grupo (${seccTit(k)}): posiciones ${ini+1} a ${fin+1}. Para pasarlo a otro grupo cambia la especie.`,true);z=Math.max(ini,Math.min(fin,z))}
+      if(z!==cur){const q=lista[z];P.splice(P.indexOf(a),1);const iq=P.indexOf(q);P.splice(z<cur?iq:iq+1,0,a)}
+      const y=scrollY;render();scrollTo(0,y);return}
+    const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;if(f==="g"){P[i].g=e.target.value;render()}else if(f==="c")render()};
   app.onclick=async e=>{const t=e.target.closest("button");if(!t)return;
     if(t.id==="bOrdAv"){if(!(await salirPrecios()))return;S.tab="autoventa";S.av.sec="arts";S.av.arts=true;S.av.cur=null;render();scrollTo(0,0);return}
     if(t.dataset.avtog!=null){const c=t.dataset.avtog,a=S.precAv,en=new Set(avCfg().arts);
