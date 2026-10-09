@@ -436,7 +436,7 @@ input.av-n:focus{background:var(--gold-soft);outline:2px solid var(--gold);outli
 tr.av-nada th{color:var(--muted)}
 .av-cq{white-space:nowrap;text-align:center}.av-cq.vacio-q button{visibility:hidden}
 .av-falta{background:#fbe3e1}
-.av-exc{padding:8px 12px;margin-bottom:10px}.av-exf{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.av-exf select{flex:1 1 180px}.av-exf input.num{width:80px}.av-exf input[type=date]{width:auto}.av-exp{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0}.av-exp .av-chips{margin:0}.av-exkg{text-align:center;white-space:nowrap;color:#1f5fbf}.av-exkg input{width:90px}input.sinkg{border-color:var(--danger)}.av-w.sinkg b{color:var(--danger)}
+.av-exc{padding:8px 12px;margin-bottom:10px}.av-exf{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.av-exf select{flex:1 1 180px}.av-exf input.num{width:80px}.av-exf input[type=date]{width:auto}.av-exbl{border-top:1px dashed var(--line);padding:6px 0 4px}.av-exbl:first-child{border-top:0}.av-exh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.av-exh input.num{width:64px}.av-exkgt{margin-left:auto;color:var(--ok,#2e7d32)}.av-flash{animation:avfl 1.6s}@keyframes avfl{0%,40%{background:var(--gold-soft)}100%{background:transparent}}.av-exp{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0}.av-exp .av-chips{margin:0}.av-exkg{text-align:center;white-space:nowrap;color:#1f5fbf}.av-exkg input{width:90px}input.sinkg{border-color:var(--danger)}.av-w.sinkg b{color:var(--danger)}
 .av-exl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 td.av-conex{position:relative;padding:0;vertical-align:middle;border-left:1px solid var(--line);text-align:center;white-space:nowrap}td.av-conex input.av-n{border-left:0}.av-exb{font-family:var(--display);font-weight:700;color:#1f5fbf;line-height:1.15;pointer-events:none}.av-exb span+span{margin-left:4px}td.av-conex.vac input.av-n::placeholder{color:transparent}td.av-conex.vac .av-exb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;align-content:center;padding:0 2px;white-space:normal}td.av-conex.vac .av-exb span+span{margin-left:0}td.av-conex.vac .av-exb{column-gap:4px}td.av-conex.vac:focus-within .av-exb{visibility:hidden}td.av-conex.k2:not(.vac) input.av-n{display:inline-block;width:50%;min-width:0;text-align:right;padding-right:3px;font-size:17px;vertical-align:middle}td.av-conex.k2:not(.vac) .av-exb{display:inline-block;width:48%;text-align:left;vertical-align:middle}td.av-conex.k3:not(.vac) input.av-n{height:30px;font-size:17px}td.av-conex.k3:not(.vac) .av-exb{white-space:normal;padding:0 2px 4px}td.av-conex.k3:not(.vac) .av-exb span+span{margin-left:0}td.av-conex.k3 .av-exb{display:grid;grid-template-columns:auto auto;justify-content:center;align-content:center;column-gap:7px}td.av-conex.k5 .av-exb{grid-template-columns:auto auto auto}td.av-conex.k3 .av-exb span{margin-left:0;text-align:center}.av-cq.sinde button{display:none}.av-cq.sinde::after{content:"✗ falta descarga";display:inline-block;background:var(--danger);color:#fff;border-radius:10px;padding:8px 10px;font-weight:800;font-size:14px;margin:3px 0}
 .av-cq button{min-width:46px;height:40px;margin:3px 2px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:18px;font-weight:800;color:#c9bcbe;cursor:pointer}
@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "114 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "115 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1495,10 +1495,12 @@ function avOrdenInicial(){const cf=avCfg();if(cf.ordenHoja||!S.av.cargado||!cf.a
 const avPeso0=()=>({llevaKg:null,entre:[],desc:[],albKg:null,carga:[]});
 // Cargas entre medias de los artículos con control de pesos: se apuntan una sola vez (en «Cargas entre medias») con sus kilos y aparecen aquí
 const avEsPeso=k=>{const pe=avCfg().peso||{};return !!k&&(k===pe.grande||k===pe.mini)};
+const avBDe=k=>{const pe=avCfg().peso||{};return k&&k===pe.grande?"grande":k&&k===pe.mini?"mini":null};
+const avPsN=x=>typeof x==="number"?{kg:x,t:true}:x; // pesadas antiguas (números) cuentan con tara
 function avEntreP(c,b){const p=(c.pesos&&c.pesos[b])||{},code=(avCfg().peso||{})[b],tara=avN(p.tara??avCfg().taras[b])||0;
-  // con pesadas: cada pesada es una caja (se le resta la tara como en carga y descarga)
-  return [...(p.entre||[]).map((e,i)=>({...e,old:i})),...(code?(avLin(c,code).ex||[]).filter(e=>avN(e.pz)).map(e=>{const ps=Array.isArray(e.ps)&&e.ps.length?e.ps:null;
-    return {f:e.f,pz:e.pz,ps,kg:ps?avR3(ps.reduce((a,x)=>a+x,0)-ps.length*tara):e.kg}}):[])]}
+  // cada pesada es una caja; se le resta la tara igual que en carga y descarga
+  return [...(p.entre||[]).map((e,i)=>({...e,old:i})),...(code?(avLin(c,code).ex||[]).map((e,idx)=>{const ps=Array.isArray(e.ps)?e.ps.map(avPsN):null;
+    return {f:e.f,pz:e.pz,ps,idx,kg:ps?(ps.length?avR3(ps.reduce((a,x)=>a+(avN(x.kg)||0)-(x.t?tara:0),0)):null):e.kg}}):[])]}
 function avPeso(c,b){
   const p=(c.pesos&&c.pesos[b])||avPeso0(), tara=avN(p.tara??avCfg().taras[b])||0;
   const suma=arr=>{let br=0,t=0;(arr||[]).forEach(e=>{br+=avN(e.kg)||0;if(e.t)t+=tara});return {bruto:avR3(br),taras:avR3(t),neto:avR3(br-t),n:(arr||[]).length}};
@@ -1823,9 +1825,9 @@ function avExCard(c){const n=avExLista(c).length;
   return `<div class="card av-exc"><div class="acc" style="align-items:center"><b>Cargas entre medias</b><span class="muted">${n?n+" apunte"+(n>1?"s":""):"ninguna"}</span><span style="flex:1"></span><button class="btn sm" id="avExVer">${n?"Ver y añadir":"+ Añadir carga"}</button></div></div>`}
 function avExVista(c){const lista=avExLista(c),arts=avRefs(c),dias={};lista.forEach(e=>(dias[e.f]||(dias[e.f]=[])).push(e));
   return `<div class="acc" style="align-items:center;margin-bottom:8px"><button class="btn sm" id="avExCerrar">← Volver al cuadre</button><span style="flex:1"></span><b>Cargas entre medias</b></div>
-    <div class="card"><div class="av-exf" style="margin-top:0"><select id="avExK">${arts.map(k=>`<option value="${esc(k)}"${S.av.exK===k?" selected":""}>${esc(nomDe(k))}</option>`).join("")}</select><input id="avExPz" class="num" inputmode="numeric" placeholder="Pz"><span id="avExKgW" style="display:${avEsPeso(S.av.exK||arts[0])?"contents":"none"}"><input id="avExKg" class="num" inputmode="decimal" placeholder="Pesadas 6,2+6,4" title="Cada pesada (caja) separada por +" style="width:150px"></span><input id="avExF" type="date" value="${S.av.exF||hoy()}"><button class="btn sm pri" id="avExAdd">Añadir</button></div></div>
+    <div class="card"><div class="av-exf" style="margin-top:0"><select id="avExK">${arts.map(k=>`<option value="${esc(k)}"${S.av.exK===k?" selected":""}>${esc(nomDe(k))}</option>`).join("")}</select><input id="avExPz" class="num" inputmode="numeric" placeholder="Pz"${avEsPeso(S.av.exK||arts[0])?' style="display:none"':""}><input id="avExF" type="date" value="${S.av.exF||hoy()}"><button class="btn sm pri" id="avExAdd">${avEsPeso(S.av.exK||arts[0])?"Pesar en Pesos →":"Añadir"}</button></div></div>
     ${Object.keys(dias).length?Object.keys(dias).sort().map(f=>`<div class="sec">${esc(avDia(f))} · ${dias[f].reduce((a,e)=>a+(avN(e.pz)||0),0)} pz</div>
-      <div class="av-tw"><table class="av-t"><tbody>${dias[f].map(e=>`<tr><th>${avRefTxt(e.k)}</th><td class="av-c" style="color:#1f5fbf">+${e.pz}</td>${avEsPeso(e.k)?`<td class="av-exkg">${avN(e.kg)!==null?`<b>${Array.isArray(e.ps)&&e.ps.length>1?e.ps.map(x=>avKg(x)).join(" + ")+" = ":""}${avKg(avN(e.kg))} kg</b>`:`<input class="num sinkg" data-exkg="${esc(e.k)}|${e.i}" inputmode="decimal" placeholder="Pesadas">`}</td>`:"<td></td>"}<td style="width:56px;text-align:center"><button class="x" data-exdel="${esc(e.k)}|${e.i}" aria-label="Quitar">×</button></td></tr>`).join("")}</tbody></table></div>`).join("")
+      <div class="av-tw"><table class="av-t"><tbody>${dias[f].map(e=>`<tr><th>${avRefTxt(e.k)}</th><td class="av-c" style="color:#1f5fbf">+${avN(e.pz)??0}</td>${avEsPeso(e.k)?`<td class="av-exkg">${e.kg!=null?`<b>${avKg(avN(e.kg))} kg</b> `:""}<button class="btn sm" data-expesos="${esc(e.k)}|${e.i}">Pesadas →</button></td>`:"<td></td>"}<td style="width:56px;text-align:center"><button class="x" data-exdel="${esc(e.k)}|${e.i}" aria-label="Quitar">×</button></td></tr>`).join("")}</tbody></table></div>`).join("")
       :`<div class="vacio">Todavía no hay cargas entre medias en este viaje.</div>`}`}
 const avBtnTodas=()=>`<button class="btn sm" id="avTodas">${S.av.todas?"Solo los de autoventa":"Ver todo el catálogo"}</button>`;
 function avAyudaPapel(c){
@@ -1873,9 +1875,15 @@ function vAvCuadre(app){
     if(b.id==="avTodas"){S.av.todas=!S.av.todas;render();return}
     if(b.id==="avExVer"){S.av.exVista=true;render();scrollTo(0,0);return}
     if(b.id==="avExCerrar"){S.av.exVista=false;render();scrollTo(0,0);return}
-    if(b.id==="avExAdd"){const k=$("#avExK").value,pz=avP($("#avExPz").value),f=$("#avExF").value||hoy(),kgI=$("#avExKg"),ps=avEsPeso(k)&&kgI?avPesadas(kgI.value):null,kg=ps?avR3(ps.reduce((a,x)=>a+x,0)):null;if(!k||!pz){$("#avExPz").focus();return}
-      if(avEsPeso(k)&&kg===null){toast("Pon las pesadas (6,2+6,4…): van a la pestaña Pesos");kgI.focus();return}
-      const l=c.lineas[k]||(c.lineas[k]={}),nw={f,pz};if(ps){nw.ps=ps;nw.kg=kg}(l.ex||(l.ex=[])).push(nw);S.av.exF=f;S.av.exK=k;avTocar();toast(`+${pz} ${nomDe(k)}${kg!==null?" · "+avKg(kg)+" kg":""} (${avDM(f)})`);avRepintar();const z=$("#avExPz");if(z)z.focus();return}
+    if(b.id==="avExAdd"){const k=$("#avExK").value,f=$("#avExF").value||hoy();if(!k)return;S.av.exF=f;S.av.exK=k;const l=c.lineas[k]||(c.lineas[k]={}),ex=l.ex||(l.ex=[]);
+      if(avEsPeso(k)){ // aceite grande o mini: se pesa caja a caja en la pestaña Pesos
+        let i=ex.findIndex(e=>e.f===f&&Array.isArray(e.ps));if(i<0){ex.push({f,pz:null,ps:[]});i=ex.length-1;avTocar()}return avIrPesadas(k,i)}
+      const pz=avP($("#avExPz").value);if(!pz){$("#avExPz").focus();return}
+      ex.push({f,pz});avTocar();toast(`+${pz} ${nomDe(k)} (${avDM(f)})`);avRepintar();const z=$("#avExPz");if(z)z.focus();return}
+    if(b.dataset.expesos){const[k,i]=b.dataset.expesos.split("|"),x=((c.lineas[k]||{}).ex||[])[+i];if(x&&!Array.isArray(x.ps)){x.ps=[];avTocar()}return avIrPesadas(k,+i)}
+    if(b.dataset.addex)return avAddEx(b.dataset.addex);
+    if(b.dataset.extog){const[k,i,j]=b.dataset.extog.split("|"),x=c.lineas[k].ex[+i],q=avPsN(x.ps[+j]);q.t=!q.t;x.ps[+j]=q;avTocar();avRepintar();return}
+    if(b.dataset.exq){const[k,i,j]=b.dataset.exq.split("|"),x=c.lineas[k].ex[+i];x.ps.splice(+j,1);avExPzAuto(k,x);avTocar();avRepintar();return}
     if(b.dataset.exdel){const[k,i]=b.dataset.exdel.split("|"),l=c.lineas[k];if(l&&l.ex){l.ex.splice(+i,1);if(!l.ex.length)delete l.ex}avTocar();avRepintar();return}
     if(b.id==="avPdaBtn"){const f=$("#avPdaF");if(f){f.value="";f.click()}return}
     if(b.id==="avPdaNube"){avPdaNube();return}
@@ -1907,6 +1915,7 @@ function vAvCuadre(app){
     if(b.id==="avCopiar")return avCopiar(c);
   };
   app.oninput=e=>{const el=e.target;
+    if(el.dataset.expz){const[k,i]=el.dataset.expz.split("|"),x=((c.lineas[k]||{}).ex||[])[+i];if(x){x.pz=avP(el.value);x.pzM=x.pz!==null;avTocar()}return}
     if(el.dataset.f&&el.closest("tr[data-row]")){const k=el.dataset.k,l=c.lineas[k]||(c.lineas[k]={});l[el.dataset.f]=avP(el.value);if(el.dataset.f==="en"){const td=el.closest("td.av-conex"),b=td&&td.querySelector(".av-exb");if(td){td.className=avConexCls(avN(l.en),td.innerHTML);if(b)b.style.fontSize=avExFs(avExN(avN(l.en),b.children.length))+"px"}}if(el.dataset.f==="al")delete l.alP;if(el.dataset.f==="de")avPdaLinea(c,k);avRefrescar();avTocar();return}
     if(el.dataset.pk){const[bk,f]=el.dataset.pk.split("|"),pp0=c.pesos[bk]||(c.pesos[bk]=avPeso0());pp0[f]=avP(el.value);if(f==="albKg")delete pp0.albKgP;avTocar();avPesoVivo(bk);return}
     if(el.dataset.tara){(c.pesos[el.dataset.tara]||(c.pesos[el.dataset.tara]=avPeso0())).tara=avP(el.value);avTocar();return}
@@ -1916,14 +1925,15 @@ function vAvCuadre(app){
     if(el.id==="avNota"){c.nota=el.value;avTocar();return}
   };
   app.onchange=e=>{const el=e.target;
-    if(el.id==="avExK"){S.av.exK=el.value;const w=$("#avExKgW");if(w)w.style.display=avEsPeso(el.value)?"contents":"none";return}
-    if(el.dataset.exkg){const[k,i]=el.dataset.exkg.split("|"),x=((c.lineas[k]||{}).ex||[])[+i],ps=avPesadas(el.value);if(x&&ps){x.ps=ps;x.kg=avR3(ps.reduce((a,x)=>a+x,0));avTocar();avRepintar()}return}
+    if(el.id==="avExK"){S.av.exK=el.value;const pe=avEsPeso(el.value),z=$("#avExPz"),a=$("#avExAdd");if(z)z.style.display=pe?"none":"";if(a)a.textContent=pe?"Pesar en Pesos →":"Añadir";return}
+    if(el.dataset.expz){avRepintar();return}
     if(el.id==="avPdaF"){avCargarPDA(el.files&&el.files[0]);return}
     if(el.id==="avFecha"){c.fecha=el.value;avTocar();return}
     if(el.dataset.tara)setTimeout(avRepintar,0); // la tara cambia todos los netos
   };
   app.onkeydown=e=>{if(e.key!=="Enter")return;const el=e.target;
     if(el.dataset.addp){e.preventDefault();avAddPeso(el.dataset.addp);return}
+    if(el.dataset.addex){e.preventDefault();avAddEx(el.dataset.addex);return}
     if(el.dataset.f){e.preventDefault();const all=[...app.querySelectorAll(`input.av-n[data-f="${el.dataset.f}"]`)],nx=all[all.indexOf(el)+1];if(nx){nx.focus();nx.select()}else el.blur()}
   };
   app.onfocusin=e=>{if(e.target.matches("input.av-n,input.num"))setTimeout(()=>{try{e.target.select()}catch(x){}},0)};
@@ -1936,6 +1946,14 @@ function avBarra(){
     <div style="text-align:right;font-size:14px;line-height:1.35;font-weight:600"><span class="${avDifCls(g.difG)}">Grande: ${avDifTxt(g.difG)}</span><br><span class="${avDifCls(m.difG)}">Minis: ${avDifTxt(m.difG)}</span></div>`);
 }
 function avRepintar(){const y=scrollY,a=document.activeElement&&document.activeElement.id;render();scrollTo(0,y);if(a){const el=document.getElementById(a);if(el)el.focus({preventScroll:true})}}
+// piezas de una carga entre medias con pesadas: en el aceite grande cada pesada son AV_PZCAJA piezas (salvo que las cambies a mano)
+function avExPzAuto(k,x){const b=avBDe(k),n=AV_PZCAJA[b];if(n&&!x.pzM)x.pz=x.ps.length?x.ps.length*n:null}
+function avIrPesadas(k,i){S.av.exVista=false;S.av.fase="pesos";render();const b=avBDe(k),bl=$(`#avExBl-${b}-${i}`);
+  if(bl){bl.scrollIntoView({block:"center"});bl.classList.add("av-flash");const n=$(`#avAddEx-${b}-${i}`);if(n)n.focus({preventScroll:true})}}
+function avAddEx(key){const c=avCuadre(),[b,k,i]=key.split("|"),el=$(`#avAddEx-${b}-${i}`),v=avP(el&&el.value),x=((c.lineas[k]||{}).ex||[])[+i];
+  if(v===null||!x){if(el)el.focus();return}const p=(c.pesos&&c.pesos[b])||{},tara=avN(p.tara??avCfg().taras[b])||0;
+  (x.ps||(x.ps=[])).push({kg:v,t:tara>0});avExPzAuto(k,x);avTocar();
+  const y=scrollY;render();scrollTo(0,y);const n=$(`#avAddEx-${b}-${i}`);if(n)n.focus({preventScroll:true})}
 function avAddPeso(key){
   const c=avCuadre(),[bk,ls]=key.split("|"),el=$(`#avAdd-${bk}-${ls}`),v=avP(el.value);if(v===null){el.focus();return}
   const p=c.pesos[bk]||(c.pesos[bk]=avPeso0()),tara=avN(p.tara??avCfg().taras[bk])||0;
@@ -1947,7 +1965,7 @@ function avBloquePeso(c,b){
   const chips=ls=>`<div class="av-chips">${(p[ls]||[]).map((e,i)=>`<span class="av-w"><b>${avKg(avN(e.kg))}</b>${conTara?`<button data-tog="${b}|${ls}|${i}" class="${e.t?"on":""}" title="Restar la tara de la caja">${e.t?"−tara":"sin tara"}</button>`:""}<button data-quita="${b}|${ls}|${i}" aria-label="Quitar peso">×</button></span>`).join("")}</div>`;
   const add=(ls,ph)=>`<div class="padd"><input id="avAdd-${b}-${ls}" class="num" inputmode="decimal" placeholder="${ph}" data-addp="${b}|${ls}" style="width:110px"><span class="muted">kg</span><button class="btn sm" data-addp="${b}|${ls}">Añadir</button></div>`;
   const cajas=(x)=>x.n?`${x.n} caja${x.n===1?"":"s"}${x.taras?` · taras −${avKg(x.taras)}`:""}`:"";
-  const entre=avEntreP(c,b), verE=entre.length, entreKg=avR3(entre.reduce((a,e)=>a+(avN(e.kg)||0),0)), entrePz=entre.reduce((a,e)=>a+(avN(e.pz)||0),0), sinKg=entre.some(e=>avN(e.kg)===null), nCaj=entre.reduce((a,e)=>a+(e.ps?e.ps.length:0),0);
+  const entre=avEntreP(c,b), verE=entre.length, entreKg=avR3(entre.reduce((a,e)=>a+(avN(e.kg)||0),0)), entrePz=entre.reduce((a,e)=>a+(avN(e.pz)||0),0), nCaj=entre.reduce((a,e)=>a+(e.ps?e.ps.length:0),0);
   const ok=w.difG!==null&&Math.abs(w.difG)<=AV_TOL;
   // control: cada pesada son AV_PZCAJA piezas; debe cuadrar con las piezas apuntadas en la hoja
   const ctl=(n,pz,donde)=>{const k=AV_PZCAJA[b];if(!k||!code)return"";
@@ -1960,8 +1978,12 @@ function avBloquePeso(c,b){
       <label for="avTara-${b}">Tara caja</label><input id="avTara-${b}" class="num" data-tara="${b}" inputmode="decimal" value="${avF(w.tara)}"></div>
     <div class="pl"><span class="ps"></span><span class="pt">CARGA INICIAL<small>${code?((avN(avLin(c,code).ll)||0)+(avN(avLin(c,code).en)||0))+" pz":""}</small></span><input id="avLl-${b}" class="num pin" data-pk="${b}|llevaKg" inputmode="decimal" value="${avF(avN(p.llevaKg))}" placeholder="kg"></div>
     ${verE?`<div class="mov car"><div class="pl"><span class="ps">+</span><span class="pt">Cargó entre medias<small>${entrePz?entrePz+" pz":""}${nCaj?" · "+nCaj+" caja"+(nCaj===1?"":"s"):""}</small></span><b>${entreKg?"+"+avKg(entreKg)+" kg":"—"}</b></div>
-      <div class="pb">${entre.map(e=>`<div class="av-exp"><span class="muted">${e.f?avDM(e.f)+" · ":""}+${avN(e.pz)??"?"} pz</span>${e.ps?`<div class="av-chips">${e.ps.map(x=>`<span class="av-w"><b>${avKg(x)}</b></span>`).join("")}</div>`:`<span class="av-w${avN(e.kg)===null?" sinkg":""}"><b>${avN(e.kg)===null?"falta el peso":avKg(avN(e.kg))+" kg"}</b>${e.old!==undefined?`<button data-quita="${b}|entre|${e.old}" aria-label="Quitar">×</button>`:""}</span>`}</div>`).join("")}
-      ${sinKg?`<div class="pav mal">⚠ Falta el peso de alguna carga entre medias</div>`:""}<button class="lnk" id="avExVer">Cambiar en Cargas entre medias</button></div></div>
+      <div class="pb">${entre.map(e=>e.old!==undefined
+        ?`<div class="av-exp"><span class="muted">+${avN(e.pz)??"?"} pz</span><span class="av-w"><b>${avKg(avN(e.kg))} kg</b><button data-quita="${b}|entre|${e.old}" aria-label="Quitar">×</button></span></div>`
+        :`<div class="av-exbl" id="avExBl-${b}-${e.idx}"><div class="av-exh"><b>${esc(avDia(e.f))}</b><input class="num" data-expz="${esc(code)}|${e.idx}" inputmode="numeric" value="${avF(avN(e.pz))}" placeholder="pz"><span class="muted">pz</span><b class="av-exkgt">${e.kg!=null?"+"+avKg(e.kg)+" kg":""}</b><button class="x" data-exdel="${esc(code)}|${e.idx}" title="Quitar esta carga" aria-label="Quitar esta carga">×</button></div>
+          ${e.ps?`${ctl(e.ps.length,avN(e.pz),"carga entre medias")}<div class="av-chips">${e.ps.map((x,j)=>`<span class="av-w"><b>${avKg(avN(x.kg))}</b>${conTara?`<button data-extog="${esc(code)}|${e.idx}|${j}" class="${x.t?"on":""}" title="Restar la tara de la caja">${x.t?"−tara":"sin tara"}</button>`:""}<button data-exq="${esc(code)}|${e.idx}|${j}" aria-label="Quitar peso">×</button></span>`).join("")}</div>
+          <div class="padd"><input id="avAddEx-${b}-${e.idx}" class="num" inputmode="decimal" placeholder="Peso caja" data-addex="${b}|${esc(code)}|${e.idx}" style="width:110px"><span class="muted">kg</span><button class="btn sm" data-addex="${b}|${esc(code)}|${e.idx}">Añadir</button></div>`
+          :`<span class="av-w${e.kg==null?" sinkg":""}"><b>${e.kg==null?"falta el peso":avKg(avN(e.kg))+" kg"}</b></span>`}</div>`).join("")}</div></div>
       <div class="pl sub"><span class="ps">=</span><span class="pt">TOTAL CARGA<small>${code?lx.lleva+" pz":""}</small></span><b id="avTL-${b}">${avKg(w.total)} kg</b></div>`:""}
     <div class="mov des"><div class="pl"><span class="ps">−</span><span class="pt">Descarga hoy<small>${cajas(w.d)}</small></span><b>${w.d.n?"−"+avKg(w.d.neto)+" kg":"—"}</b></div>
     <div class="pb">${ctl(w.d.n,lx.de,"descarga")}${chips("desc")}${add("desc","Peso caja")}</div></div>
