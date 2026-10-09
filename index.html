@@ -507,7 +507,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "96 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "97 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1754,7 +1754,7 @@ function avPdaCard(c){const P=c.pda;
   const av=[],quien=AV_TERM[P.terminal],ini=avSumaDia(c.fecha,1),fin=c.cierre||hoy();
   if(quien&&avNorm(quien)!==avNorm(c.vendedor))av.push(`El terminal ${P.terminal} es de ${quien}, no de ${esc(c.vendedor)}`);
   if(P.desde&&(P.desde!==ini||P.hasta!==fin))av.push(`Este viaje va del ${avFc(ini)} al ${avFc(fin)}`);
-  if(P.total&&(P.total.pz!==P.suma.pz||Math.abs(P.total.kg-P.suma.kg)>0.005))av.push(`La suma de líneas (${P.suma.pz} pz · ${avKg(P.suma.kg)} kg) no da el total del papel (${P.total.pz} pz · ${avKg(P.total.kg)} kg)`);
+  if(P.total&&(P.total.pz!==P.suma.pz||Math.abs(P.total.kg-P.suma.kg)>0.05)) /* el programa redondea cada línea: unos gramos de diferencia no cuentan */av.push(`La suma de líneas (${P.suma.pz} pz · ${avKg(P.suma.kg)} kg) no da el total del papel (${P.total.pz} pz · ${avKg(P.total.kg)} kg)`);
   const fuera=Object.keys(P.lin).filter(k=>!avCfg().arts.includes(k));if(fuera.length)av.push(`No están en los artículos de autoventa: ${fuera.map(esc).join(", ")} (salen igualmente en la hoja)`);
   return `<div class="card av-pda ok"><div><b>Albaranes de la PDA</b> · terminal ${esc(P.terminal||"?")}${quien?" ("+esc(quien)+")":""} · del ${avFc(P.desde)} al ${avFc(P.hasta)} · <b>${P.suma.pz} pz · ${avKg(P.suma.kg)} kg</b>
     <div class="muted">${esc(P.archivo||"")} · ya está puesto en «Según albaranes» y en los kilos de albaranes</div>${av.map(t=>`<div class="pav mal">⚠ ${t}</div>`).join("")}</div>
