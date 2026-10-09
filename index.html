@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "117 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "118 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1215,7 +1215,7 @@ function marcoDesk(){
   const n=e=>S.pedidos.filter(p=>p.estado===e).length, badge={pedidos:n("ENVIADO")+n("PREPARADO")};
   sd.innerHTML=`<div class="stop"><img src="${LOGO}" alt="Quesos El Hidalgo"><small>${esc(S.user)} · ${S.rol==="ADMIN"?"Administración":"Oficina"} · v${VERSION.split(" ")[0]}</small></div><div class="side-t">${S.rol==="ADMIN"?"Tienda y autoventa":"Pedidos tienda"}</div>
     <div class="sgrp"><div class="lgrp-s">Tienda</div><nav class="snav">${SIDE.map(([k,t,sub])=>`<button data-side="${k}" class="${S.tab===k?"on":""}">${t}${badge[k]?`<span class="badge">${badge[k]}</span>`:""}<small>${sub}</small></button>`).join("")}</nav></div>
-    ${S.rol==="ADMIN"?`<div class="sgrp sgrp-av"><div class="lgrp-s">Autoventa</div><nav class="snav">${[["cuadres","Cuadres de camiones","Viaje en curso de cada vendedor"],["hist","Histórico de cuadres","Viajes cerrados y controles"],["gest","Gestión de vendedores y camiones","Altas, bajas y matrículas"],["arts","Gestión de artículos","Orden de la hoja y pesos"]].map(([k,t,sub])=>`<button data-side="autoventa" data-avsec="${k}" class="${S.tab==="autoventa"&&(S.av.sec||"cuadres")===k?"on":""}">${t}<small>${sub}</small></button>`).join("")}</nav></div>`:""}
+    ${S.rol==="ADMIN"?`<div class="sgrp sgrp-av"><div class="lgrp-s">Autoventa</div><nav class="snav">${[["cuadres","Cuadres de camiones","Viaje en curso de cada vendedor"],["hist","Histórico de cuadres","Viajes cerrados"],["ctl","Controles de carga","Ver e imprimir por fechas"],["gest","Gestión de vendedores y camiones","Altas, bajas y matrículas"],["arts","Gestión de artículos","Orden de la hoja y pesos"]].map(([k,t,sub])=>`<button data-side="autoventa" data-avsec="${k}" class="${S.tab==="autoventa"&&(S.av.sec||"cuadres")===k?"on":""}">${t}<small>${sub}</small></button>`).join("")}</nav></div>`:""}
     <div style="flex:1"></div><div class="sbot"><button class="navb" id="sideAct">Actualizar</button><button class="navb" id="sideSalir">Salir</button></div>`;
   {const h=$("#hdr");if(h&&h.offsetHeight)sd.style.setProperty("--hdrH",h.offsetHeight+"px");sd.scrollTop=0}
   if(!marcoDesk.ok){marcoDesk.ok=1;const re=()=>{const h=$("#hdr"),d=$("#side");if(h&&d&&h.offsetHeight)d.style.setProperty("--hdrH",h.offsetHeight+"px")};if(document.fonts)document.fonts.ready.then(re);addEventListener("resize",re);setTimeout(re,300)}
@@ -1223,7 +1223,7 @@ function marcoDesk(){
   $("#sideAct").onclick=async()=>{if(["historial","albaranes","exportar","difs"].includes(S.tab)&&!S.scr){cargarHist()}else{await cargar();toast("Datos actualizados")}};
   $("#sideSalir").onclick=async()=>{const c=await confirmar("Salir","¿Cerrar la sesión en este ordenador?");if(c.ok){S.pin="";S.user=null;LS.del("ped_pin");render()}};
   // título grande en la cabecera
-  const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Programa de gestión","Albaranes enviados a GESTEURO"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"],autoventa:({cuadres:["Cuadres de camiones","Viaje en curso de cada vendedor"],hist:["Histórico de cuadres","Viajes cerrados y controles de carga"],gest:["Gestión de vendedores y camiones","Altas, bajas y matrículas"],arts:["Gestión de artículos","Artículos de la hoja de cuadre y su orden"]})[S.av.sec||"cuadres"]};
+  const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Programa de gestión","Albaranes enviados a GESTEURO"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"],autoventa:({cuadres:["Cuadres de camiones","Viaje en curso de cada vendedor"],hist:["Histórico de cuadres","Viajes cerrados"],ctl:["Controles de carga","Ver e imprimir, uno o varios por fechas"],gest:["Gestión de vendedores y camiones","Altas, bajas y matrículas"],arts:["Gestión de artículos","Artículos de la hoja de cuadre y su orden"]})[S.av.sec||"cuadres"]};
   let t=T[S.tab]||["Pedidos",""];
   if(S.scr){const sc=S.scr;
     if(sc.t==="ver"){const pp=S.pedidos.find(x=>x.id===sc.id);t=pp?["Pedido del "+fDiaPed(pp.creado).replace(/^(Hoy|Ayer) · /,""),"Pedido "+sc.id]:["Pedido "+sc.id,"Detalle"]}else if(sc.t==="preparar")t=["Preparando pedido "+sc.ped.id,"Piezas servidas y pesos"];
@@ -1621,7 +1621,7 @@ function vAutoventa(app){
       <td class="n ${avDifCls(g.difG,"grande")}">${g.difG===null?"":avDifTxt(g.difG)}</td><td class="n ${avDifCls(m.difG,"mini")}">${m.difG===null?"":avDifTxt(m.difG)}</td><td class="n">${c.estado!=="cerrado"&&!t.de?"—":t.sale}</td><td>${est}</td><td><button class="btn sm del av-borra" data-avborra="${id}" title="Borrar este cuadre">× Borrar</button></td></tr>`
     :`<div class="card ped" data-avabrir="${id}"><span></span><b>Viaje ${avViaje(c)} · ${esc(c.vendedor)}</b><span>${est} <button class="btn sm del av-borra" data-avborra="${id}" title="Borrar este cuadre">× Borrar</button></span>
       <div class="meta">${c.estado!=="cerrado"?"en ruta":`${t.vend} vendidas · sale con ${t.sale}${t.difs.length?` · <span class="av-mal">${t.difs.length} art. con diferencia</span>`:""}${g.difG!==null?` · Grande <span class="${avDifCls(g.difG,"grande")}">${avDifKg(g.difG)}</span>`:""}${m.difG!==null?` · Minis <span class="${avDifCls(m.difG,"mini")}">${avDifKg(m.difG)}</span>`:""}`}</div></div>`};
-  const sec=desk?(S.av.sec||"cuadres"):"todo", verGest=sec==="gest"||(sec==="todo"&&S.av.nuevoVend);
+  const sec=desk?(S.av.sec||"cuadres"):(S.av.sec==="ctl"?"ctl":"todo"), verGest=sec==="gest"||(sec==="todo"&&S.av.nuevoVend);
   const pGest=`<div class="card"><div class="sec" style="margin-top:0">Vendedores</div>
       <div class="av-chips">${vs.map(x=>`<span class="av-w"><b>${esc(x)}</b>${vs.length>1?`<button data-avquitav="${esc(x)}" aria-label="Quitar ${esc(x)}">×</button>`:""}</span>`).join("")}</div>
       ${S.av.quitarV?`<div class="aviso" style="margin:6px 0">¿Quitar a <b>${esc(S.av.quitarV)}</b>? Sus cuadres anteriores se quedan en el histórico.<div class="acc" style="margin-top:8px"><button class="btn del" id="avQVsi">Quitar</button><button class="btn" id="avQVno">Cancelar</button></div></div>`:""}
@@ -1633,18 +1633,31 @@ function vAutoventa(app){
       <p class="muted" style="margin:6px 0 0;font-size:13px">En el control de carga eliges el camión de una lista; se propone el último que usó cada vendedor (el nombre que sale junto a la matrícula).</p>
 </div>`;
   const pCuadres=`<div class="av-vends">${vs.map(tarjVend).join("")}</div>
-    ${sec==="todo"?`<div class="acc" style="margin:4px 0 10px"><button class="btn sm" id="avNVsi">${S.av.nuevoVend?"Cerrar vendedores y camiones":"Vendedores y camiones"}</button><button class="btn sm" id="avArts">Artículos de autoventa${cf.arts.length?" ("+cf.arts.length+")":""}</button></div>`:""}
+    ${sec==="todo"?`<div class="acc" style="margin:4px 0 10px"><button class="btn sm" id="avNVsi">${S.av.nuevoVend?"Cerrar vendedores y camiones":"Vendedores y camiones"}</button><button class="btn sm" id="avIrCtl">Controles de carga</button><button class="btn sm" id="avArts">Artículos de autoventa${cf.arts.length?" ("+cf.arts.length+")":""}</button></div>`:""}
     ${sec==="todo"&&verGest?pGest:""}
     ${S.av.cargado&&!cf.arts.length?`<div class="aviso">Antes del primer cuadre, entra en <b>Artículos de autoventa</b> y marca los que llevan los camiones. Si falta alguno (tarros, barra, lonchas…), créalo en «Artículos y precios» y déjalo «Oculto» para que la tienda no lo vea.</div>`:""}
     ${!S.av.cargado?`<div class="muted" style="text-align:center;padding:8px">Leyendo cuadres de la hoja…</div>`:""}
     ${carga}`;
   const pHist=`<div class="sec"${sec==="hist"?' style="margin-top:0"':""}>Histórico de cuadres</div>
     <div class="acc av-filtro"><select id="avFv"><option value="">Todos los vendedores</option>${vs.map(x=>`<option ${x===fv?"selected":""}>${esc(x)}</option>`).join("")}</select>
-      <label>Desde <input type="date" id="avFd" value="${fd}"></label><label>Hasta <input type="date" id="avFh" value="${fh}"></label><button class="btn sm" id="avCtlTodos">Imprimir controles de carga</button></div>
+      <label>Desde <input type="date" id="avFd" value="${fd}"></label><label>Hasta <input type="date" id="avFh" value="${fh}"></label></div>
     ${desk?`<div class="tblw"><table class="t av-hist"><thead><tr><th>Viaje</th><th>Vendedor</th><th class="n">Llevaba</th><th class="n">Vendidas</th><th>Diferencias</th><th class="n">Aceite gr.</th><th class="n">Minis</th><th class="n">Sale con</th><th>Estado</th><th></th></tr></thead>
       <tbody>${hist.map(filaH).join("")||`<tr><td colspan="10" class="vacio">No hay cuadres con estos filtros.</td></tr>`}</tbody></table></div>`
       :hist.map(filaH).join("")||`<div class="vacio">No hay cuadres con estos filtros.</div>`}`;
-  app.innerHTML=`<div class="wrap">${sec==="cuadres"?pCuadres:sec==="hist"?pHist:sec==="gest"?pGest:pCuadres+pHist}</div>`;
+  // controles de carga: uno por viaje cerrado (o con el control ya rellenado)
+  const cv=S.av.cv||"", cd=S.av.cd||"", ch=S.av.ch||"", selC=S.av.selC||(S.av.selC=new Set());
+  const ctls=sec!=="ctl"?[]:Object.entries(S.av.cuadres).filter(([,c])=>(c.estado==="cerrado"||c.control)&&(!cv||c.vendedor===cv)).map(([id,c])=>[id,c,avCtl(c)])
+    .filter(([,,k])=>(!cd||k.fecha>=cd)&&(!ch||k.fecha<=ch)).sort((a,b)=>b[2].fecha.localeCompare(a[2].fecha)||a[1].vendedor.localeCompare(b[1].vendedor));
+  const nSel=ctls.filter(([id])=>selC.has(id)).length;
+  const pCtl=`${desk?"":`<div class="acc" style="margin-bottom:8px"><button class="btn sm" id="avCtlVolver">← Autoventa</button></div>`}<div class="sec" style="margin-top:0">Controles de carga</div>
+    <div class="acc av-filtro"><select id="avCv"><option value="">Todos los vendedores</option>${vs.map(x=>`<option ${x===cv?"selected":""}>${esc(x)}</option>`).join("")}</select>
+      <label>Desde <input type="date" id="avCd" value="${cd}"></label><label>Hasta <input type="date" id="avCh" value="${ch}"></label>
+      <button class="btn sm" id="avCtlMes">Este mes</button>${cd||ch||cv?`<button class="btn sm" id="avCtlLimpia">Ver todos</button>`:""}</div>
+    <div class="acc" style="margin:6px 0 10px;align-items:center"><button class="btn pri" id="avCtlImpSel" ${nSel?"":"disabled"}>Imprimir seleccionados${nSel?" ("+nSel+")":""}</button><button class="btn" id="avCtlImpTodos" ${ctls.length?"":"disabled"}>Imprimir todos los de la lista (${ctls.length})</button></div>
+    ${ctls.length?`<div class="tblw"><table class="t av-ctlt"><thead><tr><th style="width:40px"><input type="checkbox" id="avCtlAll" ${nSel&&nSel===ctls.length?"checked":""} aria-label="Seleccionar todos"></th><th>Fecha</th><th>Transportista</th><th>Matrícula</th><th class="n">Bultos</th><th class="n">Kilos</th><th class="n">Temp.</th><th>Conforme</th><th></th></tr></thead>
+      <tbody>${ctls.map(([id,c,k])=>`<tr><td><input type="checkbox" data-ctlsel="${id}" ${selC.has(id)?"checked":""} aria-label="Seleccionar"></td><td><b>${esc(fDia(k.fecha))}</b></td><td>${esc(k.trans)}</td><td>${esc(k.mat||"")}</td><td class="n">${k.bultos??""}</td><td class="n">${k.kilos??""}</td><td class="n">${k.temp!=null?esc(String(k.temp).replace(".",","))+" ºC":""}</td><td>${k.conf?"Sí":"<b class='av-mal'>No</b>"}</td><td><button class="btn sm" data-ctlver="${id}">Ver e imprimir</button></td></tr>`).join("")}</tbody></table></div>`
+      :`<div class="vacio">No hay controles de carga con estos filtros.</div>`}`;
+  app.innerHTML=`<div class="wrap">${sec==="cuadres"?pCuadres:sec==="hist"?pHist:sec==="gest"?pGest:sec==="ctl"?pCtl:pCuadres+pHist}</div>`;
   app.onclick=async e=>{const bb=e.target.closest("[data-avborra]");
     if(bb){e.stopPropagation();const id=bb.dataset.avborra,c=S.av.cuadres[id];if(!c)return;const t=avTot(c);
       $("#cOk").textContent="Borrar";const r=await confirmar("Borrar cuadre",`¿Confirmas el borrado del cuadre de ${c.vendedor}, viaje ${avViaje(c)}?`);$("#cOk").textContent="Aceptar";
@@ -1653,7 +1666,14 @@ function vAutoventa(app){
     if(b.dataset.avabrir)return avAbrir(b.dataset.avabrir);
     if(b.dataset.avnuevo){S.av.vend=b.dataset.avnuevo;LS.set("av_vend",S.av.vend);return avNuevo(S.av.vend)}
     if(b.dataset.avvend){S.av.vend=b.dataset.avvend;LS.set("av_vend",S.av.vend);render();return}
-    if(b.id==="avCtlTodos"){const l=hist.map(([,c])=>c).filter(c=>c.estado==="cerrado"||c.control).sort((a,b)=>avCtl(a).fecha.localeCompare(avCtl(b).fecha));if(!l.length)return toast("No hay controles de carga con estos filtros",true);return avImprimirCtl(l)}
+    const impC=ids=>{const l=ids.map(i=>S.av.cuadres[i]).filter(Boolean).sort((a,b)=>avCtl(a).fecha.localeCompare(avCtl(b).fecha));if(!l.length)return toast("No hay controles de carga",true);avImprimirCtl(l)};
+    if(b.id==="avIrCtl"){S.av.sec="ctl";render();scrollTo(0,0);return}
+    if(b.id==="avCtlVolver"){S.av.sec=null;render();scrollTo(0,0);return}
+    if(b.dataset.ctlver)return impC([b.dataset.ctlver]);
+    if(b.id==="avCtlImpSel")return impC(ctls.map(([id])=>id).filter(id=>selC.has(id)));
+    if(b.id==="avCtlImpTodos")return impC(ctls.map(([id])=>id));
+    if(b.id==="avCtlMes"){const h=hoy();S.av.cd=h.slice(0,8)+"01";S.av.ch=h;render();return}
+    if(b.id==="avCtlLimpia"){S.av.cd=S.av.ch=S.av.cv="";render();return}
     if(b.id==="avArts"){S.av.arts=true;render();scrollTo(0,0);return}
     if(b.id==="avNVsi"){S.av.nuevoVend=!S.av.nuevoVend;S.av.quitarV=null;render();return}
     if(b.dataset.avquitav){S.av.quitarV=b.dataset.avquitav;render();return}
@@ -1665,7 +1685,11 @@ function vAutoventa(app){
     if(b.id==="avQVsi"){const q=S.av.quitarV,i=cf.vendedores.indexOf(q);if(i>=0&&cf.vendedores.length>1)cf.vendedores.splice(i,1);S.av.quitarV=null;if(S.av.vend===q)S.av.vend=cf.vendedores[0];avGuardarCfg();toast(q+" quitado");render();return}
     if(b.id==="avNVok"){const n=$("#avNV").value.trim();if(!n)return;if(!cf.vendedores.includes(n))cf.vendedores.push(n);S.av.vend=n;avGuardarCfg();toast(n+" añadido");render();return}
   };
-  app.onchange=e=>{const id=e.target.id;if(id==="avFv")S.av.fv=e.target.value;else if(id==="avFd")S.av.fd=e.target.value;else if(id==="avFh")S.av.fh=e.target.value;else return;render()};
+  app.onchange=e=>{const id=e.target.id;
+    if(id==="avCv"||id==="avCd"||id==="avCh"){S.av["c"+id.slice(3).toLowerCase()]=e.target.value;render();return}
+    if(e.target.dataset.ctlsel){const i=e.target.dataset.ctlsel;e.target.checked?selC.add(i):selC.delete(i);render();return}
+    if(id==="avCtlAll"){if(e.target.checked)ctls.forEach(([i])=>selC.add(i));else selC.clear();render();return}
+    if(id==="avFv")S.av.fv=e.target.value;else if(id==="avFd")S.av.fd=e.target.value;else if(id==="avFh")S.av.fh=e.target.value;else return;render()};
 }
 
 /* ---- artículos que van en la hoja de autoventa ---- */
