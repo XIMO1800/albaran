@@ -161,7 +161,7 @@ dialog::backdrop{background:rgba(29,22,24,.5)}
 .pc3 .x{margin-left:auto}
 .mvb{width:40px;height:38px;border:1.5px solid var(--line);background:#fff;border-radius:8px;font-weight:700;cursor:pointer;color:var(--brand)}
 .mvb:disabled{opacity:.3}
-.tog{border-radius:99px;padding:6px 12px;font-weight:700;border:1.5px solid var(--ok);background:#e1f2e7;color:var(--ok);cursor:pointer;font-size:14px}
+.tog{border-radius:99px;padding:6px 12px;font-weight:700;border:1.5px solid var(--ok);background:#e1f2e7;color:var(--ok);cursor:pointer;font-size:14px;white-space:nowrap}
 .tog.off{border-color:var(--line);background:#fff;color:var(--muted)}
 /* escritorio: mismo marco y medidas que Recogida de leche */
 #side{display:none}
@@ -507,7 +507,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "93 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "94 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -618,9 +618,9 @@ function renderHeader(){
   $("#nav").innerHTML=tabs.map(t=>`<button data-tab="${t[0]}" class="${S.tab===t[0]&&(!S.scr||(t[0]==="nuevo"&&S.scr.t==="editar"&&!S.scr.ped.id))?"on":""}">${t[1]}${t[2]?`<span class="badge">${t[2]}</span>`:""}</button>`).join("");
 }
 // Si se sale de «Artículos y precios» con cambios sin guardar, se avisa
-async function salirPrecios(){if(S.tab!=="precios"||!S.precEd||JSON.stringify(S.precEd)===JSON.stringify(S.productos))return true;
+async function salirPrecios(){if(S.tab!=="precios"||!S.precEd||!precHayCambios())return true;
   const c=await confirmar("Cambios sin guardar","Has cambiado artículos y precios y no lo has guardado. ¿Salir sin guardar?");
-  if(c.ok){S.precEd=null;S.precAviso=0;return true}return false}
+  if(c.ok){S.precEd=null;S.precAv=null;S.precAviso=0;return true}return false}
 $("#nav").addEventListener("click",async e=>{const b=e.target.closest("[data-tab]");if(!b)return;if(!(await salirPrecios()))return;S.tab=b.dataset.tab;S.scr=null;S.sel.clear();render();scrollTo(0,0)});
 document.addEventListener("click",async e=>{ if(e.target.id==="bSalir"){const c=await confirmar("Salir","¿Cerrar la sesión en este móvil?");if(c.ok){S.pin="";S.user=null;LS.del("ped_pin");render()}} });
 
@@ -1113,70 +1113,83 @@ function exportarCsv(albs,nombre){
 }
 
 /* =================== artículos y precios (oficina / admin) =================== */
+// ¿Va en la hoja de autoventa? (con los cambios pendientes de guardar)
+const precEsAdmin=()=>S.rol==="ADMIN";
+function precEnAv(c){const a=S.precAv||{add:new Set(),del:new Set()},en=new Set(avCfg().arts);return a.add.has(c)||(en.has(c)&&!a.del.has(c))}
+function precHayCambios(){return JSON.stringify(S.precEd)!==JSON.stringify(S.productos)||!!(S.precAv&&(S.precAv.add.size||S.precAv.del.size))}
 function vPrecios(app){
-  if(!S.precEd){S.precEd=clone(S.productos);
+  if(precEsAdmin()&&!S.av.cargado&&!S.av.cargando)avCargar().then(()=>{if(S.tab==="precios")render()});
+  if(!S.precEd){S.precEd=clone(S.productos);S.precAv={add:new Set(),del:new Set()};
     if(!hayPorcionMarcada(S.precEd)){const n=S.precEd.filter(pareceporcion);n.forEach(p=>{p.g=base(p.g)+"P"});S.precAviso=n.length}}
   const P=S.precEd, desk=esDesk(), lista=ordenProds(P);
   const idx=p=>P.indexOf(p);
   const vecino=(p,d)=>{const k=lista.indexOf(p)+d,q=lista[k];return q&&seccion(q,P)===seccion(p,P)?q:null};
   const selG=(p,i)=>`<select data-i="${i}" data-f="g" aria-label="Especie o grupo">${OPC_G.map(([g,t])=>`<option value="${g}"${p.g===g?" selected":""}>${t}</option>`).join("")}</select>`;
   const mov=(p,i)=>`<button class="mvb" data-mv="${i}" data-d="-1" ${vecino(p,-1)?"":"disabled"} aria-label="Subir">↑</button><button class="mvb" data-mv="${i}" data-d="1" ${vecino(p,1)?"":"disabled"} aria-label="Bajar">↓</button>`;
-  const enAv=new Set(((S.av&&S.av.config)||{}).arts||[]);
-  const tog=(p,i)=>`<button class="tog ${p.activo===false?"off":""}" data-act="${i}" title="Si sale en los pedidos de la tienda">${p.activo===false?"No activo":"Activo"}</button>${enAv.has(p.c)?` <span class="chip av-neu" title="Está en la hoja de autoventa">autoventa</span>`:""}`;
+  const avOk=precEsAdmin()&&S.av.cargado;
+  const tog=(p,i)=>`<button class="tog ${p.activo===false?"off":""}" data-act="${i}" title="Si sale en los pedidos de la tienda">${desk?"":"Tienda: "}${p.activo===false?"No activo":"Activo"}</button>`;
+  const togAv=p=>!precEsAdmin()?"":!avOk?`<span class="muted">…</span>`:!String(p.c).trim()?"":`<button class="tog ${precEnAv(p.c)?"":"off"}" data-avtog="${esc(p.c)}" title="Si va en la hoja de autoventa">${desk?"":"Autoventa: "}${precEnAv(p.c)?"Activo":"No activo"}</button>`;
   let h="",k0=null;
   if(desk){
     for(const p of lista){const i=idx(p),k=seccion(p,P);
-      if(k!==k0){h+=`<tr><td colspan="9" style="padding:0;border:0"><div class="grupo s-${k}" style="margin:0;border-radius:0">${seccTit(k)}</div></td></tr>`;k0=k}
+      if(k!==k0){h+=`<tr><td colspan="10" style="padding:0;border:0"><div class="grupo s-${k}" style="margin:0;border-radius:0">${seccTit(k)}</div></td></tr>`;k0=k}
       h+=`<tr class="pr" style="${estiloG(p.g)}"><td style="white-space:nowrap">${mov(p,i)}</td>
         <td class="cc"><span class="dot"></span><input class="pcode" value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" style="width:7.5em"></td>
-        <td><input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre" style="width:100%;min-width:11em"></td>
+        <td><input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre" style="width:100%;min-width:10em"></td>
+        <td>${tog(p,i)}</td>${precEsAdmin()?`<td>${togAv(p)}</td>`:""}
         <td class="tsel">${selG(p,i)}</td>
         <td class="n"><input class="num" inputmode="decimal" value="${esc(dec(p.p))}" data-i="${i}" data-f="p" aria-label="Precio €/kg" style="width:5em"></td>
         <td class="n"><input class="num" inputmode="numeric" value="${p.b}" data-i="${i}" data-f="b" aria-label="Piezas por bandeja" style="width:3.5em"></td>
         <td class="n"><input class="num" inputmode="decimal" value="${p.pm?esc(dec(p.pm)):""}" data-i="${i}" data-f="pm" aria-label="Peso medio por pieza en kg" placeholder="—" style="width:4.5em"></td>
-        <td>${tog(p,i)}</td><td><button class="x" data-del="${i}" aria-label="Borrar producto">×</button></td></tr>`}
-    h=`<div class="tblw"><table class="t"><thead><tr><th>Orden</th><th>Código</th><th>Nombre</th><th>Especie</th><th class="n">€/kg</th><th class="n">Pz/<br>bandeja</th><th class="n">Kg/pz<br>aprox.</th><th>Tienda</th><th></th></tr></thead><tbody>${h}</tbody></table></div>`;
+        <td><button class="x" data-del="${i}" aria-label="Borrar producto">×</button></td></tr>`}
+    h=`<div class="tblw"><table class="t"><thead><tr><th>Orden</th><th>Código</th><th>Nombre</th><th>Tienda</th>${precEsAdmin()?"<th>Autoventa</th>":""}<th>Especie</th><th class="n">€/kg</th><th class="n">Pz/<br>bandeja</th><th class="n">Kg/pz<br>aprox.</th><th></th></tr></thead><tbody>${h}</tbody></table></div>`;
   } else {
     for(const p of lista){const i=idx(p),k=seccion(p,P);
       if(k!==k0){h+=cabSecc(k);k0=k}
       h+=`<div class="pcard ${p.activo===false?"off":""}" style="${estiloG(p.g)}">
         <div class="pc1"><input class="pcode" value="${esc(p.c)}" data-i="${i}" data-f="c" aria-label="Código" placeholder="Código"><input value="${esc(p.n)}" data-i="${i}" data-f="n" aria-label="Nombre" placeholder="Nombre"></div>
         <div class="pc2"><label>Especie ${selG(p,i)}</label><label>€/kg<input class="num" inputmode="decimal" value="${esc(dec(p.p))}" data-i="${i}" data-f="p"></label><label>Pz/band.<input class="num" inputmode="numeric" value="${p.b}" data-i="${i}" data-f="b"></label><label>Kg/pz aprox.<input class="num" inputmode="decimal" value="${p.pm?esc(dec(p.pm)):""}" data-i="${i}" data-f="pm" placeholder="—"></label></div>
-        <div class="pc3">${tog(p,i)}${mov(p,i)}<button class="x" data-del="${i}" aria-label="Borrar producto">×</button></div></div>`}
+        <div class="pc3">${tog(p,i)}${togAv(p)}${mov(p,i)}<button class="x" data-del="${i}" aria-label="Borrar producto">×</button></div></div>`}
   }
   app.innerHTML=`<div class="wrap">
     ${S.precAviso?`<div class="aviso">He marcado como «Porción …» ${S.precAviso} artículo(s) cuyo código lleva P en la 3ª letra. Revísalos y pulsa «Guardar artículos y precios» para que quede fijado.</div>`:""}
-    <p class="nota">Precio €/kg que ve la tienda y sale en el albarán. «Pz/bandeja» es cuántas piezas lleva una bandeja, o cuántas cuñas lleva una bolsa en las porciones (1 si se pide suelto). «Kg/pz aprox.» es el peso medio de una pieza o cuña: si en fábrica no se pesa, el pedido y el albarán calculan los kilos con él. Para que un artículo vaya al bloque de <b>porciones</b>, elige en «Especie» la opción «Porción mezcla», «Porción oveja», «Porción D.O.» o «Porción cabra»; mantiene el color de su especie. Con ↑ ↓ cambias el orden dentro de cada grupo; es el orden en que lo ven la tienda y quien prepara. Nada se guarda hasta pulsar «Guardar».</p>
+    ${precEsAdmin()?`<div class="av-fases" style="margin-bottom:10px"><button class="on">Artículos · tienda y autoventa</button><button id="bOrdAv">Orden de la hoja de autoventa</button></div>
+    <p class="nota">Aquí están <b>todos los artículos</b>. En cada uno eliges si sale en <b>Tienda</b> (pedidos de la tienda) y si va en <b>Autoventa</b> (hoja del cuadre). Con ↑ ↓ ordenas cómo lo ve la tienda; el orden de la hoja de autoventa se cambia en la otra pestaña. Nada se guarda hasta pulsar «Guardar».</p>`:""}<p class="nota">Precio €/kg que ve la tienda y sale en el albarán. «Pz/bandeja» es cuántas piezas lleva una bandeja, o cuántas cuñas lleva una bolsa en las porciones (1 si se pide suelto). «Kg/pz aprox.» es el peso medio de una pieza o cuña: si en fábrica no se pesa, el pedido y el albarán calculan los kilos con él. Para que un artículo vaya al bloque de <b>porciones</b>, elige en «Especie» la opción «Porción mezcla», «Porción oveja», «Porción D.O.» o «Porción cabra»; mantiene el color de su especie. Con ↑ ↓ cambias el orden dentro de cada grupo; es el orden en que lo ven la tienda y quien prepara. Nada se guarda hasta pulsar «Guardar».</p>
     ${h}</div>`;
-  const cambios=JSON.stringify(P)!==JSON.stringify(S.productos);
+  const cambios=precHayCambios();
   barra(desk?`<span class="muted">${cambios?"<b style=\"color:var(--warn)\">Hay cambios sin guardar</b>":P.length+" artículos"}</span><div class="acc"><button class="btn" id="bAddP">+ Nuevo artículo</button><button class="btn" id="bDesh" ${cambios?"":"disabled"}>Deshacer cambios</button><button class="btn pri" id="bGP" ${cambios?"":"disabled"}>Guardar artículos y precios</button></div>`
     :`<div class="b3"><button class="btn" id="bAddP">+ Nuevo</button><button class="btn" id="bDesh" ${cambios?"":"disabled"}>Deshacer</button><button class="btn pri" id="bGP" ${cambios?"":"disabled"}>Guardar</button></div>`);
   const marcaCambios=()=>{const g=$("#bGP"),d=$("#bDesh");if(g){g.disabled=false;d.disabled=false;const m=$("#barraIn .muted");if(m)m.innerHTML='<b style="color:var(--warn)">Hay cambios sin guardar</b>'}};
   app.oninput=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null||f==="g")return;P[i][f]=f==="c"?e.target.value.trim():e.target.value;marcaCambios()};
   app.onchange=e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(i==null)return;if(f==="g"){P[i].g=e.target.value;render()}else if(f==="c")render()};
   app.onclick=async e=>{const t=e.target.closest("button");if(!t)return;
-    if(t.dataset.act!=null){P[t.dataset.act].activo=P[t.dataset.act].activo===false;render()}
+    if(t.id==="bOrdAv"){if(!(await salirPrecios()))return;S.tab="autoventa";S.av.sec="arts";S.av.arts=true;S.av.cur=null;render();scrollTo(0,0);return}
+    if(t.dataset.avtog!=null){const c=t.dataset.avtog,a=S.precAv,en=new Set(avCfg().arts);
+      if(precEnAv(c)){if(a.add.has(c))a.add.delete(c);else a.del.add(c)}else{if(en.has(c))a.del.delete(c);else a.add.add(c)}const y=scrollY;render();scrollTo(0,y);return}
+    if(t.dataset.act!=null){P[t.dataset.act].activo=P[t.dataset.act].activo===false;const y=scrollY;render();scrollTo(0,y)}
     else if(t.dataset.mv!=null){const a=P[t.dataset.mv],b=vecino(a,+t.dataset.d);if(b){const ia=idx(a),ib=idx(b);P[ia]=b;P[ib]=a;render()}}
     else if(t.dataset.del!=null){const c=await confirmar("Borrar artículo","¿Borrar "+P[t.dataset.del].c+"? Si solo quieres que la tienda no lo vea, pulsa «Activo» para dejarlo «No activo».");if(c.ok){P.splice(+t.dataset.del,1);render()}}};
   $("#bAddP").onclick=()=>{P.push({c:"",n:"",g:"X",p:0,b:1,pm:0,activo:true});render();const ins=app.querySelectorAll('[data-f="c"]');for(const x of ins)if(!x.value){x.scrollIntoView({block:"center"});x.focus();break}};
-  $("#bDesh").onclick=()=>{S.precEd=null;S.precAviso=0;render()};
+  $("#bDesh").onclick=()=>{S.precEd=null;S.precAv=null;S.precAviso=0;render()};
   $("#bGP").onclick=async()=>{
     const vacios=P.filter(p=>!String(p.c).trim());if(vacios.length)return toast("Hay un artículo sin código",true);
     const c=await confirmar("Guardar artículos y precios","Los pedidos y albaranes nuevos usarán estos precios y este orden.");if(!c.ok)return;
-    try{const j=await api("guardarProductos",{productos:ordenProds(P).map(p=>({...p,p:num(p.p),b:num(p.b),pm:num(p.pm)}))});S.productos=j.productos;S.precEd=clone(j.productos);S.precAviso=0;toast("Guardado");render()}
+    try{if(JSON.stringify(P)!==JSON.stringify(S.productos)){const j=await api("guardarProductos",{productos:ordenProds(P).map(p=>({...p,p:num(p.p),b:num(p.b),pm:num(p.pm)}))});S.productos=j.productos}
+      const a=S.precAv;if(a&&(a.add.size||a.del.size)){const cf=avCfg();cf.arts=cf.arts.filter(c=>!a.del.has(c)).concat([...a.add].filter(c=>!cf.arts.includes(c)));avGuardarCfg()}
+      S.precEd=clone(S.productos);S.precAv={add:new Set(),del:new Set()};S.precAviso=0;toast("Guardado");render()}
     catch(err){toast(err.message,true)}};
 }
 
 /* =================== ESCRITORIO: marco tipo Recogida (barra lateral + título) =================== */
 const SIDE=[["pedidos","Pedidos","Nuevos, preparando y preparados"],["historial","Histórico","Lo pedido frente a lo servido"],["difs","Diferencias","Pedido frente a lo enviado"],["albaranes","Albaranes","Emitidos y reimpresión"],
-  ["exportar","Programa de gestión","Envío de albaranes"],["precios","Artículos y precios","Catálogo, orden y precios"],["nuevo","Nuevo pedido","Meter un pedido a mano"]];
+  ["exportar","Programa de gestión","Envío de albaranes"],["precios","Artículos y precios","Tienda y autoventa, orden y precios"],["nuevo","Nuevo pedido","Meter un pedido a mano"]];
 function marcoDesk(){
   const sd=$("#side"), on=document.body.classList.contains("desk");
   if(!on){sd.innerHTML="";return}
   const n=e=>S.pedidos.filter(p=>p.estado===e).length, badge={pedidos:n("ENVIADO")+n("PREPARADO")};
   sd.innerHTML=`<div class="stop"><img src="${LOGO}" alt="Quesos El Hidalgo"><small>${esc(S.user)} · ${S.rol==="ADMIN"?"Administración":"Oficina"} · v${VERSION.split(" ")[0]}</small></div><div class="side-t">${S.rol==="ADMIN"?"Tienda y autoventa":"Pedidos tienda"}</div>
     <div class="sgrp"><div class="lgrp-s">Tienda</div><nav class="snav">${SIDE.map(([k,t,sub])=>`<button data-side="${k}" class="${S.tab===k?"on":""}">${t}${badge[k]?`<span class="badge">${badge[k]}</span>`:""}<small>${sub}</small></button>`).join("")}</nav></div>
-    ${S.rol==="ADMIN"?`<div class="sgrp sgrp-av"><div class="lgrp-s">Autoventa</div><nav class="snav">${[["cuadres","Cuadres de camiones","Viaje en curso de cada vendedor"],["hist","Histórico de cuadres","Viajes cerrados y controles"],["gest","Gestión de vendedores y camiones","Altas, bajas y matrículas"],["arts","Gestión de artículos","Artículos de la hoja y su orden"]].map(([k,t,sub])=>`<button data-side="autoventa" data-avsec="${k}" class="${S.tab==="autoventa"&&(S.av.sec||"cuadres")===k?"on":""}">${t}<small>${sub}</small></button>`).join("")}</nav></div>`:""}
+    ${S.rol==="ADMIN"?`<div class="sgrp sgrp-av"><div class="lgrp-s">Autoventa</div><nav class="snav">${[["cuadres","Cuadres de camiones","Viaje en curso de cada vendedor"],["hist","Histórico de cuadres","Viajes cerrados y controles"],["gest","Gestión de vendedores y camiones","Altas, bajas y matrículas"],["arts","Gestión de artículos","Orden de la hoja y pesos"]].map(([k,t,sub])=>`<button data-side="autoventa" data-avsec="${k}" class="${S.tab==="autoventa"&&(S.av.sec||"cuadres")===k?"on":""}">${t}<small>${sub}</small></button>`).join("")}</nav></div>`:""}
     <div style="flex:1"></div><div class="sbot"><button class="navb" id="sideAct">Actualizar</button><button class="navb" id="sideSalir">Salir</button></div>`;
   {const h=$("#hdr");if(h&&h.offsetHeight)sd.style.setProperty("--hdrH",h.offsetHeight+"px");sd.scrollTop=0}
   if(!marcoDesk.ok){marcoDesk.ok=1;const re=()=>{const h=$("#hdr"),d=$("#side");if(h&&d&&h.offsetHeight)d.style.setProperty("--hdrH",h.offsetHeight+"px")};if(document.fonts)document.fonts.ready.then(re);addEventListener("resize",re);setTimeout(re,300)}
@@ -1631,7 +1644,8 @@ function vAvArts(app){
   const opt=b=>`<select id="avPeso-${b}"><option value="">— ninguno —</option>${ordenProds(S.productos).filter(p=>en.has(p.c)).map(p=>`<option value="${esc(p.c)}" ${cf.peso[b]===p.c?"selected":""}>${esc(p.c)} · ${esc(p.n)}</option>`).join("")}</select>`;
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="justify-content:space-between;align-items:center">${esDesk()&&S.av.sec==="arts"?"<span></span>":`<button class="btn sm" id="avArtV">← Autoventa</button>`}<span class="muted" id="avSt"></span></div>
-    <p class="nota">Marca los artículos que llevan los camiones; salen en la hoja del cuadre en el orden de abajo («Orden en la hoja de cuadre»), que solo afecta al cuadre: en pedidos y precios se sigue usando el orden del catálogo. Si falta alguno, créalo en «Artículos y precios» y ponlo «Oculto»: la tienda no lo verá pero aquí sí. Los precios no se usan en el cuadre.</p>
+    <div class="av-fases" style="margin-bottom:10px"><button id="avIrArts">Artículos · tienda y autoventa</button><button class="on">Orden de la hoja de autoventa</button></div>
+    <p class="nota">Orden en que salen los artículos en la hoja del cuadre; solo afecta al cuadre (la tienda usa el suyo). Qué artículos van en autoventa lo eliges en la pestaña «Artículos», junto a la tienda; también puedes marcarlos abajo. Los artículos nuevos se crean en «Artículos».</p>
     <div class="card"><div class="sec" style="margin-top:0">Orden en la hoja de cuadre</div>
       <p class="muted" style="margin:0 0 8px">Para mover uno lejos: <b>toca su nombre</b> y luego <b>toca el artículo</b> en cuyo sitio quieres ponerlo. O escribe directamente el número de posición. ↑ ↓ para ajustes de uno en uno.</p>
       ${S.av.ordSel!=null&&cf.arts[S.av.ordSel]?`<div class="av-movaviso">Moviendo <b>${esc(cf.arts[S.av.ordSel])}</b>: toca dónde ponerlo. <button class="btn sm" id="avOrdNo">Cancelar</button></div>`:""}
@@ -1655,6 +1669,7 @@ function vAvArts(app){
     const b=e.target.closest("button");if(!b)return;
     if(b.id==="avOrdNo"){S.av.ordSel=null;repinta();return}
     if(b.id==="avArtV"){S.av.arts=false;S.av.ordSel=null;render();scrollTo(0,0);return}
+    if(b.id==="avIrArts"){S.av.arts=false;S.av.ordSel=null;S.tab="precios";S.scr=null;render();scrollTo(0,0);return}
     if(b.dataset.avmv!=null){const a=+b.dataset.avmv,z=a+(+b.dataset.d);if(z>=0&&z<cf.arts.length){[cf.arts[a],cf.arts[z]]=[cf.arts[z],cf.arts[a]];avGuardarCfg();const y=scrollY;render();scrollTo(0,y)}return}
     if(b.dataset.avquita){const i=cf.arts.indexOf(b.dataset.avquita);if(i>=0){cf.arts.splice(i,1);S.av.ordSel=null;avGuardarCfg();toast(b.dataset.avquita+" quitado de la hoja")}repinta();return}
     if(b.id==="avQuitaFuera"){const n=fuera.length;cf.arts=cf.arts.filter(c=>prod(c));S.av.ordSel=null;avGuardarCfg();toast(n+" quitado(s) de la hoja");repinta();return}
