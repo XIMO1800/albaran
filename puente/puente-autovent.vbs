@@ -72,16 +72,17 @@ Next
 For i = 0 To UBound(lista)
   nom = lista(i)
   Set f = fso.GetFile(ORIGEN & "\" & nom)
-  If True Then
-    If True Then
       If Sube(f.Path, f.Name) Then
         dest = env & "\" & f.Name
         On Error Resume Next
         If fso.FileExists(dest) Then fso.DeleteFile dest, True
         fso.MoveFile f.Path, dest
-        If Err.Number <> 0 Then Apunta "AVISO " & f.Name & " subido pero no se pudo mover a ENVIADOS: " & Err.Description: Err.Clear Else Apunta "PDA SUBIDO  " & f.Name
+        If Err.Number <> 0 Then
+          Apunta "AVISO " & nom & " subido pero no se pudo mover a ENVIADOS: " & Err.Description
+          Err.Clear
+        Else
+          Apunta "PDA SUBIDO  " & nom
+        End If
         On Error GoTo 0
       End If
-    End If
-  End If
 Next
