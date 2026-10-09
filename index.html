@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "110 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "111 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1563,7 +1563,7 @@ const avDiaV=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isN
 // Un cuadre es un viaje: empieza el día de su fecha (sale cargado) y termina el día que se cuadra y se cierra.
 function avHasta(c){if(c.estado!=="cerrado")return null;if(c.cierre)return c.cierre;let r=null;Object.values(S.av.cuadres).forEach(x=>{if(x!==c&&x.vendedor===c.vendedor&&x.fecha&&c.fecha&&x.fecha>c.fecha&&(!r||x.fecha<r))r=x.fecha});return r}
 const avDM=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.getDate()+"/"+(d.getMonth()+1)};
-function avViaje(c){const h=avHasta(c);return `${avDiaV(c.fecha?avSumaDia(c.fecha,1):"")} → ${h?avDiaV(h):c.estado==="cerrado"?"?":"en ruta"}`}
+function avViaje(c){const h=avHasta(c);return `${avDiaV(avIni(c.fecha))} → ${h?avDiaV(h):c.estado==="cerrado"?"?":"en ruta"}`}
 // Al cerrar un viaje, el siguiente empieza con lo que descargó y lo que cargó ese día
 function avBase(a,c){c.lineas=c.lineas||{};avRefs(a).forEach(k=>{const x=avCalc(avLin(a,k));if(!x.sale){if(c.lineas[k]){delete c.lineas[k].ll;delete c.lineas[k].en}return}
     const l=c.lineas[k]||(c.lineas[k]={});const ll=x.sale-(x.ca||0);if(ll)l.ll=ll;else delete l.ll;if(x.ca)l.en=x.ca;else delete l.en});
@@ -1765,6 +1765,8 @@ function avPdaLinea(c,k){if(!c.pda)return;const en=c.pda.lin[k],l=c.lineas[k];
 function avQuitarPDA(c){delete c.pda;Object.values(c.lineas||{}).forEach(l=>{if(l.alP){l.al=null;delete l.alP}});
   ["grande","mini"].forEach(b=>{const pp=c.pesos&&c.pesos[b];if(pp&&pp.albKgP){pp.albKg=null;delete pp.albKgP}})}
 const avSumaDia=(iso,n)=>{const d=new Date(iso+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+// Primer día de ventas del viaje: el siguiente día laborable al último cuadre (sábado y domingo no cuentan: tras el viernes, arranca el lunes)
+function avIni(fecha){if(!fecha)return"";let d=avSumaDia(fecha,1);while([0,6].includes(new Date(d+"T12:00:00").getDay()))d=avSumaDia(d,1);return d}
 const avFc=iso=>iso?iso.slice(8,10)+"/"+iso.slice(5,7):"";
 function avPdaListaHtml(){const L=S.av.pdaLista;if(!L)return"";
   if(L==="cargando")return `<div class="muted" style="width:100%">Buscando en la carpeta AUTOVENT…</div>`;
@@ -1774,9 +1776,9 @@ function avPdaListaHtml(){const L=S.av.pdaLista;if(!L)return"";
 const avPdaBotones=pri=>`<div class="acc"><button class="btn sm ${pri?"pri":""}" id="avPdaNube">${pri?"Coger de AUTOVENT":"Otro"}</button>${pri?"":`<button class="btn sm del" id="avPdaQuita">Quitar</button>`}</div>`;
 function avPdaCard(c){const P=c.pda;
   if(!P)return `<div class="card av-pda"><b>Albaranes PDA</b>${avPdaBotones(true)}${avPdaListaHtml()}</div>`;
-  const av=[],quien=AV_TERM[P.terminal],ini=avSumaDia(c.fecha,1),fin=c.cierre||hoy();
+  const av=[],quien=AV_TERM[P.terminal],ini=avIni(c.fecha),fin=c.cierre||hoy();
   if(quien&&avNorm(quien)!==avNorm(c.vendedor))av.push(`Este resumen es de ${quien}, no de ${esc(c.vendedor)}`);
-  if(P.desde&&(P.desde!==ini||P.hasta!==fin))av.push(`Este viaje va del ${avFc(ini)} al ${avFc(fin)}`);
+  if(P.desde&&(P.desde<=c.fecha||P.desde>ini||P.hasta!==fin))av.push(`Este viaje va del ${avFc(ini)} al ${avFc(fin)}`);
   if(P.total&&(P.total.pz!==P.suma.pz||Math.abs(P.total.kg-P.suma.kg)>0.05)) /* el programa redondea cada línea: unos gramos de diferencia no cuentan */av.push(`La suma de líneas no da el total del papel`);
   const fuera=Object.keys(P.lin).filter(k=>!avCfg().arts.includes(k));if(fuera.length)av.push(`No están en autoventa: ${fuera.map(esc).join(", ")}`);
   return `<div class="card av-pda ok"><div><b>Albaranes PDA · ${esc(quien||"terminal "+(P.terminal||"?"))} · del ${avFc(P.desde)} al ${avFc(P.hasta)}</b> <small class="muted">${esc(P.archivo||"")}</small>${av.map(t=>`<div class="pav mal">⚠ ${t}</div>`).join("")}</div>
@@ -1845,7 +1847,7 @@ function vAvCuadre(app){
   else cuerpo=avHoja(c);
   app.innerHTML=`<div class="wrap av-wrap">
     <div class="acc" style="justify-content:space-between;align-items:center"><button class="btn sm" id="avVolver">← Autoventa</button><span class="muted" id="avSt" style="font-size:13px">${Object.keys(S.av.pend).length?"Pendiente de guardar":"Guardado en la hoja"}</span></div>
-    <div class="av-cab"><b>${esc(c.vendedor)}</b><span class="muted">último cuadre</span><input type="date" id="avFecha" value="${c.fecha||""}" aria-label="Día del último cuadre">${c.fecha?`<span class="av-ventas">ventas del ${avDM(avSumaDia(c.fecha,1))} al ${avDM(c.cierre||avHasta(c)||hoy())}</span>`:""}${cerr?`<span class="chip e-PREPARADO">Cerrado</span>`:`<span class="chip e-PREPARANDO">Abierto</span>`}</div>
+    <div class="av-cab"><b>${esc(c.vendedor)}</b><span class="muted">último cuadre</span><input type="date" id="avFecha" value="${c.fecha||""}" aria-label="Día del último cuadre">${c.fecha?`<span class="av-ventas">ventas del ${avDM(avIni(c.fecha))} al ${avDM(c.cierre||avHasta(c)||hoy())}</span>`:""}${cerr?`<span class="chip e-PREPARADO">Cerrado</span>`:`<span class="chip e-PREPARANDO">Abierto</span>`}</div>
     <div class="av-fases cq">${F.map(([k,t])=>`<button data-avf="${k}" class="${S.av.fase===k?"on":""}">${t}</button>`).join("")}</div>
     ${cuerpo}</div>`;
   avRefrescar();
@@ -2072,7 +2074,7 @@ function avImprimir(c){
   const pes=(n,w)=>`<tr><td>${n}</td><td class="n">${avKg(w.total)}</td><td class="n">${w.d.n?avKg(w.d.neto):""}</td><td class="n"><b>${avKg(w.vend)}</b></td><td class="n">${avKg(w.alb)}</td><td class="n">${avDifKg(w.difG)}</td><td class="n"><b>${avKg(w.sale)}</b></td></tr>`;
   // todo en una hoja A4: cuantas más filas, letra y separación más pequeñas
   const N=filas.split("<tr>").length-1,fs=N>40?8:N>34?9:N>28?9.5:N>20?10:11,pad=N>40?.4:N>34?.7:N>28?.85:N>20?1:1.3;
-  const ven=c.fecha?`ventas del ${avDM(avSumaDia(c.fecha,1))} al ${avDM(c.cierre||avHasta(c)||hoy())}`:"";
+  const ven=c.fecha?`ventas del ${avDM(avIni(c.fecha))} al ${avDM(c.cierre||avHasta(c)||hoy())}`:"";
   $("#imp").innerHTML=`<section class="copia cuad"><style>#imp .cuad td,#imp .cuad th{padding:${pad}mm 1.6mm;font-size:${fs}pt;line-height:1.15}#imp .cuad table{page-break-inside:avoid}</style>${cabecera("CUADRE AUTOVENTA","",esc(c.vendedor)+" · "+ven)}
     <table><thead><tr><th>Artículo</th><th>Llevaba</th><th>Descarga</th><th>Vendidos</th><th>Albarán</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>${filas}</tbody>
     <tfoot><tr><td>TOTAL</td><td class="n">${t.lleva}</td><td class="n">${t.de}</td><td class="n">${t.vend}</td><td></td><td class="n">${t.ca}</td><td class="n">${t.sale}</td></tr></tfoot></table>
