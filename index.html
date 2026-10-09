@@ -517,7 +517,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "103 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "104 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -2044,10 +2044,13 @@ function avImprimir(c){
   const filas=avRefs(c).filter(k=>avCalc(avLin(c,k)).usada).map(k=>{const x=avCalc(avLin(c,k)),d=x.al===null?"":x.dif===0?"✓":(x.dif>0?"+":"")+x.dif;
     return `<tr><td><b>${esc(nomDe(k))}</b></td><td class="n">${x.lleva}</td><td class="n">${x.de??""}</td><td class="n"><b>${x.vend??""}</b></td><td class="n">${d}</td><td class="n">${x.ca||""}</td><td class="n"><b>${x.sale??""}</b></td></tr>`}).join("");
   const pes=(n,w)=>`<tr><td>${n}</td><td class="n">${avKg(w.total)}</td><td class="n">${w.d.n?avKg(w.d.neto):""}</td><td class="n"><b>${avKg(w.vend)}</b></td><td class="n">${avKg(w.alb)}</td><td class="n">${avDifKg(w.difG)}</td><td class="n"><b>${avKg(w.sale)}</b></td></tr>`;
-  $("#imp").innerHTML=`<section class="copia">${cabecera("CUADRE AUTOVENTA","",esc(c.vendedor)+" · viaje "+avViaje(c))}
+  // todo en una hoja A4: cuantas más filas, letra y separación más pequeñas
+  const N=filas.split("<tr>").length-1,fs=N>40?8:N>34?9:N>28?9.5:N>20?10:11,pad=N>40?.4:N>34?.7:N>28?.85:N>20?1:1.3;
+  const ven=c.fecha?`ventas del ${avDM(avSumaDia(c.fecha,1))} al ${avDM(c.cierre||avHasta(c)||hoy())}`:"";
+  $("#imp").innerHTML=`<section class="copia cuad"><style>#imp .cuad td,#imp .cuad th{padding:${pad}mm 1.6mm;font-size:${fs}pt;line-height:1.15}#imp .cuad table{page-break-inside:avoid}</style>${cabecera("CUADRE AUTOVENTA","",esc(c.vendedor)+" · "+ven)}
     <table><thead><tr><th>Artículo</th><th>Llevaba</th><th>Descarga</th><th>Vendidos</th><th>Albarán</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>${filas}</tbody>
     <tfoot><tr><td>TOTAL</td><td class="n">${t.lleva}</td><td class="n">${t.de}</td><td class="n">${t.vend}</td><td></td><td class="n">${t.ca}</td><td class="n">${t.sale}</td></tr></tfoot></table>
-    <table style="margin-top:4mm"><thead><tr><th>Peso (kg)</th><th>Llevaba</th><th>Descarga</th><th>Vendido</th><th>Albarán</th><th>Dif.</th><th>Sale con</th></tr></thead><tbody>${pes("Aceite grande",g)}${pes("Minis",m)}</tbody></table>
+    <table style="margin-top:3mm"><thead><tr><th>Peso (kg)</th><th>Llevaba</th><th>Descarga</th><th>Vendido</th><th>Albarán</th><th>Dif.</th><th>Sale con</th></tr></thead><tbody>${pes("Aceite grande",g)}${pes("Minis",m)}</tbody></table>
     ${c.nota?`<div class="pobs"><b>Notas:</b> ${esc(c.nota)}</div>`:""}</section>`;
   imprimir("A4 portrait","10mm");
 }
