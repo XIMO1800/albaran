@@ -401,6 +401,10 @@ textarea.conObs{background:#fff35c;border:3px solid #e2b900;font-weight:700;font
 .av-cab b{font-family:var(--display);font-size:28px;font-weight:700;color:var(--brand)}
 .av-cab input{width:auto;font-size:15px;padding:6px 8px}
 .av-fases{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px}
+/* Dentro de un cuadre: la cabecera general se va al bajar y se quedan fijas las pestañas del cuadre (y bajo ellas los títulos de la tabla) */
+body.en-cuadre header{position:relative}
+body.en-cuadre .av-fases.cq{position:sticky;top:0;z-index:6;background:var(--bg);margin:0 -16px 10px;padding:6px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+body.en-cuadre .av-t thead th{top:var(--fasAlto,56px)}
 .av-fases button{flex:1 0 auto;border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:9px 12px;font-family:var(--display);font-size:18px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
 .av-fases button.on{background:var(--brand);border-color:var(--brand);color:#fff}
 .av-tw{overflow:clip;background:var(--card);border:1px solid var(--line);border-radius:12px}
@@ -435,8 +439,8 @@ tr.av-nada th{color:var(--muted)}
 .av-cq button{min-width:46px;height:40px;margin:3px 2px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:18px;font-weight:800;color:#c9bcbe;cursor:pointer}
 .av-cq .av-sí.on{background:#1f8a4c;border-color:#1f8a4c;color:#fff}.av-cq .av-no.on{background:var(--danger);border-color:var(--danger);color:#fff;font-size:15px}
 .av-tick{width:100%;height:46px;border:0;background:none;font-size:16px;font-weight:700;color:#cbbfc1;cursor:pointer}
-.av-ok{color:var(--ok)}.av-mal{color:var(--danger)}.av-neu{color:var(--muted)}
-.chip.av-ok{background:#e1f2e7}.chip.av-mal{background:#fde4e4}.chip.av-neu{background:#ebe6e7}
+.av-ok{color:var(--ok)}.av-mal{color:var(--danger)}.av-neu{color:var(--muted)}.av-mas{color:#1f5fbf}
+.chip.av-ok{background:#e1f2e7}.chip.av-mal{background:#fde4e4}.chip.av-mas{background:#e3ecfb}.chip.av-neu{background:#ebe6e7}
 .av-pie{margin-top:12px;align-items:center}
 .nalb{color:var(--brand);font-weight:600}
 .av-peso{padding-top:0;overflow:hidden}
@@ -513,7 +517,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "102 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "103 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -633,10 +637,12 @@ document.addEventListener("click",async e=>{ if(e.target.id==="bSalir"){const c=
 /* =================== render principal =================== */
 function barra(html){const b=$("#barra");b.hidden=!html;$("#barraIn").innerHTML=html||""}
 // Alto de la cabecera fija: las tablas del cuadre se desplazan dentro de su caja para que sus títulos de columna no se pierdan
-function altoCab(){const h=$("#hdr"),b=document.querySelector(".barra");if(h&&h.offsetHeight)document.documentElement.style.setProperty("--hdrAlto",h.offsetHeight+"px");if(b)document.documentElement.style.setProperty("--barAlto",(b.hidden?0:b.offsetHeight)+"px")}
+function altoCab(){const h=$("#hdr"),b=document.querySelector(".barra");if(h&&h.offsetHeight)document.documentElement.style.setProperty("--hdrAlto",h.offsetHeight+"px");if(b)document.documentElement.style.setProperty("--barAlto",(b.hidden?0:b.offsetHeight)+"px");
+  const f=document.querySelector(".av-fases.cq");if(f&&f.offsetHeight)document.documentElement.style.setProperty("--fasAlto",f.offsetHeight+"px")}
 addEventListener("resize",()=>altoCab());
 function render(){
   document.body.classList.toggle("desk",!!S.user&&esDesk());document.documentElement.classList.toggle("desk",document.body.classList.contains("desk"));
+  document.body.classList.toggle("en-cuadre",!!S.user&&S.tab==="autoventa"&&!!S.av.cur&&!S.av.arts);
   renderHeader(); marcoDesk(); setTimeout(altoCab,0);
   const app=$("#app"); app.onclick=app.oninput=app.onchange=app.onkeydown=app.onfocusin=null; app.classList.toggle("scr",!!S.scr);
   if(!S.api) return vConfig(app);
@@ -1495,7 +1501,7 @@ function avTot(c){
 }
 const avGkg=g=>avKg(Math.abs(g)/1000)+" kg", avDifKg=g=>g===null?"":(g>0?"+":g<0?"−":"")+avGkg(g);
 const avDifTxt=g=>g===null?"pendiente":g===0?"exacto":g>0?`sobran ${avGkg(g)}`:`faltan ${avGkg(g)}`;
-const avDifCls=g=>g===null?"av-neu":Math.abs(g)<=AV_TOL?"av-ok":"av-mal";
+const avDifCls=g=>g===null?"av-neu":Math.abs(g)<=AV_TOL?"av-ok":g>0?"av-mas":"av-mal"; // sobra = azul, falta = rojo
 function avMal(c){return avTot(c).mal+["grande","mini"].filter(b=>{const g=avPeso(c,b).difG;return g!==null&&Math.abs(g)>AV_TOL}).length}
 
 /* ---- servidor y guardado (se guarda solo; si no hay cobertura se reintenta) ---- */
@@ -1819,7 +1825,7 @@ function vAvCuadre(app){
   app.innerHTML=`<div class="wrap av-wrap">
     <div class="acc" style="justify-content:space-between;align-items:center"><button class="btn sm" id="avVolver">← Autoventa</button><span class="muted" id="avSt" style="font-size:13px">${Object.keys(S.av.pend).length?"Pendiente de guardar":"Guardado en la hoja"}</span></div>
     <div class="av-cab"><b>${esc(c.vendedor)}</b><span class="muted">último cuadre</span><input type="date" id="avFecha" value="${c.fecha||""}" aria-label="Día del último cuadre">${c.fecha?`<span class="av-ventas">ventas del ${avDM(avSumaDia(c.fecha,1))} al ${avDM(c.cierre||avHasta(c)||hoy())}</span>`:""}${cerr?`<span class="chip e-PREPARADO">Cerrado</span>`:`<span class="chip e-PREPARANDO">Abierto</span>`}</div>
-    <div class="av-fases">${F.map(([k,t])=>`<button data-avf="${k}" class="${S.av.fase===k?"on":""}">${t}</button>`).join("")}</div>
+    <div class="av-fases cq">${F.map(([k,t])=>`<button data-avf="${k}" class="${S.av.fase===k?"on":""}">${t}</button>`).join("")}</div>
     ${cuerpo}</div>`;
   avRefrescar();
   if(S.av.fase==="ctl")avFirmaInit(c);
@@ -1880,7 +1886,7 @@ function vAvCuadre(app){
 }
 function avBarra(){
   const c=avCuadre();if(!c||S.tab!=="autoventa")return;
-  if(S.av.fase==="desc"||S.av.fase==="carga"){barra("");setTimeout(altoCab,0);return} // en descarga y carga, todo el sitio para la tabla
+  barra("");setTimeout(altoCab,0);return; // dentro del cuadre no hay barra de abajo: todo el sitio para la hoja
   const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini");
   barra(`<div class="tot"><small>${t.vend} vendidas · ${t.mal?t.mal+" con diferencia":t.pend?t.pend+" sin comprobar":"todo cuadra"}</small>Sale con ${t.sale} pz</div>
     <div style="text-align:right;font-size:14px;line-height:1.35;font-weight:600"><span class="${avDifCls(g.difG)}">Grande: ${avDifTxt(g.difG)}</span><br><span class="${avDifCls(m.difG)}">Minis: ${avDifTxt(m.difG)}</span></div>`);
