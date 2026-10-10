@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "120 · 09/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "121 · 10/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -2034,8 +2034,8 @@ function avHoja(c){
   return `<div class="acc" style="margin-bottom:8px"><span class="chip ${avDifCls(g.difG,"grande")}">Grande: ${avDifTxt(g.difG)}</span><span class="chip ${avDifCls(m.difG,"mini")}">Minis: ${avDifTxt(m.difG)}</span></div>
   
   <div class="acc" style="align-items:center;margin-bottom:8px"><button class="btn sm" id="avTodoOk">Marcar todo como cuadrado</button><span style="flex:1"></span><span id="avRes"></span></div>
-  <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Llevaba</th><th>Descarga</th><th>Vendidos</th><th>Cuadra</th><th>Según albaranes</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>
-  ${fs.map((k,i)=>{const x=avCalc(avLin(c,k)),l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted">${x.lleva}</td><td class="av-c">${x.de??""}</td><td class="av-c av-b" data-c="vend">${x.vend??""}</td><td class="av-cq" data-c="tick"><button class="av-sí" data-tick="${esc(k)}" title="Cuadra">✓</button><button class="av-no" data-notick="${esc(k)}" title="No cuadra">✗</button></td>${avIn(i,k,"al",l.al)}<td class="av-c">${x.ca||""}</td><td class="av-c av-b" data-c="sale">${x.sale??""}</td></tr>`}).join("")}
+  <div class="av-tw"><table class="av-t"><thead><tr><th>Artículo</th><th>Llevaba</th><th>Descarga</th><th>Vendidos</th><th>Según albaranes</th><th>Cuadra</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>
+  ${fs.map((k,i)=>{const x=avCalc(avLin(c,k)),l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted">${x.lleva}</td><td class="av-c">${x.de??""}</td><td class="av-c av-b" data-c="vend">${x.vend??""}</td>${avIn(i,k,"al",l.al)}<td class="av-cq" data-c="tick"><button class="av-sí" data-tick="${esc(k)}" title="Cuadra">✓</button><button class="av-no" data-notick="${esc(k)}" title="No cuadra">✗</button></td><td class="av-c">${x.ca||""}</td><td class="av-c av-b" data-c="sale">${x.sale??""}</td></tr>`}).join("")}
   </tbody><tfoot><tr><th>Total</th><td>${t.lleva}</td><td>${t.de}</td><td data-t="vend">${t.vend}</td><td></td><td></td><td>${t.ca}</td><td>${t.sale}</td></tr></tfoot></table></div>
   <div class="sec">Pesos (kg)</div>
   <div class="av-tw"><table class="av-t"><thead><tr><th></th><th>Llevaba</th><th>Descarga</th><th>Vendido</th><th>Albarán</th><th>Dif.</th><th>Sale</th></tr></thead><tbody>
