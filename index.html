@@ -78,7 +78,7 @@ textarea{min-height:64px;resize:vertical}
 .lin:first-child{border-top:0}
 .lin .ln{font-weight:700}
 .lin .ln small{font-weight:400;color:var(--muted)}
-.lin .lt{font-family:var(--display);font-size:19px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.lin .lt{font-family:var(--display);font-size:19px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.lin .lt .ltp{display:inline-block;min-width:4.2em;text-align:right}.lin .lt .ltb{color:var(--muted);font-weight:600;margin-right:14px}
 .lin .lf{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:end}
 .lin.ok .ln::after{content:" ✓";color:var(--ok)}
 .plist{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "129 · 11/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "130 · 11/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -942,7 +942,7 @@ function vVer(app){
   const alb=p.albaran&&S.albaranes.find(a=>String(a.num)===p.albaran);
   const filas=ordenLineas(p.lineas).map(l=>{const pr=prod(l.c)||{b:1,g:"X"};const serv=l.pzS??null;
     return `<div class="lin"><div class="ln"><span class="dot" style="--c:var(${colorG(pr.g)})"></span><b>${esc(nomDe(l.c,l.n))}</b>${l.extra?` <small>(añadido en fábrica)</small>`:""}</div>
-      <div class="lt">${!l.extra&&pr.b>1&&bandTxt(l.pz,pr.b,pr.g)?`<small class="muted">${bandTxt(l.pz,pr.b,pr.g)}</small> `:""}${l.extra?"—":l.pz+" pz"}</div>
+      <div class="lt">${!l.extra&&pr.b>1&&bandTxt(l.pz,pr.b,pr.g)?`<small class="ltb">(${bandTxt(l.pz,pr.b,pr.g)})</small>`:""}<span class="ltp">${l.extra?"—":l.pz+" pz"}</span></div>
       ${serv!=null||l.kg?`<div class="muted" style="grid-column:1/-1;font-size:13px">Servido: ${serv??l.pz} pz${l.kg?` · ${kgf(l.kg)} kg`:""}${l.obs?` · ${esc(l.obs)}`:""}</div>`:""}</div>`}).join("");
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="justify-content:space-between;align-items:center;margin-bottom:10px">
