@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "131 · 11/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "132 · 12/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -635,6 +635,12 @@ async function salirPrecios(){if(S.tab!=="precios"||!S.precEd||!precHayCambios()
   const c=await confirmar("Cambios sin guardar","Has cambiado artículos y precios y no lo has guardado. ¿Salir sin guardar?");
   if(c.ok){S.precEd=null;S.precAv=null;S.precAviso=0;return true}return false}
 $("#nav").addEventListener("click",async e=>{const b=e.target.closest("[data-tab]");if(!b)return;if(!(await salirPrecios()))return;S.tab=b.dataset.tab;S.scr=null;S.sel.clear();render();scrollTo(0,0)});
+// Pantalla siempre encendida mientras la app está abierta (la tablet no se apaga sola; se apaga con el botón)
+let wakeLk=null;
+async function pantallaEncendida(){try{if(!("wakeLock" in navigator)||document.visibilityState!=="visible"||(wakeLk&&!wakeLk.released))return;wakeLk=await navigator.wakeLock.request("screen");wakeLk.addEventListener("release",()=>{wakeLk=null})}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")pantallaEncendida()});
+["click","touchstart","keydown"].forEach(ev=>document.addEventListener(ev,pantallaEncendida,{passive:true}));
+pantallaEncendida();
 document.addEventListener("click",async e=>{ if(e.target.id==="bSalir"){const c=await confirmar("Salir","¿Cerrar la sesión en este móvil?");if(c.ok){S.pin="";S.user=null;LS.del("ped_pin");render()}} });
 
 /* =================== render principal =================== */
