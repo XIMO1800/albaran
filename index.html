@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "133 · 13/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "134 · 15/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -878,6 +878,9 @@ function nuevoBorrador(){
   if(S.borr && !S.borr.id) return S.borr;
   return {id:null,obs:"",lineas:[]};
 }
+// Pedido anulado por error: sus artículos y observaciones pasan a un pedido nuevo para corregirlo y enviarlo
+function copiarPedido(p){S.scr={t:"editar",ped:{id:null,obs:p.obs||"",lineas:p.lineas.filter(l=>!l.extra&&+l.pz>0&&prod(l.c)).map(l=>({c:l.c,n:prod(l.c).n,pz:l.pz,p:prod(l.c).p}))}};
+  guardarBorrador();render();scrollTo(0,0);toast("Copiado el pedido "+p.id+". Quita o añade lo que haga falta y envíalo.")}
 function guardarBorrador(){ if(S.scr&&S.scr.t==="editar"&&!S.scr.ped.id){S.borr=S.scr.ped;LS.set("ped_borrador",S.borr)} }
 function vEditar(app){
   const P=S.scr.ped, q=(S.scr.q||"").trim().toUpperCase();
@@ -965,7 +968,9 @@ function vVer(app){
       ${R!=="TIENDA"?`<button class="btn" id="bHoja">Imprimir hoja de preparación</button>`:""}
       ${alb?`<button class="btn" id="bVerAlb">Ver albarán</button>`:""}
       ${puedeAnular?`<button class="btn del" id="bAnular">Anular pedido</button>`:""}
+      ${E==="ANULADO"?`<button class="btn pri" id="bCopiar">Recuperar como pedido nuevo</button>`:""}
     </div>
+    ${E==="ANULADO"?`<p class="muted">«Recuperar» copia estos artículos en un pedido nuevo: puedes quitar o añadir lo que quieras antes de enviarlo.</p>`:""}
     ${R==="TIENDA"&&E!=="ENVIADO"&&E!=="ALBARANADO"&&E!=="ANULADO"?`<p class="muted">El pedido ya se está preparando. Para cambiar algo, llama a la fábrica.</p>`:""}
   </div>`;
   barra(puedePreparar?`<span class="muted">${totPz(p)} piezas</span><button class="btn pri" id="bPrep">${E==="PREPARADO"?"Corregir preparación":E==="PREPARANDO"?"Seguir preparando":"Preparar pedido"}</button>`:"");
@@ -974,8 +979,9 @@ function vVer(app){
   const ed=$("#bEdit"); if(ed) ed.onclick=()=>{S.scr={t:"editar",ped:clone({id:p.id,version:p.version,obs:p.obs,lineas:p.lineas.map(l=>({c:l.c,n:l.n,pz:l.pz,p:l.p}))})};render();scrollTo(0,0)};
   const ho=$("#bHoja"); if(ho) ho.onclick=()=>imprimirHoja(p);
   const va=$("#bVerAlb"); if(va) va.onclick=()=>{S.scr={t:"verAlb",num:p.albaran};render()};
-  const an=$("#bAnular"); if(an) an.onclick=async()=>{const c=await confirmar("Anular pedido "+p.id,"El pedido quedará anulado y no se preparará.",true);if(!c.ok)return;
+  const an=$("#bAnular"); if(an) an.onclick=async()=>{const c=await confirmar("Anular pedido "+p.id,"Se anula el pedido ENTERO y no se preparará. Para quitar o cambiar un solo artículo, cancela y usa «Modificar».",true);if(!c.ok)return;
     try{await api("anularPedido",{id:p.id,motivo:c.motivo});toast("Pedido anulado");S.scr=null;await cargar()}catch(err){toast(err.message,true)}};
+  const cp=$("#bCopiar"); if(cp) cp.onclick=()=>copiarPedido(p);
   const pr=$("#bPrep"); if(pr) pr.onclick=async()=>{
     if(E==="PREPARADO"){const c=await confirmar("Corregir preparación","El pedido vuelve a «Preparando» hasta que lo marques otra vez como preparado.");if(!c.ok)return;
       try{await api("reabrirPedido",{id:p.id});await cargar(true)}catch(err){return toast(err.message,true)}}
@@ -1282,6 +1288,7 @@ function detalleDesk(p){
       <button class="btn" data-dact="hoja">Imprimir hoja de preparación</button>
       ${alb?`<button class="btn" data-dact="alb">Ver albarán ${esc(p.albaran)}</button>`:""}
       ${puedeAnular&&(R==="ADMIN"||R==="OFICINA")?`<button class="btn del" data-dact="anular">Anular pedido</button>`:""}
+      ${E==="ANULADO"?`<button class="btn pri" data-dact="copiar">Recuperar como pedido nuevo</button>`:""}
     </div></div>`;
 }
 async function accionPedido(p,a){
@@ -1289,7 +1296,8 @@ async function accionPedido(p,a){
   if(a==="hist"){S.scr={t:"hist",id:p.id,vuelve:null};render();return scrollTo(0,0)}
   if(a==="alb")return abrirAlbaran(p.albaran);
   if(a==="edit"){S.scr={t:"editar",ped:clone({id:p.id,version:p.version,obs:p.obs,lineas:p.lineas.map(l=>({c:l.c,n:l.n,pz:l.pz,p:l.p}))})};return render()}
-  if(a==="anular"){const c=await confirmar("Anular pedido "+p.id,"El pedido quedará anulado y no se preparará.",true);if(!c.ok)return;
+  if(a==="copiar")return copiarPedido(p);
+  if(a==="anular"){const c=await confirmar("Anular pedido "+p.id,"Se anula el pedido ENTERO y no se preparará. Para cambiar un solo artículo, usa «Modificar pedido».",true);if(!c.ok)return;
     try{await api("anularPedido",{id:p.id,motivo:c.motivo});toast("Pedido anulado");await cargar()}catch(err){toast(err.message,true)}return}
   if(a==="prep"){
     if(p.estado==="PREPARADO"){const c=await confirmar("Corregir preparación","El pedido vuelve a «Preparando» hasta que lo marques otra vez como preparado.");if(!c.ok)return;
