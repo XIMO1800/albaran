@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "134 · 15/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "135 · 17/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1580,8 +1580,10 @@ function avBj(c){const bj=c.bandejas||{},d=avN(bj.desc),t=avN(bj.total)??(avN(bj
 // Kilos aproximados de lo que sale: piezas × peso medio; el aceite pesado con su peso real
 function avKgSale(c){const cf=avCfg();let kg=0;const pes={};["grande","mini"].forEach(b=>{if(cf.peso[b])pes[cf.peso[b]]=avPeso(c,b).sale});
   avRefs(c).forEach(k=>{const x=avCalc(avLin(c,k));if(!x.sale)return;kg+=pes[k]!=null?pes[k]:x.sale*pmDe(k)});return Math.round(kg)}
+// Nombre de la persona: «Mere 1» y «Mere 2» (dos cargas de Mere) son la misma transportista, «Mere»
+const avPersona=v=>String(v||"").replace(/\s*\d+$/,"").trim()||String(v||"");
 function avCtl(c){const ct=c.control||{},cf=avCfg(),bj=avBj(c);
-  return {fecha:ct.fecha||c.cierre||hoy(),trans:c.vendedor,mat:ct.mat??((cf.matriculas||{})[c.vendedor]||""),bultos:ct.bultos??bj.t,kilos:ct.kilos??avKgSale(c),temp:ct.temp??null,conf:ct.conf!==false,obs:ct.obs||""}}
+  return {fecha:ct.fecha||c.cierre||hoy(),trans:ct.trans||avPersona(c.vendedor),mat:ct.mat??((cf.matriculas||{})[c.vendedor]||""),bultos:ct.bultos??bj.t,kilos:ct.kilos??avKgSale(c),temp:ct.temp??null,conf:ct.conf!==false,obs:ct.obs||""}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&Object.keys(S.av.pend).length&&S.pin)avSubir()});
 window.addEventListener("online",()=>{if(Object.keys(S.av.pend).length&&S.pin)avSubir()});
 
@@ -1826,7 +1828,7 @@ const avPdaBotones=pri=>`<div class="acc"><button class="btn sm ${pri?"pri":""}"
 function avPdaCard(c){const P=c.pda;
   if(!P)return `<div class="card av-pda"><b>Albaranes PDA</b>${avPdaBotones(true)}${avPdaListaHtml()}</div>`;
   const av=[],quien=AV_TERM[P.terminal],ini=avIniC(c),fin=c.cierre||hoy();
-  if(quien&&avNorm(quien)!==avNorm(c.vendedor))av.push(`Este resumen es de ${quien}, no de ${esc(c.vendedor)}`);
+  if(quien&&avNorm(quien)!==avNorm(avPersona(c.vendedor)))av.push(`Este resumen es de ${quien}, no de ${esc(c.vendedor)}`);
   if(P.desde&&(P.desde<=c.fecha||P.desde>ini||P.hasta!==fin))av.push(`Este viaje va del ${avFc(ini)} al ${avFc(fin)}`);
   if(P.total&&(P.total.pz!==P.suma.pz||Math.abs(P.total.kg-P.suma.kg)>0.05)) /* el programa redondea cada línea: unos gramos de diferencia no cuentan */av.push(`La suma de líneas no da el total del papel`);
   const fuera=Object.keys(P.lin).filter(k=>!avCfg().arts.includes(k));if(fuera.length)av.push(`No están en autoventa: ${fuera.map(esc).join(", ")}`);
@@ -1960,7 +1962,7 @@ function vAvCuadre(app){
     if(el.dataset.pk){const[bk,f]=el.dataset.pk.split("|"),pp0=c.pesos[bk]||(c.pesos[bk]=avPeso0());pp0[f]=avP(el.value);if(f==="albKg")delete pp0.albKgP;avTocar();avPesoVivo(bk);return}
     if(el.dataset.tara){(c.pesos[el.dataset.tara]||(c.pesos[el.dataset.tara]=avPeso0())).tara=avP(el.value);avTocar();return}
     if(el.dataset.bj){const bj0=c.bandejas||(c.bandejas={});if(el.dataset.bj==="total")delete bj0.carga;bj0[el.dataset.bj]=avP(el.value);const x=$("#avBjC");if(x)x.textContent=avBj(c).ca??"—";const y=$("#avBjCmp");if(y)y.innerHTML=avBjCmp(c);avTocar();return}
-    if(el.dataset.ctl){const ct=c.control||(c.control={}),f=el.dataset.ctl;ct.por=ct.por||S.user;ct[f]=el.type==="checkbox"?el.checked:["bultos","kilos","temp"].includes(f)?avP(el.value):f==="mat"?el.value.trim().toUpperCase():el.value;
+    if(el.dataset.ctl){const ct=c.control||(c.control={}),f=el.dataset.ctl;ct.por=ct.por||S.user;ct[f]=el.type==="checkbox"?el.checked:["bultos","kilos","temp"].includes(f)?avP(el.value):f==="mat"?el.value.trim().toUpperCase():f==="trans"?el.value.trim():el.value;
       if(f==="mat"){const cf=avCfg();(cf.matriculas||(cf.matriculas={}))[c.vendedor]=el.value.trim().toUpperCase();avGuardarCfg()}avFijarCtl(c);avTocar();return}
     if(el.id==="avNota"){c.nota=el.value;avTocar();return}
   };
@@ -2111,7 +2113,7 @@ function avCtlCard(c){const k=avCtl(c),ct=c.control||{},bj=avBj(c);
   return `<div class="card av-peso av-ctl"><div class="pcab"><b>Control carga vehículo</b><span class="pnm">Calidad · FOR PR 08-10</span></div>
     <div class="av-ctlg">
       <label>Fecha<input type="date" data-ctl="fecha" value="${k.fecha}"></label>
-      <label>Transportista<input value="${esc(k.trans)}" disabled></label>
+      <label>Transportista<input data-ctl="trans" value="${esc(k.trans)}"></label>
       <label>Camión (matrícula)${(()=>{const cs=[...(avCfg().camiones||[])];if(k.mat&&!cs.includes(k.mat))cs.push(k.mat);
         return cs.length?`<select data-ctl="mat"><option value="">— elige —</option>${cs.map(m=>`<option ${m===k.mat?"selected":""}>${esc(m)}</option>`).join("")}</select>`
         :`<span class="muted" style="text-transform:none;font-weight:500;font-size:14px;padding:8px 0">Da de alta los camiones en «Vendedores y camiones»</span>`})()}</label>
