@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "136 · 21/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "137 · 21/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -986,7 +986,7 @@ function vVer(app){
     if(E==="PREPARADO"){const c=await confirmar("Corregir preparación","El pedido vuelve a «Preparando» hasta que lo marques otra vez como preparado.");if(!c.ok)return;
       try{await api("reabrirPedido",{id:p.id});await cargar(true)}catch(err){return toast(err.message,true)}}
     const q=S.pedidos.find(x=>x.id===p.id)||p;
-    S.scr={t:"preparar",ped:clone({id:q.id,version:q.version,obsF:q.obsF||"",obs:q.obs,lineas:ordenLineas(q.lineas).map(l=>({...l,pzS:l.pzS??l.pz,kg:l.aprox?"":(l.kg||"")}))})};render();scrollTo(0,0)};
+    S.scr={t:"preparar",ped:clone({id:q.id,version:q.version,obsF:q.obsF||"",obs:q.obs,lineas:ordenLineas(q.lineas).map(l=>({...l,pzS:l.pzS??l.pz,kg:l.aprox?"":(l.kg||""),nohay:!l.extra&&l.pzS===0&&/no hay/i.test(l.obs||"")}))})};render();scrollTo(0,0)};
 }
 
 /* =================== preparar (fábrica) =================== */
@@ -1310,7 +1310,7 @@ async function accionPedido(p,a){
     if(p.estado==="PREPARADO"){const c=await confirmar("Corregir preparación","El pedido vuelve a «Preparando» hasta que lo marques otra vez como preparado.");if(!c.ok)return;
       try{await api("reabrirPedido",{id:p.id});await cargar(true)}catch(err){return toast(err.message,true)}}
     const q=S.pedidos.find(x=>x.id===p.id)||p;
-    S.scr={t:"preparar",ped:clone({id:q.id,version:q.version,obsF:q.obsF||"",obs:q.obs,lineas:ordenLineas(q.lineas).map(l=>({...l,pzS:l.pzS??l.pz,kg:l.aprox?"":(l.kg||"")}))})};render();scrollTo(0,0)}
+    S.scr={t:"preparar",ped:clone({id:q.id,version:q.version,obsF:q.obsF||"",obs:q.obs,lineas:ordenLineas(q.lineas).map(l=>({...l,pzS:l.pzS??l.pz,kg:l.aprox?"":(l.kg||""),nohay:!l.extra&&l.pzS===0&&/no hay/i.test(l.obs||"")}))})};render();scrollTo(0,0)}
 }
 
 /* =================== ESCRITORIO: histórico =================== */
