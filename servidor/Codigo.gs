@@ -295,7 +295,8 @@ var ACCIONES = {
       var imp = r2_(l.kg * l.p); kg += l.kg; total += imp;
       filasL.push([num, fecha, cliente, l.pedido, l.c, l.n, l.pz, l.kg, l.p, imp]);
     });
-    shA.appendRow([num, fecha, cliente, ids.join(','), r3_(kg), r2_(total), a.obs || '', 'EMITIDO', new Date(), u.nombre]);
+    // el apóstrofo guarda «18,19» como texto: sin él la hoja lo convierte en el número 18,19 y se pierden los pedidos
+    shA.appendRow([num, fecha, cliente, "'" + ids.join(','), r3_(kg), r2_(total), a.obs || '', 'EMITIDO', new Date(), u.nombre]);
     var shL = hoja_('ALBARAN_LINEAS');
     shL.getRange(shL.getLastRow() + 1, 1, filasL.length, filasL[0].length).setValues(filasL);
     filas.forEach(function (f) {
@@ -317,13 +318,24 @@ var ACCIONES = {
     permitir_(u, ['ADMIN']);
     var f = buscar_('ALBARANES', 'NUM', req.num);
     if (!f) throw new Error('Albarán no encontrado');
-    if (f.obj.ESTADO === 'ANULADO') throw new Error('Ya está anulado');
+    var yaAnulado = f.obj.ESTADO === 'ANULADO';
+    // Sus pedidos vuelven a PREPARADO. Se buscan por la columna ALBARAN del pedido (lo fiable);
+    // así también se arreglan los albaranes ya anulados cuyos pedidos se quedaron «con albarán».
+    var shP = hoja_('PEDIDOS'), vp = shP.getDataRange().getValues(), cp = vp[0];
+    var iA = cp.indexOf('ALBARAN'), iE = cp.indexOf('ESTADO'), iV = cp.indexOf('VERSION'), devueltos = 0;
+    for (var k = 1; k < vp.length; k++) {
+      if (String(vp[k][iA]).trim() === String(req.num).trim() && vp[k][iE] === 'ALBARANADO') {
+        escribir_(shP, k + 1, {ESTADO: 'PREPARADO', ALBARAN: '', VERSION: (+vp[k][iV] || 1) + 1,
+          ACTUALIZADO: new Date(), ACTUALIZADO_POR: u.nombre});
+        devueltos++;
+      }
+    }
+    if (yaAnulado) {
+      if (!devueltos) throw new Error('Ya está anulado');
+      log_(u, 'ARREGLA ALBARÁN ANULADO', req.num, devueltos + ' pedidos vuelven a Preparado');
+      return {devueltos: devueltos};
+    }
     escribir_(hoja_('ALBARANES'), f.fila, {ESTADO: 'ANULADO'});
-    String(f.obj.PEDIDOS).split(',').forEach(function (id) {
-      var p = buscar_('PEDIDOS', 'ID', id.trim());
-      if (p) escribir_(hoja_('PEDIDOS'), p.fila, {ESTADO: 'PREPARADO', ALBARAN: '', VERSION: (+p.obj.VERSION || 1) + 1,
-        ACTUALIZADO: new Date(), ACTUALIZADO_POR: u.nombre});
-    });
     // las líneas se quedan pero marcadas en el NUM con la palabra ANULADO para que no se importen
     var shL = hoja_('ALBARAN_LINEAS'), datos = shL.getDataRange().getValues();
     for (var i = 1; i < datos.length; i++) if (String(datos[i][0]) === String(req.num)) shL.getRange(i + 1, 1).setValue(req.num + ' ANULADO');

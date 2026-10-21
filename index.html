@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "137 · 21/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "138 · 21/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1116,11 +1116,13 @@ function vVerAlb(app){
     <div class="card"><b style="font-family:var(--display);font-size:24px">${fDiaPed(a.fecha+"T12:00:00")}</b><div class="muted"><span class="nalb">Albarán nº ${esc(a.num)}</span> · ${esc(a.cliente)} · pedidos ${esc(a.pedidos)}${a.creadoPor?` · emitido por ${esc(a.creadoPor)}`:""}</div></div>
     ${a.obs?`<div class="obsbox">${esc(a.obs)}</div>`:""}
     <div class="card">${filas}</div>
+    ${S.rol==="ADMIN"&&a.estado==="ANULADO"&&S.pedidos.some(x=>String(x.albaran)===String(a.num)&&x.estado==="ALBARANADO")?`<div class="aviso">Este albarán está anulado pero sus pedidos siguen «con albarán».</div><button class="btn pri" id="bDevA">Devolver sus pedidos a «Preparado»</button>`:""}
     ${S.rol==="ADMIN"&&a.estado!=="ANULADO"?`<button class="btn del" id="bAnA">Anular albarán</button><p class="muted">Al anularlo, sus pedidos vuelven a «Preparado» para corregirlos y emitir otro.</p>`:""}
   </div>`;
   barra(`<div class="tot"><small>${kgf(a.kg)} kg</small>${eur(a.total)} €</div>${S.rol!=="TIENDA"?`<button class="btn pri" id="bImp">Imprimir 2 copias</button>`:""}`);
   $("#bVolver").onclick=()=>{S.scr=null;render()};
   const bi=$("#bImp"); if(bi) bi.onclick=()=>imprimirAlbaran(a);
+  const dv=$("#bDevA"); if(dv) dv.onclick=async()=>{try{const r=await api("anularAlbaran",{num:a.num,motivo:"Devolver pedidos"});toast((r.devueltos||"Los")+" pedidos vuelven a «Preparado»");S.scr=null;S.tab="pedidos";await cargar()}catch(err){toast(err.message,true)}};
   const an=$("#bAnA"); if(an) an.onclick=async()=>{const c=await confirmar("Anular albarán "+a.num,"Queda anulado y sus pedidos vuelven a «Preparado».",true);if(!c.ok)return;
     try{await api("anularAlbaran",{num:a.num,motivo:c.motivo});toast("Albarán anulado");S.scr=null;S.tab="pedidos";await cargar()}catch(err){toast(err.message,true)}};
 }
