@@ -103,7 +103,7 @@ td.tsel select{min-width:10.5em}
 .plin input.num::placeholder{color:#b3a8aa}
 .plin .pb label.l{white-space:nowrap}
 .plin .pband{display:block;color:var(--muted);font-weight:700;font-size:13px;margin-top:3px}
-.plin .pb>div:last-child{padding-top:18px}
+.plin .pb>div:last-child{padding-top:18px}.plin .pacc{display:grid;grid-template-columns:56px 60px;grid-template-rows:auto auto;gap:5px}.plin .pacc .chk{grid-row:1/3;width:56px;height:auto;min-height:72px}.plin .pacc .nohay,.plin .pacc .nbtn,.plin .pacc .x{width:60px;height:auto;min-height:34px;font-size:13px;padding:0;margin:0}.plin .pacc .nbtn{font-size:17px}
 .plin .pdif{display:block;color:var(--warn);font-weight:700;font-size:13px;margin-top:3px}
 .plin .pn input{width:100%}
 .plin.ok{border-color:var(--ok)}.nohay{border:1px solid var(--line);background:#fff;border-radius:10px;padding:0 10px;font-weight:700;font-size:13px;color:var(--muted);min-height:40px;cursor:pointer}.nohay.on{background:#b3262d;border-color:#b3262d;color:#fff}
@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "138 · 21/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "139 · 24/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -999,7 +999,7 @@ function vPreparar(app){
       <div class="pb">
         <div><label class="l" for="s${i}">Piezas</label><input id="s${i}" class="num" inputmode="numeric" value="${l.pzS}" data-i="${i}" data-f="pzS">${bandTxt(l.pz,pr.b,pr.g)?`<small class="pband">${bandTxt(l.pz,pr.b,pr.g)}</small>`:""}<small class="pdif" id="d${i}">${!l.extra&&num(l.pzS)!==num(l.pz)?`pedidas ${l.pz}`:""}</small></div>
         <div><label class="l" for="k${i}">Kg</label><input id="k${i}" class="num" inputmode="decimal" value="${esc(dec(l.kg))}" data-i="${i}" data-f="kg" placeholder="${kgEst(l)?"≈ "+kgf(kgEst(l)):"0,000"}"><small class="pband" id="e${i}">${!(num(l.kg)>0)&&kgEst(l)?"aprox.":""}</small></div>
-        <div style="display:flex;gap:6px">${l.extra?`<button class="x" data-del="${i}" aria-label="Quitar línea">×</button>`:""}<button class="chk ${l.ok?"on":""}" data-ok="${i}" aria-label="Marcar como hecho">✓</button>${l.extra?"":`<button class="nohay ${l.nohay?"on":""}" data-nohay="${i}" title="No hay: no se sirve y no va al albarán">No hay</button>`}<button class="nbtn ${l.obs?"on":""}" data-nota="${i}" aria-label="Añadir nota a esta línea" title="Nota">✎</button></div>
+        <div class="pacc"><button class="chk ${l.ok?"on":""}" data-ok="${i}" aria-label="Marcar como hecho">✓</button>${l.extra?`<button class="x" data-del="${i}" aria-label="Quitar línea">×</button>`:`<button class="nohay ${l.nohay?"on":""}" data-nohay="${i}" title="No hay: no se sirve y no va al albarán">No hay</button>`}<button class="nbtn ${l.obs?"on":""}" data-nota="${i}" aria-label="Añadir nota a esta línea" title="Nota">✎</button></div>
       </div>${l.obs||l._nota?`<div class="pn"><input id="o${i}" value="${esc(l.obs||"")}" data-i="${i}" data-f="obs" placeholder="Nota de esta línea (ej.: el gigante va el jueves)"></div>`:""}</div>`}).join("");
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="justify-content:space-between;align-items:center;margin-bottom:10px">
