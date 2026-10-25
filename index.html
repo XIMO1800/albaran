@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "140 · 25/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "141 · 25/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1880,7 +1880,8 @@ function avExVista(c){const lista=avExLista(c),arts=avRefs(c),dias={};lista.forE
     return Object.keys(g).sort((a,b)=>(a?0:1)-(b?0:1)||a.localeCompare(b,"es")).map(k=>`<div class="av-excab">${k?esc(k):'<span class="muted">Sin cliente</span>'} · ${pz(g[k])} pz</div><div class="av-tw"><table class="av-t"><tbody>${g[k].map(fila).join("")}</tbody></table></div>`).join("")};
   return `<div class="acc" style="align-items:center;margin-bottom:8px"><button class="btn sm" id="avExCerrar">← Volver al cuadre</button><span style="flex:1"></span><b>Cargas entre medias</b></div>
     <datalist id="avExCliL">${avExClis().map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
-    <div class="card"><div class="av-exf" style="margin-top:0"><input id="avExCli" list="avExCliL" value="${esc(S.av.exCli||"")}" placeholder="Cliente (albarán)" style="flex:1 1 220px"><select id="avExK">${arts.map(k=>`<option value="${esc(k)}"${S.av.exK===k?" selected":""}>${esc(nomDe(k))}</option>`).join("")}</select><input id="avExPz" class="num" inputmode="numeric" placeholder="Pz"${avEsPeso(S.av.exK||arts[0])?' style="display:none"':""}><input id="avExF" type="date" value="${S.av.exF||hoy()}"><button class="btn sm pri" id="avExAdd">${avEsPeso(S.av.exK||arts[0])?"Pesar en Pesos →":"Añadir"}</button></div></div>
+    <div class="card"><div class="av-exf" style="margin-top:0"><input id="avExF" type="date" value="${S.av.exF||hoy()}"><input id="avExCli" list="avExCliL" value="${esc(S.av.exCli||"")}" placeholder="Cliente (albarán)" style="flex:1 1 220px"></div>
+      <div class="av-exf"><select id="avExK">${arts.map(k=>`<option value="${esc(k)}"${S.av.exK===k?" selected":""}>${esc(nomDe(k))}</option>`).join("")}</select><input id="avExPz" class="num" inputmode="numeric" placeholder="Pz"${avEsPeso(S.av.exK||arts[0])?' style="display:none"':""}><button class="btn sm pri" id="avExAdd">${avEsPeso(S.av.exK||arts[0])?"Pesar en Pesos →":"Añadir"}</button></div></div>
     ${Object.keys(dias).length?Object.keys(dias).sort().map(f=>`<div class="sec">${esc(avDia(f))} · ${pz(dias[f])} pz</div>${porCli(dias[f])}`).join("")
       :`<div class="vacio">Todavía no hay cargas entre medias en este viaje.</div>`}`}
 const avBtnTodas=()=>`<button class="btn sm" id="avTodas">${S.av.todas?"Solo los de autoventa":"Ver todo el catálogo"}</button>`;
