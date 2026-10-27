@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "142 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "143 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -620,7 +620,7 @@ function tabsDeRol(){
   const n=e=>S.pedidos.filter(p=>p.estado===e).length;
   if(S.rol==="TIENDA") return [["nuevo","Nuevo pedido"],["mios","Mis pedidos"],["difs","Diferencias"]];
   if(S.rol==="FABRICA") return [["preparar","Por preparar",n("ENVIADO")+n("PREPARANDO")],["hechos","Preparados"],["difs","Diferencias"]];
-  if(esDesk()) return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["historial","Histórico"],["difs","Diferencias"],["albaranes","Albaranes"],["exportar","Programa"],["precios","Artículos y precios"],["nuevo","+ Pedido"],...(S.rol==="ADMIN"?[["autoventa","Autoventa"]]:[])];
+  if(esDesk()) return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["historial","Histórico"],["difs","Diferencias"],["albaranes","Albaranes"],["exportar","Programa"],["precios","Artículos y precios"],["nuevo","+ Pedido"],...(S.rol==="ADMIN"?[["resumen","Resumen"],["autoventa","Autoventa"]]:[])];
   return [["pedidos","Pedidos",n("ENVIADO")+n("PREPARADO")],["albaranes","Albaranes"],["difs","Diferencias"],["nuevo","+ Pedido"],["precios","Precios"],...(S.rol==="ADMIN"?[["autoventa","Autoventa"]]:[])];
 }
 function renderHeader(){
