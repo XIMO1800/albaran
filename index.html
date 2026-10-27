@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "148 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "149 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1552,7 +1552,7 @@ const avLin=(c,k)=>(c&&c.lineas&&c.lineas[k])||{};
 // Cargas entre medias (días después de salir): se guardan con su fecha y se suman a lo que llevaba
 const avExtra=l=>(l&&l.ex||[]).reduce((a,e)=>a+(avN(e.pz)||0),0);
 function avCalc(l){
-  const lleva=(avN(l.ll)||0)+(avN(l.en)||0)+avExtra(l), de=avN(l.de), al=avN(l.al), ca=avN(l.ca)||0, dv=avN(l.dv)||0;
+  const lleva=(avN(l.ll)||0)+(avN(l.en)||0)+avExtra(l), de=avN(l.de), al=avN(l.al), ca=avN(l.ca)||0, dv=Math.abs(avN(l.dv)||0);
   const vend=de===null?null:lleva-de, dif=vend===null||al===null?null:al-vend;
   const base=de===null?(lleva===0?0:null):de;
   return {lleva,de,vend,al,dif,ca,dv,sale:base===null?null:base-dv+ca,usada:lleva>0||de!==null||ca!==0||al!==null||dv!==0};
@@ -1591,7 +1591,7 @@ function avPeso(c,b){
 }
 function avTot(c){
   const t={lleva:0,ll:0,en:0,de:0,vend:0,ca:0,dv:0,sale:0,al:0,pend:0,mal:0,ok:0,difs:[]};
-  avRefs(c).forEach(k=>{const l0=avLin(c,k),x=avCalc(l0);t.lleva+=x.lleva;t.ll+=avN(l0.ll)||0;t.en+=(avN(l0.en)||0)+avExtra(l0);if(x.de!==null)t.de+=x.de;if(x.vend!==null)t.vend+=x.vend;t.ca+=x.ca;t.dv+=x.dv;if(x.sale!==null)t.sale+=x.sale;if(x.al!==null)t.al+=x.al;
+  avRefs(c).forEach(k=>{const l0=avLin(c,k),x=avCalc(l0);t.lleva+=x.lleva;t.ll+=avN(l0.ll)||0;t.en+=(avN(l0.en)||0)+avExtra(l0);if(x.de!==null)t.de+=x.de;if(x.vend!==null)t.vend+=x.vend;t.ca+=x.ca;t.dv-=x.dv;if(x.sale!==null)t.sale+=x.sale;if(x.al!==null)t.al+=x.al;
     if(x.de===null&&x.lleva>0){t.mal++;t.sinDe=(t.sinDe||0)+1;t.difs.push([k,"sin descarga"])}
     else if(x.vend){if(x.al===null)t.pend++;else if(x.dif===0)t.ok++;else{t.mal++;t.difs.push([k,x.dif])}}});
   return t;
@@ -1964,7 +1964,7 @@ function vAvCuadre(app){
   else if(S.av.fase==="carga"){const fs=avFilas(c);
     cuerpo=`
     <div class="av-tw"><table class="av-t av-cga"><colgroup><col class="c-art"><col><col><col><col></colgroup><thead><tr><th>Artículo</th><th>Descarga</th><th title="Devoluciones o averías que trae y se quedan en fábrica: se restan de lo que sale">Se queda</th><th>Carga</th><th>Sale con</th></tr></thead><tbody>
-    ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted" data-c="de"></td>${avIn(i,k,"dv",l.dv,"av-dv")}${avIn(i,k,"ca",l.ca)}<td class="av-c av-b" data-c="sale"></td></tr>`}).join("")}
+    ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted" data-c="de"></td>${avIn(i,k,"dv",avN(l.dv)?-Math.abs(avN(l.dv)):null,"av-dv")}${avIn(i,k,"ca",l.ca)}<td class="av-c av-b" data-c="sale"></td></tr>`}).join("")}
     </tbody><tfoot><tr><th>Total</th><td data-t="de"></td><td data-t="dv"></td><td data-t="ca"></td><td data-t="sale"></td></tr></tfoot></table></div>
     <p class="muted" style="font-size:13px;margin:6px 2px">«Se queda»: devoluciones o averías que trae y se quedan en fábrica. Cuentan en la descarga para cuadrar, pero no vuelven a salir: Sale con = Descarga − Se queda + Carga.</p>
     <div class="acc av-pie"><button class="btn sm" data-avf="pesos">← Pesos</button>${avBtnTodas()}<span style="flex:1"></span><button class="btn sm" data-avf="hoja">Siguiente: hoja y cierre →</button></div>`}
@@ -2041,6 +2041,7 @@ function vAvCuadre(app){
     if(el.id==="avNota"){c.nota=el.value;avTocar();return}
   };
   app.onchange=e=>{const el=e.target;
+    if(el.dataset.f==="dv"){const v=Math.abs(avP(el.value)||0);el.value=v?"-"+v:"";return} // siempre con el menos: se resta
     if(el.dataset.excli){const[k,i]=el.dataset.excli.split("|"),x=((c.lineas[k]||{}).ex||[])[+i];if(x){const v=el.value.trim();if(v)x.cli=v;else delete x.cli;avTocar();avRepintar()}return}
     if(el.id==="avExCli"){S.av.exCli=el.value.trim();return}
     if(el.id==="avExK"){S.av.exK=el.value;const pe=avEsPeso(el.value),z=$("#avExPz"),a=$("#avExAdd");if(z)z.style.display=pe?"none":"";if(a)a.textContent=pe?"Pesar en Pesos →":"Añadir";return}
