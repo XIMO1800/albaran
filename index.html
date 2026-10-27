@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "149 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "150 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -699,7 +699,11 @@ function vLogin(app){
 /* =================== tarjetas de pedido =================== */
 function totPz(p){return p.lineas.reduce((s,l)=>s+(l.pzS??l.pz),0)}
 // Fecha legible: «Hoy · Domingo 4 oct», «Ayer · …», «Jueves 2 oct»
-function fDiaPed(iso){const d=new Date(iso);if(isNaN(d))return"";const h=new Date();h.setHours(0,0,0,0);const x=new Date(d);x.setHours(0,0,0,0);
+// Fábrica y oficina: fecha en números y la letra del día, «24/10/26 (S)». La tienda sigue viendo «Hoy · Martes 27 oct».
+const LETRA_DIA=["D","L","M","X","J","V","S"];
+function fDiaPed(iso){const d=new Date(iso);if(isNaN(d))return"";
+  if(S.rol!=="TIENDA")return `${d.getDate()}/${d.getMonth()+1}/${String(d.getFullYear()).slice(2)} (${LETRA_DIA[d.getDay()]})`;
+  const h=new Date();h.setHours(0,0,0,0);const x=new Date(d);x.setHours(0,0,0,0);
   const dif=Math.round((h-x)/864e5),t=d.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"short"}).replace(",","").replace(".","");
   return (dif===0?"Hoy · ":dif===1?"Ayer · ":"")+t.charAt(0).toUpperCase()+t.slice(1)}
 const fHora=iso=>{const d=new Date(iso);return isNaN(d)?"":d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})};
