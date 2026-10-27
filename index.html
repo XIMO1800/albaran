@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "144 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "145 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1228,8 +1228,8 @@ function vPrecios(app){
 }
 
 /* =================== ESCRITORIO: marco tipo Recogida (barra lateral + título) =================== */
-const SIDE=[["pedidos","Pedidos","Nuevos, preparando y preparados"],["historial","Histórico","Lo pedido frente a lo servido"],["difs","Diferencias","Pedido frente a lo enviado"],["albaranes","Albaranes","Emitidos y reimpresión"],
-  ["exportar","Programa de gestión","Envío de albaranes"],["precios","Artículos y precios","Tienda y autoventa, orden y precios"],["nuevo","Nuevo pedido","Meter un pedido a mano"]];
+const SIDE=[["nuevo","Nuevo pedido","Meter un pedido a mano"],["pedidos","Pedidos","Nuevos, preparando y preparados"],["historial","Histórico","Lo pedido frente a lo servido"],["difs","Diferencias","Pedido frente a lo enviado"],["albaranes","Albaranes","Emitidos y reimpresión"],
+  ["exportar","Programa de gestión","Envío de albaranes"],["precios","Artículos y precios","Tienda y autoventa, orden y precios"]];
 function marcoDesk(){
   const sd=$("#side"), on=document.body.classList.contains("desk");
   if(!on){sd.innerHTML="";return}
