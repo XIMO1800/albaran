@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "141 · 25/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "142 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -662,7 +662,7 @@ function render(){
   }
   ({nuevo:()=>{S.scr={t:"editar",ped:nuevoBorrador()};render()},mios:vListaTienda,preparar:vListaFab,hechos:vListaFabHechos,
     pedidos:esDesk()?vPedidosDesk:vListaOficina,albaranes:esDesk()?vAlbaranesDesk:vAlbaranes,precios:vPrecios,
-    historial:vHistorial,exportar:vExportar,difs:vDiferencias,autoventa:vAutoventa})[S.tab](app);
+    historial:vHistorial,exportar:vExportar,resumen:vResumen,difs:vDiferencias,autoventa:vAutoventa})[S.tab](app);
 }
 
 /* =================== configuración y login =================== */
@@ -1106,7 +1106,7 @@ function vAlbaran(app){
   };
 }
 function vVerAlb(app){
-  const a=S.albaranes.find(x=>String(x.num)===String(S.scr.num));
+  const a=S.albaranes.find(x=>String(x.num)===String(S.scr.num))||((S.H.data||{}).albaranes||[]).find(x=>String(x.num)===String(S.scr.num));
   if(!a){S.scr=null;return render()}
   const filas=a.lineas.map(l=>`<div class="lin"><div class="ln"><b>${esc(nomDe(l.c,l.n))}</b> <small>${esc(l.c)} · ped. ${esc(l.pedido)}</small></div>
     <div class="lt">${eur(r2(l.kg*l.p))} €</div><div class="muted" style="grid-column:1/-1;font-size:13px">${l.pz} pz · ${kgf(l.kg)} kg × ${eur(l.p)} €/kg</div></div>`).join("");
@@ -1235,16 +1235,16 @@ function marcoDesk(){
   if(!on){sd.innerHTML="";return}
   const n=e=>S.pedidos.filter(p=>p.estado===e).length, badge={pedidos:n("ENVIADO")+n("PREPARADO")};
   sd.innerHTML=`<div class="stop"><img src="${LOGO}" alt="Quesos El Hidalgo"><small>${esc(S.user)} · ${S.rol==="ADMIN"?"Administración":"Oficina"} · v${VERSION.split(" ")[0]}</small></div><div class="side-t">${S.rol==="ADMIN"?"Tienda y autoventa":"Pedidos tienda"}</div>
-    <div class="sgrp"><div class="lgrp-s">Tienda</div><nav class="snav">${SIDE.map(([k,t,sub])=>`<button data-side="${k}" class="${S.tab===k?"on":""}">${t}${badge[k]?`<span class="badge">${badge[k]}</span>`:""}<small>${sub}</small></button>`).join("")}</nav></div>
+    <div class="sgrp"><div class="lgrp-s">Tienda</div><nav class="snav">${[...SIDE,...(S.rol==="ADMIN"?[["resumen","Resumen de ventas","Albaranes y artículos por fechas"]]:[])].map(([k,t,sub])=>`<button data-side="${k}" class="${S.tab===k?"on":""}">${t}${badge[k]?`<span class="badge">${badge[k]}</span>`:""}<small>${sub}</small></button>`).join("")}</nav></div>
     ${S.rol==="ADMIN"?`<div class="sgrp sgrp-av"><div class="lgrp-s">Autoventa</div><nav class="snav">${[["cuadres","Cuadres de camiones","Viaje en curso de cada vendedor"],["hist","Histórico de cuadres","Viajes cerrados"],["ctl","Controles de carga","Ver e imprimir por fechas"],["gest","Gestión de vendedores y camiones","Altas, bajas y matrículas"],["arts","Gestión de artículos","Orden de la hoja y pesos"]].map(([k,t,sub])=>`<button data-side="autoventa" data-avsec="${k}" class="${S.tab==="autoventa"&&(S.av.sec||"cuadres")===k?"on":""}">${t}<small>${sub}</small></button>`).join("")}</nav></div>`:""}
     <div style="flex:1"></div><div class="sbot"><button class="navb" id="sideAct">Actualizar</button><button class="navb" id="sideSalir">Salir</button></div>`;
   {const h=$("#hdr");if(h&&h.offsetHeight)sd.style.setProperty("--hdrH",h.offsetHeight+"px");sd.scrollTop=0}
   if(!marcoDesk.ok){marcoDesk.ok=1;const re=()=>{const h=$("#hdr"),d=$("#side");if(h&&d&&h.offsetHeight)d.style.setProperty("--hdrH",h.offsetHeight+"px")};if(document.fonts)document.fonts.ready.then(re);addEventListener("resize",re);setTimeout(re,300)}
-  sd.querySelectorAll("[data-side]").forEach(b=>b.onclick=async()=>{if(!(await salirPrecios()))return;S.tab=b.dataset.side;S.scr=null;S.sel.clear();if(b.dataset.avsec){S.av.sec=b.dataset.avsec;S.av.cur=null;S.av.arts=false}if(["historial","albaranes","exportar","difs"].includes(S.tab))S.H.data=null;render();scrollTo(0,0)});
-  $("#sideAct").onclick=async()=>{if(["historial","albaranes","exportar","difs"].includes(S.tab)&&!S.scr){cargarHist()}else{await cargar();toast("Datos actualizados")}};
+  sd.querySelectorAll("[data-side]").forEach(b=>b.onclick=async()=>{if(!(await salirPrecios()))return;S.tab=b.dataset.side;S.scr=null;S.sel.clear();if(b.dataset.avsec){S.av.sec=b.dataset.avsec;S.av.cur=null;S.av.arts=false}if(["historial","albaranes","exportar","difs","resumen"].includes(S.tab))S.H.data=null;render();scrollTo(0,0)});
+  $("#sideAct").onclick=async()=>{if(["historial","albaranes","exportar","difs","resumen"].includes(S.tab)&&!S.scr){cargarHist()}else{await cargar();toast("Datos actualizados")}};
   $("#sideSalir").onclick=async()=>{const c=await confirmar("Salir","¿Cerrar la sesión en este ordenador?");if(c.ok){S.pin="";S.user=null;LS.del("ped_pin");render()}};
   // título grande en la cabecera
-  const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Programa de gestión","Albaranes enviados a GESTEURO"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"],autoventa:({cuadres:["Cuadres de camiones","Viaje en curso de cada vendedor"],hist:["Histórico de cuadres","Viajes cerrados"],ctl:["Controles de carga","Ver e imprimir, uno o varios por fechas"],gest:["Gestión de vendedores y camiones","Altas, bajas y matrículas"],arts:["Gestión de artículos","Artículos de la hoja de cuadre y su orden"]})[S.av.sec||"cuadres"]};
+  const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Programa de gestión","Albaranes enviados a GESTEURO"],resumen:["Resumen de ventas","Albaranes y artículos entre fechas"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"],autoventa:({cuadres:["Cuadres de camiones","Viaje en curso de cada vendedor"],hist:["Histórico de cuadres","Viajes cerrados"],ctl:["Controles de carga","Ver e imprimir, uno o varios por fechas"],gest:["Gestión de vendedores y camiones","Altas, bajas y matrículas"],arts:["Gestión de artículos","Artículos de la hoja de cuadre y su orden"]})[S.av.sec||"cuadres"]};
   let t=T[S.tab]||["Pedidos",""];
   if(S.scr){const sc=S.scr;
     if(sc.t==="ver"){const pp=S.pedidos.find(x=>x.id===sc.id);t=pp?["Pedido del "+fDiaPed(pp.creado).replace(/^(Hoy|Ayer) · /,""),"Pedido "+sc.id]:["Pedido "+sc.id,"Detalle"]}else if(sc.t==="preparar")t=["Preparando pedido "+sc.ped.id,"Piezas servidas y pesos"];
@@ -1395,6 +1395,57 @@ function vAlbaranesDesk(app){
 }
 
 /* =================== ESCRITORIO: exportar al programa de gestión =================== */
+/* =================== ESCRITORIO: resumen de ventas (solo ADMIN) =================== */
+// Dos listados del mismo periodo: los albaranes con su importe y los artículos vendidos (piezas, kg, importe).
+// Los dos totales tienen que coincidir: cada línea vale kg × precio redondeado a céntimos, igual que en el albarán.
+const mesTxt=(d)=>{const x=new Date(d+"T12:00:00");return x.toLocaleDateString("es-ES",{month:"long",year:"numeric"})};
+function rangoMes(desp){const h=new Date();const a=new Date(h.getFullYear(),h.getMonth()+desp,1),b=new Date(h.getFullYear(),h.getMonth()+desp+1,0);
+  const f=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");return [f(a),desp===0?hoy():f(b)]}
+function datosResumen(){
+  const albs=(S.H.data?S.H.data.albaranes:[]).filter(a=>a.estado!=="ANULADO").sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha))||(+a.num)-(+b.num));
+  const peds=a=>[...new Set((a.lineas||[]).map(l=>String(l.pedido||"")).filter(Boolean))];
+  const art={};let totLin=0,kgLin=0,pzLin=0;
+  albs.forEach(a=>(a.lineas||[]).forEach(l=>{const imp=r2((+l.kg||0)*(+l.p||0));const k=String(l.c);
+    const x=art[k]||(art[k]={c:k,n:nomDe(k,l.n),pz:0,kg:0,imp:0});x.pz+=+l.pz||0;x.kg+=+l.kg||0;x.imp+=imp;totLin+=imp;kgLin+=+l.kg||0;pzLin+=+l.pz||0}));
+  const rk=rangos(S.productos),arts=Object.values(art).sort((a,b)=>(rk[a.c]??1e4)-(rk[b.c]??1e4)||a.n.localeCompare(b.n,"es"));
+  const totAlb=r2(albs.reduce((s,a)=>s+(+a.total||0),0)),kgAlb=albs.reduce((s,a)=>s+(+a.kg||0),0);
+  return {albs,peds,arts,totLin:r2(totLin),kgLin,pzLin,totAlb,kgAlb,cuadra:Math.abs(r2(totLin)-totAlb)<0.005};
+}
+function vResumen(app){
+  if(S.rol!=="ADMIN"){S.tab="pedidos";return render()}
+  if(!S.H.data&&!S.H.cargando){barra("");cargarHist();return}
+  const R=datosResumen(), per=`${fDia(S.H.desde)} – ${fDia(S.H.hasta)}`;
+  app.innerHTML=`<div class="wrap">${filtroFechas(`<div class="acc"><button class="btn sm" data-mes="0">Este mes</button><button class="btn sm" data-mes="-1">Mes anterior</button></div>`)}
+    <div class="acc" style="align-items:center;margin:8px 0 12px"><b style="font-family:var(--display);font-size:20px">${esc(per)}</b><span style="flex:1"></span>
+      <span class="tag ${R.cuadra?"ok":"no"}">${R.cuadra?"✓ Artículos y albaranes suman lo mismo":"⚠ No coinciden: "+eur(R.totLin)+" € en artículos y "+eur(R.totAlb)+" € en albaranes"}</span>
+      <button class="btn pri" id="rImp" ${R.albs.length?"":"disabled"}>Imprimir resumen</button></div>
+    <div class="sec">1 · Albaranes (${R.albs.length})</div>
+    <div class="tblw"><table class="t"><thead><tr><th>Fecha</th><th>Nº albarán</th><th>Cliente</th><th>Pedidos</th><th class="n">Kg</th><th class="n">Importe</th></tr></thead>
+      <tbody>${R.albs.map(a=>`<tr data-ralb="${esc(a.num)}" style="cursor:pointer"><td><b>${fDia(a.fecha)}</b></td><td class="nalb">${esc(a.num)}</td><td>${esc(a.cliente||"")}</td><td>${R.peds(a).join(", ")}</td><td class="n">${kgf(a.kg)}</td><td class="n">${eur(a.total)} €</td></tr>`).join("")||`<tr><td colspan="6" class="vacio">No hay albaranes en estas fechas.</td></tr>`}</tbody>
+      ${R.albs.length?`<tfoot><tr><th colspan="4">TOTAL · ${R.albs.length} albaranes</th><th class="n">${kgf(R.kgAlb)}</th><th class="n">${eur(R.totAlb)} €</th></tr></tfoot>`:""}</table></div>
+    <div class="sec">2 · Artículos vendidos (${R.arts.length})</div>
+    <div class="tblw"><table class="t"><thead><tr><th>Código</th><th>Artículo</th><th class="n">Piezas</th><th class="n">Kg</th><th class="n">€/kg medio</th><th class="n">Importe</th></tr></thead>
+      <tbody>${R.arts.map(x=>`<tr><td class="nalb">${esc(x.c)}</td><td style="${estiloG(grupoDe(x.c))}"><i class="pdot"></i><b>${esc(x.n)}</b></td><td class="n">${x.pz}</td><td class="n">${kgf(x.kg)}</td><td class="n">${x.kg?eur(x.imp/x.kg):""}</td><td class="n">${eur(x.imp)} €</td></tr>`).join("")||`<tr><td colspan="6" class="vacio">—</td></tr>`}</tbody>
+      ${R.arts.length?`<tfoot><tr><th colspan="2">TOTAL</th><th class="n">${R.pzLin}</th><th class="n">${kgf(R.kgLin)}</th><th></th><th class="n">${eur(R.totLin)} €</th></tr></tfoot>`:""}</table></div></div>`;
+  barra("");
+  enlazarFiltro(app);
+  app.querySelectorAll("[data-mes]").forEach(b=>b.onclick=()=>{[S.H.desde,S.H.hasta]=rangoMes(+b.dataset.mes);cargarHist()});
+  app.onclick=e=>{const tr=e.target.closest("[data-ralb]");if(tr){S.scr={t:"verAlb",num:tr.dataset.ralb};render()}};
+  $("#rImp").onclick=()=>imprimirResumen(R,per);
+}
+function imprimirResumen(R,per){
+  $("#imp").innerHTML=`<section class="copia">${cabecera("RESUMEN DE VENTAS","",esc(per))}
+    <div class="meta"><div><b>Cliente:</b> CASA</div><div><b>Albaranes:</b> ${R.albs.length}</div><div><b>Total:</b> ${eur(R.totAlb)} €</div></div>
+    <table><thead><tr><th style="width:14%">Fecha</th><th style="width:12%">Nº</th><th>Pedidos</th><th style="width:14%">Kg</th><th style="width:17%">Importe €</th></tr></thead>
+    <tbody>${R.albs.map(a=>`<tr><td>${fDia(a.fecha)}</td><td>${esc(a.num)}</td><td>${R.peds(a).join(", ")}</td><td class="n">${kgf(a.kg)}</td><td class="n">${eur(a.total)}</td></tr>`).join("")}</tbody>
+    <tfoot><tr><td colspan="3">TOTAL ALBARANES</td><td class="n">${kgf(R.kgAlb)}</td><td class="n">${eur(R.totAlb)}</td></tr></tfoot></table>
+    <h3 style="margin:6mm 0 2mm;font-size:11pt">Artículos vendidos</h3>
+    <table><thead><tr><th style="width:12%">Código</th><th>Artículo</th><th style="width:10%">Piezas</th><th style="width:13%">Kg</th><th style="width:13%">€/kg medio</th><th style="width:16%">Importe €</th></tr></thead>
+    <tbody>${R.arts.map(x=>`<tr><td>${esc(x.c)}</td><td style="${estiloG(grupoDe(x.c))}"><i class="pdot"></i><b>${esc(x.n)}</b></td><td class="n">${x.pz}</td><td class="n">${kgf(x.kg)}</td><td class="n">${x.kg?eur(x.imp/x.kg):""}</td><td class="n">${eur(x.imp)}</td></tr>`).join("")}</tbody>
+    <tfoot><tr><td colspan="2">TOTAL ARTÍCULOS</td><td class="n">${R.pzLin}</td><td class="n">${kgf(R.kgLin)}</td><td></td><td class="n">${eur(R.totLin)}</td></tr></tfoot></table>
+    <p style="margin-top:3mm;font-size:9pt">${R.cuadra?"✓ La suma de artículos coincide con la suma de albaranes.":"⚠ La suma de artículos ("+eur(R.totLin)+" €) no coincide con la de albaranes ("+eur(R.totAlb)+" €)."}</p></section>`;
+  imprimir("A4 portrait","12mm");
+}
 function vExportar(app){
   if(!S.H.data&&!S.H.cargando){barra("");cargarHist();return}
   if(!S.H.exp)S.H.exp="todos";
