@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "146 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "147 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1317,7 +1317,7 @@ async function accionPedido(p,a){
 
 /* =================== ESCRITORIO: histórico =================== */
 const haceDias=d=>{const x=new Date();x.setDate(x.getDate()-d);x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,10)};
-S.H={desde:haceDias(30),hasta:hoy(),estado:"",q:"",exp:"pend",data:null,cargando:false,err:"",abiertos:new Set(),selExp:null};
+S.H={desde:haceDias(30),hasta:hoy(),estado:"",q:"",exp:"todos",data:null,cargando:false,err:"",abiertos:new Set(),selExp:null};
 async function cargarHist(){
   S.H.cargando=true;S.H.err="";S.H.selExp=null;render();
   try{const j=await api("historial",{desde:S.H.desde,hasta:S.H.hasta});S.H.data={pedidos:j.pedidos,albaranes:j.albaranes}}
@@ -1462,10 +1462,10 @@ function vExportar(app){
   const fich=a=>/AUTO (T\d+\.TXT)/.exec(a.exportadoPor||"");
   app.innerHTML=`<div class="wrap">${filtroFechas(`<label class="lbl">Mostrar<select id="hX"><option value="todos"${S.H.exp==="todos"?" selected":""}>Todos</option><option value="pend"${S.H.exp==="pend"?" selected":""}>Sin enviar</option><option value="hechos"${S.H.exp==="hechos"?" selected":""}>Enviados</option></select></label>`)}
     <p class="nota">Cada albarán se envía <b>solo</b> al programa de gestión al emitirlo: fichero <b>T + nº de albarán</b> (p. ej. T0000012.TXT) en la carpeta V:\\SERVIDORW10\\ALBTIEND, unos minutos después. Aquí ves cuáles han llegado a enviarse. Si alguno sale «Sin enviar» o hay que repetirlo (por ejemplo, tras corregir un código), márcalo y pulsa «Enviar al programa».</p>
-    ${npend?`<div class="aviso">${npend} albarán(es) sin enviar al programa.</div>`:""}
+    ${npend?`<div class="aviso">${npend} albarán(es) sin enviar al programa.</div>`:albs.length?`<div class="tag ok" style="margin:0 0 10px">✓ Los ${albs.length} albaranes de estas fechas están enviados al programa</div>`:""}
     <div class="tblw"><table class="t"><thead><tr><th><input type="checkbox" id="xAll" class="selbox" ${vis.length&&sel.length===vis.length?"checked":""} aria-label="Marcar todos"></th><th>Fecha</th><th>Nº</th><th>Pedidos</th><th class="n">Líneas</th><th class="n">Kg</th><th class="n">Importe</th><th>Programa de gestión</th></tr></thead>
     <tbody>${vis.map(a=>{const f=fich(a);return `<tr><td><input type="checkbox" class="selbox" data-x="${esc(a.num)}" ${S.H.selExp.has(String(a.num))?"checked":""} aria-label="Albarán ${esc(a.num)}"></td><td><b>${fDia(a.fecha)}</b></td><td class="nalb">${esc(a.num)}</td><td>${esc(a.pedidos)}</td><td class="n">${a.lineas.length}</td><td class="n">${kgf(a.kg)}</td><td class="n">${eur(a.total)} €</td>
-      <td>${a.exportado?`<span class="tag ok">Enviado ${fCorta(a.exportado)}${f?" · "+f[1]:a.exportadoPor?" · "+esc(a.exportadoPor):""}</span>`:`<span class="tag no">Sin enviar</span>`}</td></tr>`}).join("")||`<tr><td colspan="8" class="vacio">No hay albaranes en estas fechas.</td></tr>`}</tbody></table></div></div>`;
+      <td>${a.exportado?`<span class="tag ok">Enviado ${fCorta(a.exportado)}${f?" · "+f[1]:a.exportadoPor?" · "+esc(a.exportadoPor):""}</span>`:`<span class="tag no">Sin enviar</span>`}</td></tr>`}).join("")||`<tr><td colspan="8" class="vacio">${albs.length&&S.H.exp==="pend"?"✓ Todos los albaranes de estas fechas ("+albs.length+") están enviados al programa. Elige «Mostrar: Todos» para verlos.":"No hay albaranes en estas fechas."}</td></tr>`}</tbody></table></div></div>`;
   barra(`<span class="muted">${sel.length} albarán(es) marcados</span><button class="btn pri" id="xEnv" ${sel.length?"":"disabled"}>Enviar al programa</button>`);
   enlazarFiltro(app);
   $("#hX").onchange=e=>{S.H.exp=e.target.value;render()};
