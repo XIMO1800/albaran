@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "143 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "144 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1414,37 +1414,42 @@ function datosResumen(){
 function vResumen(app){
   if(S.rol!=="ADMIN"){S.tab="pedidos";return render()}
   if(!S.H.data&&!S.H.cargando){barra("");cargarHist();return}
-  const R=datosResumen(), per=`${fDia(S.H.desde)} – ${fDia(S.H.hasta)}`;
-  app.innerHTML=`<div class="wrap">${filtroFechas(`<div class="acc"><button class="btn sm" data-mes="0">Este mes</button><button class="btn sm" data-mes="-1">Mes anterior</button></div>`)}
-    <div class="acc" style="align-items:center;margin:8px 0 12px"><b style="font-family:var(--display);font-size:20px">${esc(per)}</b><span style="flex:1"></span>
-      <span class="tag ${R.cuadra?"ok":"no"}">${R.cuadra?"✓ Artículos y albaranes suman lo mismo":"⚠ No coinciden: "+eur(R.totLin)+" € en artículos y "+eur(R.totAlb)+" € en albaranes"}</span>
-      <button class="btn pri" id="rImp" ${R.albs.length?"":"disabled"}>Imprimir resumen</button></div>
-    <div class="sec">1 · Albaranes (${R.albs.length})</div>
-    <div class="tblw"><table class="t"><thead><tr><th>Fecha</th><th>Nº albarán</th><th>Cliente</th><th>Pedidos</th><th class="n">Kg</th><th class="n">Importe</th></tr></thead>
+  const R=datosResumen(), per=`${fDia(S.H.desde)} – ${fDia(S.H.hasta)}`, T=S.H.resTab||"alb";
+  const tAlb=`<div class="tblw"><table class="t"><thead><tr><th>Fecha</th><th>Nº albarán</th><th>Cliente</th><th>Pedidos</th><th class="n">Kg</th><th class="n">Importe</th></tr></thead>
       <tbody>${R.albs.map(a=>`<tr data-ralb="${esc(a.num)}" style="cursor:pointer"><td><b>${fDia(a.fecha)}</b></td><td class="nalb">${esc(a.num)}</td><td>${esc(a.cliente||"")}</td><td>${R.peds(a).join(", ")}</td><td class="n">${kgf(a.kg)}</td><td class="n">${eur(a.total)} €</td></tr>`).join("")||`<tr><td colspan="6" class="vacio">No hay albaranes en estas fechas.</td></tr>`}</tbody>
-      ${R.albs.length?`<tfoot><tr><th colspan="4">TOTAL · ${R.albs.length} albaranes</th><th class="n">${kgf(R.kgAlb)}</th><th class="n">${eur(R.totAlb)} €</th></tr></tfoot>`:""}</table></div>
-    <div class="sec">2 · Artículos vendidos (${R.arts.length})</div>
-    <div class="tblw"><table class="t"><thead><tr><th>Código</th><th>Artículo</th><th class="n">Piezas</th><th class="n">Kg</th><th class="n">€/kg medio</th><th class="n">Importe</th></tr></thead>
-      <tbody>${R.arts.map(x=>`<tr><td class="nalb">${esc(x.c)}</td><td style="${estiloG(grupoDe(x.c))}"><i class="pdot"></i><b>${esc(x.n)}</b></td><td class="n">${x.pz}</td><td class="n">${kgf(x.kg)}</td><td class="n">${x.kg?eur(x.imp/x.kg):""}</td><td class="n">${eur(x.imp)} €</td></tr>`).join("")||`<tr><td colspan="6" class="vacio">—</td></tr>`}</tbody>
-      ${R.arts.length?`<tfoot><tr><th colspan="2">TOTAL</th><th class="n">${R.pzLin}</th><th class="n">${kgf(R.kgLin)}</th><th></th><th class="n">${eur(R.totLin)} €</th></tr></tfoot>`:""}</table></div></div>`;
+      ${R.albs.length?`<tfoot><tr><th colspan="4">TOTAL · ${R.albs.length} albaranes</th><th class="n">${kgf(R.kgAlb)}</th><th class="n">${eur(R.totAlb)} €</th></tr></tfoot>`:""}</table></div>`;
+  const tArt=`<div class="tblw"><table class="t"><thead><tr><th>Código</th><th>Artículo</th><th class="n">Piezas</th><th class="n">Kg</th><th class="n">€/kg medio</th><th class="n">Importe</th></tr></thead>
+      <tbody>${R.arts.map(x=>`<tr><td class="nalb">${esc(x.c)}</td><td style="${estiloG(grupoDe(x.c))}"><i class="pdot"></i><b>${esc(x.n)}</b></td><td class="n">${x.pz}</td><td class="n">${kgf(x.kg)}</td><td class="n">${x.kg?eur(x.imp/x.kg):""}</td><td class="n">${eur(x.imp)} €</td></tr>`).join("")||`<tr><td colspan="6" class="vacio">No hay ventas en estas fechas.</td></tr>`}</tbody>
+      ${R.arts.length?`<tfoot><tr><th colspan="2">TOTAL · ${R.arts.length} artículos</th><th class="n">${R.pzLin}</th><th class="n">${kgf(R.kgLin)}</th><th></th><th class="n">${eur(R.totLin)} €</th></tr></tfoot>`:""}</table></div>`;
+  app.innerHTML=`<div class="wrap">${filtroFechas(`<div class="acc"><button class="btn sm" data-mes="0">Este mes</button><button class="btn sm" data-mes="-1">Mes anterior</button></div>`)}
+    <div class="av-fases" style="margin:10px 0"><button data-rtab="alb" class="${T==="alb"?"on":""}">Albaranes (${R.albs.length})</button><button data-rtab="art" class="${T==="art"?"on":""}">Artículos vendidos (${R.arts.length})</button></div>
+    <div class="acc" style="align-items:center;margin:0 0 12px"><b style="font-family:var(--display);font-size:20px">${esc(per)}</b><span style="flex:1"></span>
+      <span class="tag ${R.cuadra?"ok":"no"}">${R.cuadra?"✓ Artículos y albaranes suman lo mismo: "+eur(R.totAlb)+" €":"⚠ No coinciden: "+eur(R.totLin)+" € en artículos y "+eur(R.totAlb)+" € en albaranes"}</span>
+      <button class="btn pri" id="rImp" ${R.albs.length?"":"disabled"}>Imprimir ${T==="alb"?"albaranes":"artículos"}</button></div>
+    ${T==="alb"?tAlb:tArt}</div>`;
   barra("");
   enlazarFiltro(app);
   app.querySelectorAll("[data-mes]").forEach(b=>b.onclick=()=>{[S.H.desde,S.H.hasta]=rangoMes(+b.dataset.mes);cargarHist()});
-  app.onclick=e=>{const tr=e.target.closest("[data-ralb]");if(tr){S.scr={t:"verAlb",num:tr.dataset.ralb};render()}};
-  $("#rImp").onclick=()=>imprimirResumen(R,per);
+  app.onclick=e=>{const rt=e.target.closest("[data-rtab]");if(rt){S.H.resTab=rt.dataset.rtab;render();return}
+    const tr=e.target.closest("[data-ralb]");if(tr){S.scr={t:"verAlb",num:tr.dataset.ralb};render()}};
+  $("#rImp").onclick=()=>imprimirResumen(R,per,T);
 }
-function imprimirResumen(R,per){
-  $("#imp").innerHTML=`<section class="copia">${cabecera("RESUMEN DE VENTAS","",esc(per))}
-    <div class="meta"><div><b>Cliente:</b> CASA</div><div><b>Albaranes:</b> ${R.albs.length}</div><div><b>Total:</b> ${eur(R.totAlb)} €</div></div>
-    <table><thead><tr><th style="width:14%">Fecha</th><th style="width:12%">Nº</th><th>Pedidos</th><th style="width:14%">Kg</th><th style="width:17%">Importe €</th></tr></thead>
+// Impresión compacta: un informe de albaranes y otro de artículos, por separado
+function imprimirResumen(R,per,T){
+  const st=`<style>#imp .res table{margin-top:2mm}#imp .res td,#imp .res th{padding:.7mm 1.6mm;font-size:8.5pt;line-height:1.12}#imp .res .pdot{width:2.2mm;height:2.2mm}#imp .res tfoot td{font-size:9.5pt;font-weight:700}#imp .res .meta{margin:2mm 0}</style>`;
+  const nota=`<p style="margin-top:2mm;font-size:8.5pt">${R.cuadra?"✓ La suma de artículos coincide con la suma de albaranes ("+eur(R.totAlb)+" €).":"⚠ La suma de artículos ("+eur(R.totLin)+" €) no coincide con la de albaranes ("+eur(R.totAlb)+" €)."}</p>`;
+  const alb=`<section class="copia res">${st}${cabecera("RESUMEN DE ALBARANES","",esc(per))}
+    <div class="meta"><div><b>Cliente:</b> CASA</div><div><b>Albaranes:</b> ${R.albs.length}</div><div><b>Kg:</b> ${kgf(R.kgAlb)}</div><div><b>Total:</b> ${eur(R.totAlb)} €</div></div>
+    <table><thead><tr><th style="width:15%">Fecha</th><th style="width:12%">Nº albarán</th><th>Pedidos</th><th style="width:15%">Kg</th><th style="width:18%">Importe €</th></tr></thead>
     <tbody>${R.albs.map(a=>`<tr><td>${fDia(a.fecha)}</td><td>${esc(a.num)}</td><td>${R.peds(a).join(", ")}</td><td class="n">${kgf(a.kg)}</td><td class="n">${eur(a.total)}</td></tr>`).join("")}</tbody>
-    <tfoot><tr><td colspan="3">TOTAL ALBARANES</td><td class="n">${kgf(R.kgAlb)}</td><td class="n">${eur(R.totAlb)}</td></tr></tfoot></table>
-    <h3 style="margin:6mm 0 2mm;font-size:11pt">Artículos vendidos</h3>
-    <table><thead><tr><th style="width:12%">Código</th><th>Artículo</th><th style="width:10%">Piezas</th><th style="width:13%">Kg</th><th style="width:13%">€/kg medio</th><th style="width:16%">Importe €</th></tr></thead>
+    <tfoot><tr><td colspan="3">TOTAL · ${R.albs.length} albaranes</td><td class="n">${kgf(R.kgAlb)}</td><td class="n">${eur(R.totAlb)}</td></tr></tfoot></table>${nota}</section>`;
+  const art=`<section class="copia res">${st}${cabecera("RESUMEN DE ARTÍCULOS","",esc(per))}
+    <div class="meta"><div><b>Cliente:</b> CASA</div><div><b>Artículos:</b> ${R.arts.length}</div><div><b>Piezas:</b> ${R.pzLin}</div><div><b>Kg:</b> ${kgf(R.kgLin)}</div><div><b>Total:</b> ${eur(R.totLin)} €</div></div>
+    <table><thead><tr><th style="width:12%">Código</th><th>Artículo</th><th style="width:9%">Piezas</th><th style="width:12%">Kg</th><th style="width:12%">€/kg medio</th><th style="width:15%">Importe €</th></tr></thead>
     <tbody>${R.arts.map(x=>`<tr><td>${esc(x.c)}</td><td style="${estiloG(grupoDe(x.c))}"><i class="pdot"></i><b>${esc(x.n)}</b></td><td class="n">${x.pz}</td><td class="n">${kgf(x.kg)}</td><td class="n">${x.kg?eur(x.imp/x.kg):""}</td><td class="n">${eur(x.imp)}</td></tr>`).join("")}</tbody>
-    <tfoot><tr><td colspan="2">TOTAL ARTÍCULOS</td><td class="n">${R.pzLin}</td><td class="n">${kgf(R.kgLin)}</td><td></td><td class="n">${eur(R.totLin)}</td></tr></tfoot></table>
-    <p style="margin-top:3mm;font-size:9pt">${R.cuadra?"✓ La suma de artículos coincide con la suma de albaranes.":"⚠ La suma de artículos ("+eur(R.totLin)+" €) no coincide con la de albaranes ("+eur(R.totAlb)+" €)."}</p></section>`;
-  imprimir("A4 portrait","12mm");
+    <tfoot><tr><td colspan="2">TOTAL · ${R.arts.length} artículos</td><td class="n">${R.pzLin}</td><td class="n">${kgf(R.kgLin)}</td><td></td><td class="n">${eur(R.totLin)}</td></tr></tfoot></table>${nota}</section>`;
+  $("#imp").innerHTML=T==="art"?art:alb;
+  imprimir("A4 portrait","10mm");
 }
 function vExportar(app){
   if(!S.H.data&&!S.H.cargando){barra("");cargarHist();return}
