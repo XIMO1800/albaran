@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "156 · 30/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "157 · 30/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1701,8 +1701,9 @@ function vAutoventa(app){
   const carga="";
   // histórico con filtros
   const fv=S.av.fv, fd=S.av.fd, fh=S.av.fh;
-  // primero los abiertos (en ruta); después los cerrados, del último cuadre hecho al más antiguo
-  const hist=avLista(fv||null).filter(([,c])=>(!fd||c.fecha>=fd)&&(!fh||c.fecha<=fh))
+  // del último cuadre hecho al más antiguo
+  // solo cuadres cerrados: los abiertos ya están arriba, en cada vendedor
+  const hist=avLista(fv||null).filter(([,c])=>c.estado==="cerrado"&&(!fd||c.fecha>=fd)&&(!fh||c.fecha<=fh))
     .sort(([,a],[,b])=>((a.estado==="cerrado")-(b.estado==="cerrado"))||String(b.cierre||avHasta(b)||b.fecha||"").localeCompare(String(a.cierre||avHasta(a)||a.fecha||""))||(b.creado||0)-(a.creado||0));
   const filaH=([id,c])=>{const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini"),mal=avMal(c);
     const est=c.estado!=="cerrado"?`<span class="chip e-PREPARANDO">Abierto</span>`:mal?`<span class="chip e-ANULADO">${mal} sin cuadrar</span>`:`<span class="chip e-PREPARADO">Cuadrado</span>`;
