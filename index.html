@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "150 · 27/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "151 · 30/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -2021,11 +2021,15 @@ function vAvCuadre(app){
     if(b.dataset.entre){const bk=b.dataset.entre,pz=avP($("#avEp-"+bk).value),kg=avP($("#avEk-"+bk).value);if(kg===null)return;const p=c.pesos[bk]||(c.pesos[bk]=avPeso0());(p.entre||(p.entre=[])).push({pz,kg});avTocar();avRepintar();return}
     if(b.id==="avCerrar"){S.av.cerrando=true;avRepintar();const d=$("#avSigIni");if(d){d.scrollIntoView({block:"center"});d.focus()}return}
     if(b.id==="avNoCerrar"){S.av.cerrando=false;avRepintar();return}
-    if(b.id==="avCerrarOk"){const sigIni=($("#avSigIni")||{}).value||avIni(hoy());S.av.cerrando=false;c.estado="cerrado";c.cierre=hoy();delete c.primero;avFijarCtl(c);avTocar();
+    if(b.id==="avCerrarOk"){const sigIni=($("#avSigIni")||{}).value||avIni(hoy());S.av.cerrando=false;c.estado="cerrado";c.cierre=c.cierre||hoy();delete c.primero;avFijarCtl(c);avTocar();
       const sig=Object.entries(S.av.cuadres).find(([i2,x])=>x.origen===id&&x.estado!=="cerrado"), otro=avAbierto(c.vendedor);
       if(sig){avBase(c,sig[1]);sig[1].inicio=sigIni;avTocar(sig[0])}
       else if(!otro){const n={vendedor:c.vendedor,fecha:hoy(),estado:"abierto",creado:Date.now(),lineas:{},pesos:{grande:avPeso0(),mini:avPeso0()},bandejas:{},nota:"",origen:id,inicio:sigIni};avBase(c,n);const nid="c"+Date.now().toString(36);S.av.cuadres[nid]=n;avTocar(nid)}
       avSubir();S.av.cur=null;toast(otro&&!sig?"Cuadre cerrado":"Cuadre cerrado · el siguiente viaje empieza el "+avDM(sigIni));render();scrollTo(0,0);return}
+    if(b.id==="avPasarSig"){const sig=Object.entries(S.av.cuadres).find(([,x])=>x.origen===id&&x.estado!=="cerrado");if(!sig)return;
+      const w0=avPeso(sig[1],"grande").total,m0=avPeso(sig[1],"mini").total;avBase(c,sig[1]);avTocar(sig[0]);avSubir();
+      const w1=avPeso(sig[1],"grande").total,m1=avPeso(sig[1],"mini").total;
+      toast(`Viaje siguiente actualizado${m1!==m0?` · minis ${avKg(m0||0)} → ${avKg(m1||0)} kg`:""}${w1!==w0?` · grande ${avKg(w0||0)} → ${avKg(w1||0)} kg`:""}`);render();return}
     if(b.id==="avReabrir"){c.estado="abierto";S.av.fase="desc";avTocar();render();return}
     if(b.id==="avBorrar"){S.av.borrar=true;render();return}
     if(b.id==="avNoBorrar"){S.av.borrar=false;render();return}
@@ -2140,8 +2144,9 @@ function avHoja(c){
   </tbody></table></div>
   <div class="sec">Notas</div><textarea id="avNota" placeholder="Incidencias, devoluciones, fallos de cuadres anteriores…">${esc(c.nota||"")}</textarea>
   <div class="acc" style="margin-top:12px"><button class="btn" id="avCopiar">Copiar resumen</button><button class="btn" id="avImprimir">Imprimir hoja</button><span style="flex:1"></span>
+    ${cerr&&Object.values(S.av.cuadres).some(x=>x.origen===S.av.cur&&x.estado!=="cerrado")?`<button class="btn pri" id="avPasarSig" title="Lo que sale de este cuadre (piezas, pesos y bandejas) pasa a ser lo que lleva el viaje siguiente">Pasar correcciones al viaje siguiente</button>`:""}
     ${cerr?`<button class="btn" id="avReabrir">Reabrir para corregir</button>`:`<button class="btn pri" id="avCerrar">Cerrar cuadre</button>`}</div>
-  ${!cerr&&S.av.cerrando?`<div class="card av-cierra"><b>¿Qué día empieza a vender en el siguiente viaje?</b><div class="acc" style="margin-top:8px;align-items:center"><input type="date" id="avSigIni" value="${avIni(hoy())}"><button class="btn pri" id="avCerrarOk">Cerrar y empezar el siguiente</button><button class="btn" id="avNoCerrar">Cancelar</button></div></div>`:""}
+  ${!cerr&&S.av.cerrando?`<div class="card av-cierra"><b>¿Qué día empieza a vender en el siguiente viaje?</b><div class="acc" style="margin-top:8px;align-items:center"><input type="date" id="avSigIni" value="${(()=>{const sg=Object.values(S.av.cuadres).find(x=>x.origen===S.av.cur&&x.estado!=="cerrado");return sg?avIniC(sg):avIni(c.cierre||hoy())})()}"><button class="btn pri" id="avCerrarOk">Cerrar y empezar el siguiente</button><button class="btn" id="avNoCerrar">Cancelar</button></div></div>`:""}
   ${S.av.borrar?`<div class="card" style="margin-top:12px;border-color:var(--danger)"><b>¿Borrar este cuadre?</b> No se puede deshacer.<div class="acc" style="margin-top:8px"><button class="btn del" id="avSiBorrar">Borrar</button><button class="btn" id="avNoBorrar">Cancelar</button></div></div>`:`<div style="margin-top:12px"><button class="btn sm del" id="avBorrar">Borrar cuadre</button></div>`}`;
 }
 function avRefrescar(){
