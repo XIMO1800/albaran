@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "155 · 30/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "156 · 30/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1665,7 +1665,7 @@ function avHasta(c){if(c.estado!=="cerrado")return null;if(c.cierre)return c.cie
 const avDM=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.getDate()+"/"+(d.getMonth()+1)};
 // «del 28/10 (X) al 30/10 (V)» · abierto: «desde 9/11 (L) · en ruta»
 const avDL=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:`${d.getDate()}/${d.getMonth()+1} (${LETRA_DIA[d.getDay()]})`};
-function avViaje(c){const h=avHasta(c),i=avIniC(c);return h?`${avDL(i)} – ${avDL(h)}`:c.estado==="cerrado"?avDL(i):`${avDL(i)} – en ruta`}
+function avViaje(c){const h=avHasta(c),i=avIniC(c);return h?`${avDL(i)}\u2002–\u2002${avDL(h)}`:c.estado==="cerrado"?avDL(i):`${avDL(i)}\u2002–\u2002en ruta`}
 // Al cerrar un viaje, el siguiente empieza con lo que descargó y lo que cargó ese día
 function avBase(a,c){c.lineas=c.lineas||{};avRefs(a).forEach(k=>{const x=avCalc(avLin(a,k));if(!x.sale){if(c.lineas[k]){delete c.lineas[k].ll;delete c.lineas[k].en}return}
     const l=c.lineas[k]||(c.lineas[k]={});const ll=x.sale-(x.ca||0);if(ll)l.ll=ll;else delete l.ll;if(x.ca)l.en=x.ca;else delete l.en});
