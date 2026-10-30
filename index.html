@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "157 · 30/10/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "158 · 30/10/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1700,7 +1700,8 @@ function vAutoventa(app){
       ${ab?`<button class="btn pri" data-avabrir="${ab[0]}">${avViaje(ab[1])}</button>`:`<button class="btn pri" data-avnuevo="${esc(x)}">Empezar cuadre de hoy</button>`}</div>`};
   const carga="";
   // histórico con filtros
-  const fv=S.av.fv, fd=S.av.fd, fh=S.av.fh;
+  // vendedor del histórico: por defecto, el que está marcado arriba; «*» = todos
+  const soloHist=esDesk()&&S.av.sec==="hist", fv=S.av.fv==="*"?"":(S.av.fv||(soloHist?"":v)), fd=S.av.fd, fh=S.av.fh;
   // del último cuadre hecho al más antiguo
   // solo cuadres cerrados: los abiertos ya están arriba, en cada vendedor
   const hist=avLista(fv||null).filter(([,c])=>c.estado==="cerrado"&&(!fd||c.fecha>=fd)&&(!fh||c.fecha<=fh))
@@ -1730,7 +1731,7 @@ function vAutoventa(app){
     ${!S.av.cargado?`<div class="muted" style="text-align:center;padding:8px">Leyendo cuadres de la hoja…</div>`:""}
     ${carga}`;
   const pHist=`<div class="sec"${sec==="hist"?' style="margin-top:0"':""}>Histórico de cuadres</div>
-    <div class="acc av-filtro"><select id="avFv"><option value="">Todos los vendedores</option>${vs.map(x=>`<option ${x===fv?"selected":""}>${esc(x)}</option>`).join("")}</select>
+    <div class="acc av-filtro"><select id="avFv"><option value="*">Todos los vendedores</option>${vs.map(x=>`<option ${x===fv?"selected":""}>${esc(x)}</option>`).join("")}</select>
       <label>Desde <input type="date" id="avFd" value="${fd}"></label><label>Hasta <input type="date" id="avFh" value="${fh}"></label></div>
     ${desk?`<div class="tblw"><table class="t av-hist"><thead><tr><th>Vendedor</th><th>Viaje</th><th class="n">Llevaba</th><th class="n">Vendidas</th><th>Diferencias</th><th class="n">Aceite gr.</th><th class="n">Minis</th><th class="n">Sale con</th><th>Estado</th><th></th></tr></thead>
       <tbody>${hist.map(filaH).join("")||`<tr><td colspan="10" class="vacio">No hay cuadres con estos filtros.</td></tr>`}</tbody></table></div>`
@@ -1756,7 +1757,7 @@ function vAutoventa(app){
     const b=e.target.closest("[data-avabrir],[data-avnuevo],[data-avvend],button");if(!b)return;
     if(b.dataset.avabrir)return avAbrir(b.dataset.avabrir);
     if(b.dataset.avnuevo){S.av.vend=b.dataset.avnuevo;LS.set("av_vend",S.av.vend);return avNuevo(S.av.vend)}
-    if(b.dataset.avvend){S.av.vend=b.dataset.avvend;LS.set("av_vend",S.av.vend);render();return}
+    if(b.dataset.avvend){S.av.vend=b.dataset.avvend;S.av.fv=undefined;LS.set("av_vend",S.av.vend);render();return}
     const impC=ids=>{const l=ids.map(i=>S.av.cuadres[i]).filter(Boolean).sort((a,b)=>avCtl(a).fecha.localeCompare(avCtl(b).fecha));if(!l.length)return toast("No hay controles de carga",true);avImprimirCtl(l)};
     if(b.id==="avIrCtl"){S.av.sec="ctl";render();scrollTo(0,0);return}
     if(b.id==="avCtlVolver"){S.av.sec=null;render();scrollTo(0,0);return}
