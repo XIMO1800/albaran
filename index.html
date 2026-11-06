@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "164 · 06/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "165 · 06/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1559,7 +1559,7 @@ function avCalc(l){
   const lleva=(avN(l.ll)||0)+(avN(l.en)||0)+avExtra(l), de=avN(l.de), al=avN(l.al), ca=avN(l.ca)||0, dv=Math.abs(avN(l.dv)||0);
   const vend=de===null?null:lleva-de, dif=vend===null||al===null?null:al-vend;
   const base=de===null?(lleva===0?0:null):de;
-  return {lleva,de,vend,al,dif,ca,dv,sale:base===null?null:base-dv+ca,usada:lleva>0||de!==null||ca!==0||al!==null||dv!==0};
+  return {lleva,de,vend,al,dif,ca,dv,sale:base===null?null:base-dv+ca,usada:lleva>0||!!de||ca!==0||!!al||dv!==0};
 }
 // referencias de la hoja: marcadas para autoventa (orden del catálogo) + las que ya tenga el cuadre
 function avRefs(c,todas){
@@ -1604,8 +1604,9 @@ const avGkg=g=>avKg(Math.abs(g)/1000)+" kg", avDifKg=g=>g===null?"":(g>0?"+":g<0
 const avDifTxt=g=>g===null?"pendiente":g===0?"exacto":g>0?`sobran ${avGkg(g)}`:`faltan ${avGkg(g)}`;
 // Pesos: se da por cuadrado por debajo de 1 kg en el aceite grande y de medio kilo en los minis
 const AV_TOLB={grande:1000,mini:500}, avTolB=b=>AV_TOLB[b]??AV_TOL;
-const avDifCls=(g,b)=>g===null?"av-neu":Math.abs(g)<=avTolB(b)?"av-ok":g>0?"av-mas":"av-mal"; // sobra = azul, falta = rojo
-function avMal(c){return avTot(c).mal+["grande","mini"].filter(b=>{const g=avPeso(c,b).difG;return g!==null&&Math.abs(g)>avTolB(b)}).length}
+const avPOk=(g,b)=>g!==null&&g>=-avTolB(b); // si sobra (albaranes > vendido) se da por cuadrado; solo cuenta lo que falta
+const avDifCls=(g,b)=>g===null?"av-neu":avPOk(g,b)?"av-ok":"av-mal"; // falta = rojo
+function avMal(c){return avTot(c).mal+["grande","mini"].filter(b=>{const g=avPeso(c,b).difG;return g!==null&&!avPOk(g,b)}).length}
 
 /* ---- servidor y guardado (se guarda solo; si no hay cobertura se reintenta) ---- */
 async function avCargar(){
@@ -2111,7 +2112,7 @@ function avBloquePeso(c,b){
   const chips=ls=>`<div class="av-chips">${(p[ls]||[]).map((e,i)=>`<span class="av-w"><b>${avKg(avN(e.kg))}</b>${conTara?`<button data-tog="${b}|${ls}|${i}" class="${e.t?"on":""}" title="Restar la tara de la caja">${e.t?"−tara":"sin tara"}</button>`:""}<button data-quita="${b}|${ls}|${i}" aria-label="Quitar peso">×</button></span>`).join("")}</div>`;
   const add=(ls,ph)=>`<div class="padd"><input id="avAdd-${b}-${ls}" class="num" inputmode="decimal" placeholder="${ph}" data-addp="${b}|${ls}" style="width:110px"><span class="muted">kg</span><button class="btn sm" data-addp="${b}|${ls}">Añadir</button></div>`;
   const entre=avEntreP(c,b), verE=entre.length, entreKg=avR3(entre.reduce((a,e)=>a+(avN(e.kg)||0),0)), entrePz=entre.reduce((a,e)=>a+(avN(e.pz)||0),0), nCaj=entre.reduce((a,e)=>a+(e.ps?e.ps.length:0),0);
-  const ok=w.difG!==null&&Math.abs(w.difG)<=avTolB(b), ab=S.av.pAbre||(S.av.pAbre={}), abierto=ls=>!!ab[b+"|"+ls];
+  const ok=avPOk(w.difG,b), ab=S.av.pAbre||(S.av.pAbre={}), abierto=ls=>!!ab[b+"|"+ls];
   // control: cada pesada son AV_PZCAJA piezas; debe cuadrar con las piezas apuntadas en la hoja
   const ctlEst=(n,pz)=>{const k=AV_PZCAJA[b];if(!k||!code)return null;if(pz===null||pz===undefined)return n?"mal":null;if(!pz&&!n)return null;return n===Math.ceil(pz/k)?"ok":"mal"};
   const ctl=(n,pz,donde)=>{const k=AV_PZCAJA[b];if(!k||!code)return"";
@@ -2159,7 +2160,7 @@ function avBloquePeso(c,b){
     </div></div>`;
 }
 function avPesoVivo(b){const w=avPeso(avCuadre(),b),d=$("#avDif-"+b),set=(id,t)=>{const e=$(id);if(e)e.textContent=t};if(d){d.className="chip "+avDifCls(w.difG,b);d.textContent=avDifTxt(w.difG)}
-  set("#avTL-"+b,avKg(w.total)+" kg");set("#avVe-"+b,avKg(w.vend)+" kg");const ok=$(`[data-albok="${b}"]`);if(ok)ok.classList.toggle("on",w.difG!==null&&Math.abs(w.difG)<=avTolB(b));avBarra()}
+  set("#avTL-"+b,avKg(w.total)+" kg");set("#avVe-"+b,avKg(w.vend)+" kg");const ok=$(`[data-albok="${b}"]`);if(ok)ok.classList.toggle("on",avPOk(w.difG,b));avBarra()}
 function avHoja(c){
   const t=avTot(c),g=avPeso(c,"grande"),m=avPeso(c,"mini"),cerr=c.estado==="cerrado";
   const fs=avRefs(c).filter(k=>avCalc(avLin(c,k)).usada);
