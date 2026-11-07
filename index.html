@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "169 · 07/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "170 · 07/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -740,6 +740,9 @@ function datosMes(k){const [d0,d1]=mesRango(k),en=f=>{f=String(f||"").slice(0,10
   const ped=new Map(r.pedidos.map(p=>[String(p.id),p]));S.pedidos.forEach(p=>ped.set(String(p.id),p));
   const alb=new Map(r.albaranes.map(a=>[String(a.num),a]));S.albaranes.forEach(a=>alb.set(String(a.num),a));
   return {pedidos:[...ped.values()].filter(p=>en(p.creado)),albaranes:[...alb.values()].filter(a=>en(a.fecha)),cargando:m==="c",err:m&&m.err}}
+// mes en curso: lo último primero; meses pasados: del día 1 al 31
+const ordMes=(pasado,ka,kb)=>pasado?ka-kb:kb-ka;
+const hPasado=()=>S.H.hasta<hoy().slice(0,8)+"01";
 function chipsMes(){return `<div class="meses">${mesesLista().map(k=>`<button data-mes="${k}" class="${k===S.mes?"on":""}">${mesEt(k)}</button>`).join("")}</div>`}
 function enlazarMes(app){app.querySelectorAll(".meses").forEach(bar=>{const o=bar.querySelector(".on");if(o)bar.scrollLeft=Math.max(0,o.offsetLeft-bar.offsetLeft-(bar.clientWidth-o.offsetWidth)/2)});app.querySelectorAll("[data-mes]").forEach(b=>b.onclick=e=>{e.stopPropagation();S.mes=b.dataset.mes;render()})}
 // al abrir algo de un mes antiguo que no está en la app, se añade para poder verlo
@@ -897,7 +900,7 @@ function vListaOficina(app){
     <div class="sec">1 · Nuevos</div>${ordenados(["ENVIADO"]).map(p=>tarjeta(p)).join("")||`<div class="vacio">Ninguno.</div>`}
     <div class="sec">2 · Preparándose</div>${ordenados(["PREPARANDO"]).map(p=>tarjeta(p)).join("")||`<div class="vacio">Ninguno.</div>`}
     <div class="sec">3 · Preparados · marca los que van en el albarán</div>${prep.map(p=>tarjeta(p,true)).join("")||`<div class="vacio">Ninguno.</div>`}
-    <div class="sec">4 · Cerrados</div>${chipsMes()}${(()=>{const D=datosMes(S.mes),l=D.pedidos.filter(p=>["ALBARANADO","ANULADO"].includes(p.estado)).sort((a,b)=>(+b.id)-(+a.id));
+    <div class="sec">4 · Cerrados</div>${chipsMes()}${(()=>{const D=datosMes(S.mes),l=D.pedidos.filter(p=>["ALBARANADO","ANULADO"].includes(p.estado)).sort((a,b)=>ordMes(S.mes<mesHoy(),+a.id,+b.id));
       return l.map(p=>tarjeta(p)).join("")||`<div class="vacio">${D.cargando?"Cargando…":"Ninguno en "+mesEt(S.mes).toLowerCase()+"."}</div>`})()}</div>`;
   onLista(app);enlazarMes(app);
   const b=$("#bHacer"); if(b) b.onclick=()=>{S.scr={t:"albaran",alb:borradorAlbaran([...S.sel])};render();scrollTo(0,0)};
@@ -1160,7 +1163,7 @@ function vVerAlb(app){
 /* =================== lista de albaranes + exportar =================== */
 function vAlbaranes(app){
   const q=S.filtroAlb.trim().toUpperCase(), D=datosMes(S.mes);
-  const l=D.albaranes.filter(a=>!q||String(a.num).includes(q)||fDia(a.fecha).includes(q)).sort((a,b)=>(+b.num)-(+a.num));
+  const l=D.albaranes.filter(a=>!q||String(a.num).includes(q)||fDia(a.fecha).includes(q)).sort((a,b)=>ordMes(S.mes<mesHoy(),+a.num,+b.num));
   app.innerHTML=`<div class="wrap">
     <div class="acc" style="margin-bottom:8px"><input id="fA" placeholder="Buscar nº o fecha" value="${esc(S.filtroAlb)}" style="flex:1"></div>${chipsMes()}
     ${l.map(a=>`<div class="card ped" data-alb="${esc(a.num)}"><span></span><b>${fDiaPed(a.fecha+"T12:00:00")}</b><span>${a.estado==="ANULADO"?`<span class="chip e-ANULADO">Anulado</span>`:`<b>${eur(a.total)} €</b>`}</span>
@@ -1375,7 +1378,7 @@ function vHistorial(app){
   if(!S.H.data&&!S.H.cargando){cargarHist();return}
   const q=S.H.q.trim().toUpperCase();
   const peds=(S.H.data?S.H.data.pedidos:[]).filter(p=>(!S.H.estado||(S.H.estado==="DIF"?p.lineas.some(esDif):p.estado===S.H.estado))&&(!q||p.id===q||p.lineas.some(l=>String(l.c).includes(q))))
-    .sort((a,b)=>(+b.id)-(+a.id));
+    .sort((a,b)=>ordMes(hPasado(),+a.id,+b.id));
   const tPed=peds.reduce((s,p)=>s+p.lineas.reduce((x,l)=>x+(+l.pz||0),0),0), tSer=peds.reduce((s,p)=>s+p.lineas.reduce((x,l)=>x+(+servido(l)||0),0),0);
   const tKg=peds.reduce((s,p)=>s+p.lineas.reduce((x,l)=>x+num(l.kg),0),0), nDif=peds.filter(p=>p.lineas.some(esDif)).length;
   const filas=peds.map(p=>{const pz=p.lineas.reduce((x,l)=>x+(+l.pz||0),0),sv=p.lineas.reduce((x,l)=>x+(+servido(l)||0),0),kg=p.lineas.reduce((x,l)=>x+num(l.kg),0),nd=p.lineas.filter(esDif).length,ab=S.H.abiertos.has(p.id);
@@ -1412,7 +1415,7 @@ function abrirAlbaran(num){
 function vAlbaranesDesk(app){
   barra("");
   if(!S.H.data&&!S.H.cargando){cargarHist();return}
-  const albs=(S.H.data?S.H.data.albaranes:[]).slice().sort((a,b)=>(+b.num)-(+a.num));
+  const albs=(S.H.data?S.H.data.albaranes:[]).slice().sort((a,b)=>ordMes(hPasado(),+a.num,+b.num));
   const val=albs.filter(a=>a.estado!=="ANULADO");
   const filas=albs.map(a=>`<tr class="cl" data-alb="${esc(a.num)}"><td><b>${fDia(a.fecha)}</b></td><td class="nalb">${esc(a.num)}</td><td>${esc(a.cliente)}</td><td>${esc(a.pedidos)}</td><td class="n">${a.lineas.length}</td><td class="n">${kgf(a.kg)}</td><td class="n"><b>${eur(a.total)} €</b></td>
     <td>${a.estado==="ANULADO"?`<span class="chip e-ANULADO">Anulado</span>`:`<span class="chip e-PREPARADO">Emitido</span>`}</td><td>${a.estado==="ANULADO"?"":a.exportado?`<span class="tag ok">Exportado ${fDiaCorto(a.exportado)}</span>`:`<span class="tag no">Pendiente</span>`}</td><td>${esc(a.creadoPor||"")}</td></tr>`).join("");
