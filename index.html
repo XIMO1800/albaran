@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "170 · 07/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "171 · 13/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1992,7 +1992,7 @@ function avAyudaPapel(c){
 function vAvCuadre(app){
   const c=avCuadre(), id=S.av.cur, cerr=c.estado==="cerrado", cf=avCfg();
   if(S.av.fase==="alb")S.av.fase="hoja";
-  const F=[["desc","1 · Descarga"],["pesos","2 · Pesos"],["carga","3 · Carga"],["hoja","4 · Hoja y cierre"],["ctl","5 · Control carga"]];
+  const F=[["desc","1 · Descarga"],["pesos","2 · Pesos"],["hoja","3 · Hoja"],["carga","4 · Carga"],["ctl","5 · Control y cierre"]];
   let cuerpo="";
   if(c.estado!=="cerrado")avExNorm(c);
   if(S.av.exVista){cuerpo=avExVista(c)}
@@ -2008,18 +2008,19 @@ function vAvCuadre(app){
     ${fs.map((k,i)=>{const l=avLin(c,k);return `<tr data-row="${esc(k)}"><th>${avRefTxt(k)}</th><td class="av-c muted" data-c="de"></td>${avIn(i,k,"dv",avN(l.dv)?-Math.abs(avN(l.dv)):null,"av-dv")}${avIn(i,k,"ca",l.ca)}<td class="av-c av-b" data-c="sale"></td></tr>`}).join("")}
     </tbody><tfoot><tr><th>Total</th><td data-t="de"></td><td data-t="dv"></td><td data-t="ca"></td><td data-t="sale"></td></tr></tfoot></table></div>
     <p class="muted" style="font-size:13px;margin:6px 2px">«Se queda»: devoluciones o averías que trae y se quedan en fábrica. Cuentan en la descarga para cuadrar, pero no vuelven a salir: Sale con = Descarga − Se queda + Carga.</p>
-    <div class="acc av-pie"><button class="btn sm" data-avf="pesos">← Pesos</button>${avBtnTodas()}<span style="flex:1"></span><button class="btn sm" data-avf="hoja">Siguiente: hoja y cierre →</button></div>`}
+    <div class="acc av-pie"><button class="btn sm" data-avf="hoja">← Hoja</button>${avBtnTodas()}<span style="flex:1"></span><button class="btn sm" data-avf="ctl">Siguiente: control y cierre →</button></div>`}
   else if(S.av.fase==="pesos"){
     cuerpo=`<div class="av-pesos">${avBloquePeso(c,"grande")}${avBloquePeso(c,"mini")}</div>
-      <div class="acc av-pie"><button class="btn sm" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn sm" data-avf="carga">Siguiente: carga →</button></div>`}
+      <div class="acc av-pie"><button class="btn sm" data-avf="desc">← Descarga</button><span style="flex:1"></span><button class="btn sm" data-avf="hoja">Siguiente: hoja →</button></div>`}
   else if(S.av.fase==="ctl") cuerpo=`<p class="nota">Registro que pide calidad (FOR PR 08-10): se rellena casi solo con los datos del cuadre; tú solo pones la temperatura.</p>${avCtlCard(c)}<div class="sec">Comprobación de bandejas · solo para ti, no va al registro de calidad</div>${avBjCard(c)}
-      <div class="acc av-pie"><button class="btn sm" data-avf="hoja">← Hoja y cierre</button><span style="flex:1"></span><button class="btn pri" id="avImpCtl">Imprimir control de carga</button></div>`;
+      <div class="acc av-pie"><button class="btn sm" data-avf="carga">← Carga</button><span style="flex:1"></span><button class="btn" id="avImpCtl">Imprimir control de carga</button>${cerr?"":`<button class="btn pri" id="avCerrar">Cerrar cuadre</button>`}</div>
+      ${!cerr&&S.av.cerrando?`<div class="card av-cierra"><b>¿Qué día empieza a vender en el siguiente viaje?</b><div class="acc" style="margin-top:8px;align-items:center"><input type="date" id="avSigIni" value="${(()=>{const sg=Object.values(S.av.cuadres).find(x=>x.origen===S.av.cur&&x.estado!=="cerrado");return sg?avIniC(sg):avIni(c.cierre||hoy())})()}"><button class="btn pri" id="avCerrarOk">Cerrar y empezar el siguiente</button><button class="btn" id="avNoCerrar">Cancelar</button></div></div>`:""}`;
   else cuerpo=avHoja(c);
   app.innerHTML=`<div class="wrap av-wrap${cerr?" av-ro":""}">
     <div class="acc" style="justify-content:space-between;align-items:center"><button class="btn sm" id="avVolver">← Autoventa</button><span class="muted" id="avSt" style="font-size:13px">${Object.keys(S.av.pend).length?"Pendiente de guardar":"Guardado en la hoja"}</span></div>
     <div class="av-cab"><b>${esc(c.vendedor)}</b><span class="muted">último cuadre</span><input type="date" id="avFecha" value="${c.fecha||""}" aria-label="Día del último cuadre">${c.fecha?`<span class="av-ventas">ventas del <input type="date" id="avIniF" value="${avIniC(c)}" aria-label="Primer día de ventas">${cerr||avIniC(c)<=hoy()?` al ${avDM(c.cierre||avHasta(c)||hoy())}`:""}</span>`:""}${cerr?`<span class="chip e-PREPARADO">Cerrado</span>`:`<span class="chip e-PREPARANDO">Abierto</span>`}</div>
     <div class="av-fases cq">${F.map(([k,t])=>`<button data-avf="${k}" class="${S.av.fase===k?"on":""}">${t}</button>`).join("")}</div>
-    ${cerr?`<div class="av-roav">🔒 Cuadre cerrado: solo se puede ver. Para cambiar algo, pulsa «Reabrir para corregir» en 4 · Hoja y cierre.</div>`:""}
+    ${cerr?`<div class="av-roav">🔒 Cuadre cerrado: solo se puede ver. Para cambiar algo, pulsa «Reabrir para corregir» en 3 · Hoja.</div>`:""}
     ${cuerpo}</div>`;
   // Cuadre cerrado: todo en solo lectura hasta que se reabra
   if(cerr)app.querySelectorAll(".av-wrap input,.av-wrap select,.av-wrap textarea").forEach(e=>{if(e.type==="checkbox"||e.tagName==="SELECT"||e.type==="file")e.disabled=true;else e.readOnly=true;e.tabIndex=-1});
@@ -2028,7 +2029,7 @@ function vAvCuadre(app){
   {const fb=document.querySelector(".av-fases .on");if(fb){const bar=fb.parentNode;bar.scrollLeft=Math.max(0,fb.offsetLeft-bar.offsetLeft-(bar.clientWidth-fb.offsetWidth)/2)}}
 
   app.onclick=e=>{const b=e.target.closest("button");if(!b)return;
-    if(cerr&&!(b.dataset.avf||b.dataset.pab||["avVolver","avReabrir","avPasarSig","avImprimir","avCopiar","avBorrar","avSiBorrar","avNoBorrar","avImpCtl","avExVer","avExCerrar","avTodas"].includes(b.id))){toast("Cuadre cerrado: para cambiarlo, pulsa «Reabrir para corregir» en 4 · Hoja y cierre",true);return}
+    if(cerr&&!(b.dataset.avf||b.dataset.pab||["avVolver","avReabrir","avPasarSig","avImprimir","avCopiar","avBorrar","avSiBorrar","avNoBorrar","avImpCtl","avExVer","avExCerrar","avTodas"].includes(b.id))){toast("Cuadre cerrado: para cambiarlo, pulsa «Reabrir para corregir» en 3 · Hoja",true);return}
     if(b.id==="avVolver"){avSubir();S.av.cur=null;render();scrollTo(0,0);return}
     if(b.dataset.avf){S.av.fase=b.dataset.avf;S.av.borrar=false;S.av.exVista=false;render();scrollTo(0,0);return}
     if(b.id==="avTodas"){S.av.todas=!S.av.todas;render();return}
@@ -2207,8 +2208,7 @@ function avHoja(c){
   <div class="sec">Notas</div><textarea id="avNota" placeholder="Incidencias, devoluciones, fallos de cuadres anteriores…">${esc(c.nota||"")}</textarea>
   <div class="acc" style="margin-top:12px"><button class="btn" id="avCopiar">Copiar resumen</button><button class="btn" id="avImprimir">Imprimir hoja</button><span style="flex:1"></span>
     ${cerr&&Object.values(S.av.cuadres).some(x=>x.origen===S.av.cur&&x.estado!=="cerrado")?`<button class="btn pri" id="avPasarSig" title="Lo que sale de este cuadre (piezas, pesos y bandejas) pasa a ser lo que lleva el viaje siguiente">Pasar correcciones al viaje siguiente</button>`:""}
-    ${cerr?`<button class="btn" id="avReabrir">Reabrir para corregir</button>`:`<button class="btn pri" id="avCerrar">Cerrar cuadre</button>`}</div>
-  ${!cerr&&S.av.cerrando?`<div class="card av-cierra"><b>¿Qué día empieza a vender en el siguiente viaje?</b><div class="acc" style="margin-top:8px;align-items:center"><input type="date" id="avSigIni" value="${(()=>{const sg=Object.values(S.av.cuadres).find(x=>x.origen===S.av.cur&&x.estado!=="cerrado");return sg?avIniC(sg):avIni(c.cierre||hoy())})()}"><button class="btn pri" id="avCerrarOk">Cerrar y empezar el siguiente</button><button class="btn" id="avNoCerrar">Cancelar</button></div></div>`:""}
+    ${cerr?`<button class="btn" id="avReabrir">Reabrir para corregir</button>`:`<button class="btn pri" data-avf="carga">Siguiente: carga →</button>`}</div>
   ${S.av.borrar?`<div class="card" style="margin-top:12px;border-color:var(--danger)"><b>¿Borrar este cuadre?</b> No se puede deshacer.<div class="acc" style="margin-top:8px"><button class="btn del" id="avSiBorrar">Borrar</button><button class="btn" id="avNoBorrar">Cancelar</button></div></div>`:`<div style="margin-top:12px"><button class="btn sm del" id="avBorrar">Borrar cuadre</button></div>`}`;
 }
 function avRefrescar(){
