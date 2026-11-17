@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "174 · 17/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "175 · 17/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1676,7 +1676,13 @@ async function avSubir(){
 function avEstado(t){const e=$("#avSt");if(e){e.textContent=t;e.classList.toggle("av-pend",!/Guardado/.test(t))}}
 function avGuardarCfg(){avTocar("CONFIG")}
 // Bandejas: las que trae (desc) y las que hay al terminar de cargar (total); cargadas = diferencia
-function avBj(c){const bj=c.bandejas||{},d=avN(bj.desc),t=avN(bj.total)??(avN(bj.carga)!==null?(d||0)+avN(bj.carga):null);return {d,t,ca:t===null||d===null?null:t-d}}
+function avBj(c){const bj=c.bandejas||{},d=avN(bj.desc);
+  // cargas en varias veces (+3, +11, +10…): cargadas = la suma; al terminar = trae + cargadas
+  if(Array.isArray(bj.cargas)&&bj.cargas.length){const ca=bj.cargas.reduce((a,x)=>a+(avN(x)||0),0);return {d,t:(d||0)+ca,ca,cargas:bj.cargas}}
+  const t=avN(bj.total)??(avN(bj.carga)!==null?(d||0)+avN(bj.carga):null);return {d,t,ca:t===null||d===null?null:t-d,cargas:t===null||d===null?[]:[t-d]}}
+// añade una carga de bandejas; los cuadres antiguos (un solo total) se pasan a lista la primera vez
+function avBjAdd(c){const n=$("#avBjN"),v=n&&avP(n.value);if(!v){if(n)n.focus();return}const bj=c.bandejas||(c.bandejas={});
+  if(!Array.isArray(bj.cargas)){bj.cargas=avBj(c).cargas.filter(x=>x);delete bj.total;delete bj.carga}bj.cargas.push(v);avTocar();render();const m=$("#avBjN");if(m)m.focus({preventScroll:true})}
 // Kilos aproximados de lo que sale: piezas × peso medio; el aceite pesado con su peso real
 function avKgSale(c){const cf=avCfg();let kg=0;const pes={};["grande","mini"].forEach(b=>{if(cf.peso[b])pes[cf.peso[b]]=avPeso(c,b).sale});
   avRefs(c).forEach(k=>{const x=avCalc(avLin(c,k));if(!x.sale)return;kg+=pes[k]!=null?pes[k]:x.sale*pmDe(k)});return Math.round(kg)}
@@ -2057,6 +2063,8 @@ function vAvCuadre(app){
     if(b.id==="avTodoOk"){avRefs(c).forEach(k=>{const l=c.lineas[k];if(!l)return;const x=avCalc(l);if(x.vend!==null&&x.al===null)l.al=x.vend});avTocar();render();return}
     if(b.dataset.addp)return avAddPeso(b.dataset.addp);
     if(b.dataset.tog){const[bk,ls,i]=b.dataset.tog.split("|"),e2=c.pesos[bk][ls][+i];e2.t=!e2.t;avTocar();avRepintar();return}
+    if(b.id==="avBjAdd")return avBjAdd(c);
+    if(b.dataset.bjq!=null){const bj=c.bandejas||{};if(Array.isArray(bj.cargas)){bj.cargas.splice(+b.dataset.bjq,1)}else{delete bj.total;delete bj.carga}avTocar();avRepintar();return}
     if(b.dataset.quita){const[bk,ls,i]=b.dataset.quita.split("|");c.pesos[bk][ls].splice(+i,1);avTocar();avRepintar();return}
     if(b.dataset.verentre){(S.av.verEntre||(S.av.verEntre={}))[b.dataset.verentre]=true;avRepintar();return}
     if(b.dataset.albok){const bk=b.dataset.albok,w=avPeso(c,bk);if(w.vend===null)return;const p=c.pesos[bk]||(c.pesos[bk]=avPeso0());p.albKg=(avN(p.albKg)!==null&&Math.abs(Math.round((avN(p.albKg)-w.vend)*1000))<=AV_TOL)?null:w.vend;delete p.albKgP;avTocar();avRepintar();return}
@@ -2106,6 +2114,7 @@ function vAvCuadre(app){
   app.onkeydown=e=>{if(e.key!=="Enter")return;const el=e.target;
     if(el.dataset.addp){e.preventDefault();avAddPeso(el.dataset.addp);return}
     if(el.dataset.addex){e.preventDefault();avAddEx(el.dataset.addex);return}
+    if(el.id==="avBjN"){e.preventDefault();avBjAdd(c);return}
     if(el.dataset.f){e.preventDefault();const all=[...app.querySelectorAll(`input.av-n[data-f="${el.dataset.f}"]`)],nx=all[all.indexOf(el)+1];if(nx){nx.focus({preventScroll:true});nx.select()}else el.blur()}
   };
   app.onfocusin=e=>{if(e.target.matches("input.av-n,input.num"))setTimeout(()=>{try{e.target.select()}catch(x){}},0);
@@ -2259,8 +2268,11 @@ function avBjCmp(c){const bj=avBj(c),e=avBjEsp(c);if(bj.ca===null||!e.det.length
 function avBjCard(c){const bj=avBj(c),e=avBjEsp(c);
   return `<div class="card av-peso"><div class="pcab"><b>Bandejas</b><span class="pnm">${avN((c.bandejas||{}).lleva)!==null?`salió con ${c.bandejas.lleva}`:"recuento físico"}</span></div>
     <div class="pl"><span class="ps"></span><span class="pt">Bandejas que trae</span><input id="avBjD" class="num pin" data-bj="desc" inputmode="numeric" value="${avF(bj.d)}"></div>
-    <div class="pl"><span class="ps"></span><span class="pt">Bandejas al terminar de cargar</span><input id="avBjT" class="num pin" data-bj="total" inputmode="numeric" value="${avF(bj.t)}"></div>
+    <div class="pl"><span class="ps">+</span><span class="pt">Cargas</span><span></span></div>
+    <div class="av-chips" style="justify-content:flex-end">${bj.cargas.map((x,i)=>`<span class="av-w"><b>+${x}</b><button data-bjq="${i}" aria-label="Quitar">×</button></span>`).join("")}</div>
+    <div class="padd" style="justify-content:flex-end"><input id="avBjN" class="num" inputmode="numeric" placeholder="Bandejas" style="width:110px"><button class="btn sm" id="avBjAdd">Añadir</button></div>
     <div class="pl sub"><span class="ps">=</span><span class="pt">CARGADAS HOY</span><b id="avBjC">${bj.ca??"—"}</b></div>
+    <div class="pl"><span class="ps"></span><span class="pt">Sale con</span><b>${bj.t??"—"}</b></div>
     <div class="pl"><span class="ps"></span><span class="pt">Según la carga en piezas</span><b>${e.det.length?"≈ "+String(e.t).replace(".",","):"—"}</b></div>
     <div id="avBjCmp" style="margin:4px 0 2px;text-align:right">${avBjCmp(c)}</div>
     ${e.det.length?`<details class="av-bjdet"><summary>Ver cómo se calcula</summary>${e.det.map(([k,ca,b,n])=>`<div>${esc(nomDe(k))}: ${ca} pz ÷ ${b} pz por bandeja = <b>${String(Math.round(n*10)/10).replace(".",",")}</b> bandeja${Math.round(n*10)/10===1?"":"s"}</div>`).join("")}</details>`:""}
