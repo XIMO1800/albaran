@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "180 · 17/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "181 · 17/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1688,8 +1688,9 @@ function avGuardarCfg(){avTocar("CONFIG")}
 //  · intermedio (martes): solo se cuentan las que carga, en una o varias veces (+3, +13…) → cargadas = la suma
 //  · final (viernes): se descarga todo a palés y se cuenta; al terminar de cargar se cuenta el total → cargadas = total − descarga
 function avBjModo(c){const bj=c.bandejas||{};if(bj.modo)return bj.modo;if(Array.isArray(bj.cargas)&&bj.cargas.length)return"int";
-  if(avN(bj.total)!==null||avN(bj.carga)!==null)return"fin";const f=c.cierre||hoy();return new Date(f+"T12:00:00").getDay()===5?"fin":"int"}
+  if(avN(bj.total)!==null||avN(bj.carga)!==null)return"fin";return null} // sin elegir: lo elige Joaquín (martes suele ser intermedio y viernes final, pero cambia con festivos)
 function avBj(c){const bj=c.bandejas||{},modo=avBjModo(c),cargas=Array.isArray(bj.cargas)?bj.cargas:[];
+  if(!modo)return {modo,d:null,t:null,ca:null,cargas};
   if(modo==="int"){const ca=cargas.length?cargas.reduce((a,x)=>a+(avN(x)||0),0):null;return {modo,d:null,t:null,ca,cargas}}
   const d=avN(bj.desc),t=avN(bj.total)??(avN(bj.carga)!==null?(d||0)+avN(bj.carga):null);return {modo,d,t,ca:t===null||d===null?null:t-d,cargas}}
 function avBjAdd(c){const n=$("#avBjN"),v=n&&avP(n.value);if(!v){if(n)n.focus();return}const bj=c.bandejas||(c.bandejas={});
@@ -2277,13 +2278,13 @@ function avPzB(k){const cf=avCfg(),v=avN((cf.pzb||{})[k]);if(v!==null)return v;c
   if(/^.AG/i.test(k)||k===cf.peso.grande)return 2;if(p.c&&esPorcion(p,S.productos))return 80;return +p.b||1}
 function avBjEsp(c){let t=0;const sin=[],det=[];avRefs(c).forEach(k=>{const ca=avCalc(avLin(c,k)).ca;if(!ca)return;const b=avPzB(k);
     if(b<=1){sin.push(k);return}const n=ca/b;t+=n;det.push([k,ca,b,n])});return {t:Math.round(t*10)/10,sin,det}}
-function avBjCmp(c){const bj=avBj(c),e=avBjEsp(c);if(bj.ca===null||!e.det.length)return `<span class="muted">${bj.ca===null?(bj.modo==="int"?"Apunta las bandejas que carga":"Cuenta las bandejas al descargar y al terminar de cargar"):"Sin carga apuntada en piezas"}</span>`;
+function avBjCmp(c){const bj=avBj(c),e=avBjEsp(c);if(bj.ca===null||!e.det.length)return `<span class="muted">${bj.ca===null?(!bj.modo?"":bj.modo==="int"?"Apunta las bandejas que carga":"Cuenta las bandejas al descargar y al terminar de cargar"):"Sin carga apuntada en piezas"}</span>`;
   const d=Math.round((bj.ca-e.t)*10)/10;return Math.abs(d)<1?`<span class="chip av-ok">✓ cuadra (${bj.ca} contadas · ≈${String(e.t).replace(".",",")} según la carga)</span>`
     :`<span class="chip av-mal">⚠ ${bj.ca} contadas, pero la carga en piezas son ≈${String(e.t).replace(".",",")} bandejas (${d>0?"sobran":"faltan"} ${String(Math.abs(d)).replace(".",",")})</span>`}
 function avBjCard(c){const bj=avBj(c),e=avBjEsp(c),fin=bj.modo==="fin";
   return `<div class="card av-peso"><div class="pcab"><b>Bandejas</b><span class="pnm"></span>
-      <span class="bjmodo"><button data-bjmodo="int" class="${fin?"":"on"}">Intermedio</button><button data-bjmodo="fin" class="${fin?"on":""}">Final</button></span></div>
-    ${fin?`<div class="pl"><span class="ps"></span><span class="pt">Descarga</span><input id="avBjD" class="num pin" data-bj="desc" inputmode="numeric" value="${avF(bj.d)}"></div>
+      <span class="bjmodo"><button data-bjmodo="int" class="${bj.modo==="int"?"on":""}">Intermedio</button><button data-bjmodo="fin" class="${fin?"on":""}">Final</button></span></div>
+    ${!bj.modo?`<p class="muted" style="margin:10px 0;text-align:center">Elige arriba: <b>Intermedio</b> o <b>Final</b></p>`:fin?`<div class="pl"><span class="ps"></span><span class="pt">Descarga</span><input id="avBjD" class="num pin" data-bj="desc" inputmode="numeric" value="${avF(bj.d)}"></div>
     <div class="pl"><span class="ps"></span><span class="pt">Al terminar</span><input id="avBjT" class="num pin" data-bj="total" inputmode="numeric" value="${avF(bj.t)}"></div>`
     :`<div class="pl"><span class="ps">+</span><span class="pt">Cargas</span><span></span></div>
     <div class="av-chips" style="justify-content:flex-end">${bj.cargas.map((x,i)=>`<span class="av-w"><b>+${x}</b><button data-bjq="${i}" aria-label="Quitar">×</button></span>`).join("")}</div>
