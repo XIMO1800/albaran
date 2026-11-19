@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "181 · 17/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "182 · 19/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -808,6 +808,8 @@ function vDiferencias(app){
     const t=e.target.closest("[data-cmp]");if(t){S.scr={t:"cmp",id:t.dataset.cmp};render();scrollTo(0,0)}};
 }
 const huboCambio=p=>p.actualizadoPor&&p.actualizado&&p.actualizado!==p.creado;
+// lo último que se hizo con el pedido: si ya está en fábrica es la preparación, no un cambio de lo pedido
+const txtUlt=p=>!huboCambio(p)?"":` · ${({PREPARANDO:"preparando",PREPARADO:"preparado",ALBARANADO:"con albarán",ANULADO:"anulado"})[p.estado]||"modificado"} ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`;
 // Lo pedido originalmente y cada modificación (del registro del servidor)
 function vHist(app){
   const sc=S.scr,p=pedDe(sc.id);if(!p){S.scr=null;return render()}
@@ -990,14 +992,14 @@ function vVer(app){
     <div class="acc" style="justify-content:space-between;align-items:center;margin-bottom:10px">
       <button class="btn sm" id="bVolver">← Volver</button><span class="chip e-${E}">${EST_TXT[E]}</span></div>
     <div class="card">${R==="TIENDA"?`<b style="font-family:var(--display);font-size:24px">${fDiaPed(p.creado)}</b><div class="muted">Pedido ${esc(p.id)} · ${fHora(p.creado)}</div>`:`<b style="font-family:var(--display);font-size:24px">${fDiaPed(p.creado)}</b><div class="muted">Pedido ${esc(p.id)}</div>`}
-      <div class="muted">Hecho a las ${fHora(p.creado)} por ${esc(p.creadoPor)}${p.actualizadoPor&&p.actualizado!==p.creado?` · último cambio ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`:""}</div>
+      <div class="muted">Hecho a las ${fHora(p.creado)} por ${esc(p.creadoPor)}${txtUlt(p)}</div>
       ${p.albaran?`<div style="margin-top:4px">Albarán nº <b>${esc(p.albaran)}</b>${alb?` · ${kgf(alb.kg)} kg · ${eur(alb.total)} €`:""}</div>`:""}</div>
     ${p.obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>OBSERVACIONES DE LA TIENDA</b><p>${esc(p.obs)}</p></div></div>`:""}
     ${p.obsF?`<div class="obsbox"><b>Notas de fábrica:</b>\n${esc(p.obsF)}</div>`:""}
     <div class="card">${filas}</div>
     <div class="acc">
       ${puedeEditar?`<button class="btn" id="bEdit">Modificar</button>`:""}
-      ${huboCambio(p)?`<button class="btn" id="bHist">Ver cambios</button>`:""}
+      ${huboCambio(p)?`<button class="btn" id="bHist">Pedido original</button>`:""}
       ${R!=="TIENDA"?`<button class="btn" id="bHoja">Imprimir hoja de preparación</button>`:""}
       ${alb?`<button class="btn" id="bVerAlb">Ver albarán</button>`:""}
       ${puedeAnular?`<button class="btn del" id="bAnular">Anular pedido</button>`:""}
@@ -1319,14 +1321,14 @@ function detalleDesk(p){
       <td class="n">${!l.extra&&pr.b>1&&l.pz>=pr.b?`<small class="muted">${bandTxt(l.pz,pr.b,pr.g)}</small> `:""}${l.extra?"—":l.pz}</td><td class="n">${E==="ENVIADO"?"—":servido(l)}</td><td class="n">${E==="ENVIADO"||!d?"":(d>0?"+":"")+d}</td><td class="n">${l.kg?(l.aprox?"≈ ":"")+kgf(num(l.kg)):""}</td><td>${esc(l.obs||"")}</td></tr>`}).join("");
   const R=S.rol, puedeEditar=(R==="TIENDA"&&E==="ENVIADO")||((R==="OFICINA"||R==="ADMIN")&&["ENVIADO","PREPARANDO"].includes(E)), puedePrep=["ENVIADO","PREPARANDO","PREPARADO"].includes(E), puedeAnular=!["ALBARANADO","ANULADO"].includes(E);
   return `<div class="dcard"><div class="dhead"><h2>${fDiaPed(p.creado)}</h2><span class="chip e-${E}">${EST_TXT[E]}</span></div>
-    <div class="muted"><b>Pedido ${esc(p.id)}</b> · hecho a las ${fHora(p.creado)} por ${esc(p.creadoPor)}${p.actualizadoPor&&p.actualizado!==p.creado?` · último cambio ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`:""}${p.albaran?` · albarán nº <b>${esc(p.albaran)}</b>`:""}</div>
+    <div class="muted"><b>Pedido ${esc(p.id)}</b> · hecho a las ${fHora(p.creado)} por ${esc(p.creadoPor)}${txtUlt(p)}${p.albaran?` · albarán nº <b>${esc(p.albaran)}</b>`:""}</div>
     <div class="kpis" style="margin-top:12px"><div class="kpi"><span>Artículos</span><b>${p.lineas.length}</b></div><div class="kpi"><span>Piezas pedidas</span><b>${pzPed(p)}</b></div><div class="kpi"><span>Piezas servidas</span><b>${E==="ENVIADO"?"—":pzSer(p)}</b></div><div class="kpi"><span>Kg</span><b>${kgPed(p)?kgf(kgPed(p)):"—"}</b></div>${alb?`<div class="kpi"><span>Importe</span><b>${eur(alb.total)} €</b></div>`:""}${nd&&E!=="ENVIADO"?`<div class="kpi kd"><span>Cambios</span><b>${nd}</b></div>`:""}</div>
     ${p.obs?`<div class="obsT"><span class="obsTi">⚠</span><div><b>OBSERVACIONES DE LA TIENDA</b><p>${esc(p.obs)}</p></div></div>`:""}${p.obsF?`<div class="obsbox"><b>Fábrica:</b> ${esc(p.obsF)}</div>`:""}
     <div class="tblw"><table class="t"><thead><tr><th style="width:1%">Código</th><th>Producto</th><th class="n">Pedido</th><th class="n">Servido</th><th class="n">Diferencia</th><th class="n">Kg</th><th style="width:30%">Nota</th></tr></thead><tbody>${filas}</tbody></table></div>
     <div class="acc" style="margin-top:12px">
       ${puedePrep?`<button class="btn pri" data-dact="prep">${E==="PREPARADO"?"Corregir preparación":E==="PREPARANDO"?"Seguir preparando":"Preparar pedido"}</button>`:""}
       ${puedeEditar?`<button class="btn" data-dact="edit">Modificar pedido</button>`:""}
-      ${huboCambio(p)?`<button class="btn" data-dact="hist">Ver cambios</button>`:""}
+      ${huboCambio(p)?`<button class="btn" data-dact="hist">Pedido original</button>`:""}
       <button class="btn" data-dact="hoja">Imprimir hoja de preparación</button>
       ${alb?`<button class="btn" data-dact="alb">Ver albarán ${esc(p.albaran)}</button>`:""}
       ${puedeAnular&&(R==="ADMIN"||R==="OFICINA")?`<button class="btn del" data-dact="anular">Anular pedido</button>`:""}
