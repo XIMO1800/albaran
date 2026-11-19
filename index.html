@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "182 · 19/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "183 · 19/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -809,7 +809,7 @@ function vDiferencias(app){
 }
 const huboCambio=p=>p.actualizadoPor&&p.actualizado&&p.actualizado!==p.creado;
 // lo último que se hizo con el pedido: si ya está en fábrica es la preparación, no un cambio de lo pedido
-const txtUlt=p=>!huboCambio(p)?"":` · ${({PREPARANDO:"preparando",PREPARADO:"preparado",ALBARANADO:"con albarán",ANULADO:"anulado"})[p.estado]||"modificado"} ${fCorta(p.actualizado)} (${esc(p.actualizadoPor)})`;
+const txtUlt=p=>!huboCambio(p)?"":`<br>${({PREPARANDO:"Preparando",PREPARADO:"Preparado",ALBARANADO:"Con albarán",ANULADO:"Anulado"})[p.estado]||"Modificado"} ${fCorta(p.actualizado)} por ${esc(p.actualizadoPor)}`;
 // Lo pedido originalmente y cada modificación (del registro del servidor)
 function vHist(app){
   const sc=S.scr,p=pedDe(sc.id);if(!p){S.scr=null;return render()}
