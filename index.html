@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "185 · 20/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "186 · 20/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1652,6 +1652,8 @@ async function avCargar(){
       if(id!=="CONFIG"&&m[id]&&(m[id].mod||0)>(loc.mod||0)){delete S.av.pend[id];viejos.push(id);return}
       if(id!=="CONFIG"&&m[id]&&!loc.mod&&!m[id].mod){delete S.av.pend[id];viejos.push(id);return} // sin fecha de cambio: manda la hoja
       m[id]=loc; });
+    // y si este aparato tiene una copia más nueva que la hoja aunque no esté marcada como pendiente (p. ej. se apuntó algo mientras se estaba subiendo sin cobertura), se queda la del aparato y se vuelve a subir
+    Object.keys(m).forEach(id=>{const loc=S.av.cuadres[id];if(id==="CONFIG"||!loc||S.av.pend[id]||!m[id])return;if((loc.mod||0)>(m[id].mod||0)){m[id]=loc;S.av.pend[id]=1}});
     if(viejos.length){LS.set("av_pend",S.av.pend);toast("Había cambios viejos en este aparato: se queda lo guardado en la hoja",true)}
     S.av.cuadres=m; if(j.config&&!S.av.pend.CONFIG)S.av.config=j.config; S.av.cargado=true; S.av.leido=Date.now();
     LS.set("av_cache",m); LS.set("av_cfg",S.av.config);
@@ -1663,7 +1665,8 @@ async function avCargar(){
 let avT=null, avSubiendo=false;
 function avTocar(id){
   id=id||S.av.cur; if(!id)return;
-  if(S.av.pend[id]!=="borrar") S.av.pend[id]=1;
+  // número de cambio: si se apunta algo mientras se sube, el número cambia y no se da por guardado
+  if(S.av.pend[id]!=="borrar") S.av.pend[id]=(typeof S.av.pend[id]==="number"?S.av.pend[id]:0)+1;
   const cx=S.av.cuadres[id];if(cx&&id!=="CONFIG")cx.mod=Date.now(); // fecha del último cambio, para no machacar con datos viejos
   LS.set("av_pend",S.av.pend); LS.set("av_cache",S.av.cuadres); LS.set("av_cfg",S.av.config);
   avEstado("Guardando…"); clearTimeout(avT); avT=setTimeout(avSubir,900);
