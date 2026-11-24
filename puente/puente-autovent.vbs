@@ -1,4 +1,6 @@
-' PUENTE AUTOVENT - sube a Google los resumenes de la PDA (.xps) que deja el programa en SERVIDORW10\AUTOVENT.
+' PUENTE AUTOVENT - sube a Google los resumenes de la PDA (.xps) que deja el programa en SERVIDORW10\AUTOVENT,
+' y los datos de la PDA (cab01/lin01/cob01, cab02/lin02/cob02, CLIENTE.TXT, ARTICULO.TXT) para la revision de albaranes.
+' Los cab/lin/cob se suben con la ruta y la fecha y hora del fichero en el nombre (R02_20261120_1741_cab.txt) para que no se machaquen.
 ' Lo lanza una tarea programada cada 2 minutos. Cada fichero subido se mueve a AUTOVENT\ENVIADOS.
 ' La clave la coge de puente-albtiend.vbs (tiene que estar en la misma carpeta). Apunta lo que hace en envios.log.
 Option Explicit
@@ -39,6 +41,25 @@ Function Base64(ruta)
   Base64 = Replace(Replace(el.text, vbLf, ""), vbCr, "")
 End Function
 
+Function Dos(n)
+  Dos = Right("0" & n, 2)
+End Function
+
+' Nombre con el que se sube: los .xps tal cual; cab02.txt -> R02_AAAAMMDD_HHMM_cab.txt; CLIENTE/ARTICULO tal cual. "" = no se sube
+Function NombreSubida(f)
+  Dim ext, re, m, d
+  NombreSubida = ""
+  ext = LCase(fso.GetExtensionName(f.Name))
+  If ext = "xps" Or ext = "oxps" Then NombreSubida = f.Name: Exit Function
+  If ext <> "txt" Then Exit Function
+  If UCase(f.Name) = "CLIENTE.TXT" Or UCase(f.Name) = "ARTICULO.TXT" Then NombreSubida = UCase(f.Name): Exit Function
+  Set re = New RegExp: re.IgnoreCase = True: re.Pattern = "^(cab|lin|cob)(\d\d)\.txt$"
+  Set m = re.Execute(f.Name)
+  If m.Count = 0 Then Exit Function
+  d = f.DateLastModified
+  NombreSubida = "R" & m(0).SubMatches(1) & "_" & Year(d) & Dos(Month(d)) & Dos(Day(d)) & "_" & Dos(Hour(d)) & Dos(Minute(d)) & "_" & LCase(m(0).SubMatches(0)) & ".txt"
+End Function
+
 Function Sube(ruta, nombre)
   Dim h
   Sube = False
@@ -63,17 +84,18 @@ env = ORIGEN & "\ENVIADOS"
 On Error Resume Next
 If Not fso.FolderExists(env) Then fso.CreateFolder env
 On Error GoTo 0
-Dim lista, i, nom: lista = Array()
+Dim lista, i, nom, nsub: lista = Array()
 For Each f In fso.GetFolder(ORIGEN).Files
-  If (LCase(fso.GetExtensionName(f.Name)) = "xps" Or LCase(fso.GetExtensionName(f.Name)) = "oxps") And DateDiff("s", f.DateLastModified, Now) > 20 Then
+  If NombreSubida(f) <> "" And DateDiff("s", f.DateLastModified, Now) > 20 Then
     ReDim Preserve lista(UBound(lista) + 1): lista(UBound(lista)) = f.Name
   End If
 Next
 For i = 0 To UBound(lista)
   nom = lista(i)
   Set f = fso.GetFile(ORIGEN & "\" & nom)
-      If Sube(f.Path, f.Name) Then
-        dest = env & "\" & f.Name
+      nsub = NombreSubida(f)
+      If Sube(f.Path, nsub) Then
+        dest = env & "\" & nsub
         On Error Resume Next
         If fso.FileExists(dest) Then fso.DeleteFile dest, True
         fso.MoveFile f.Path, dest
@@ -81,7 +103,7 @@ For i = 0 To UBound(lista)
           Apunta "AVISO " & nom & " subido pero no se pudo mover a ENVIADOS: " & Err.Description
           Err.Clear
         Else
-          Apunta "PDA SUBIDO  " & nom
+          Apunta "PDA SUBIDO  " & nom & " como " & nsub
         End If
         On Error GoTo 0
       End If

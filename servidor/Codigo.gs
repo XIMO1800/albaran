@@ -594,15 +594,64 @@ function puenteSubir_(e) {
   if (!clave || p.clave !== clave) return txt('ERROR: clave incorrecta');
   if (p.tipo !== 'subirPda') return txt('ERROR: tipo desconocido');
   var nombre = String(p.nombre || '').replace(/[\\/:*?"<>|]/g, '_');
-  if (!/\.o?xps$/i.test(nombre)) return txt('ERROR: solo ficheros .xps');
+  var esTxt = /\.txt$/i.test(nombre);   // datos de la PDA (cab/lin/cob de cada ruta, CLIENTE, ARTICULO): van a su propia carpeta
+  if (!esTxt && !/\.o?xps$/i.test(nombre)) return txt('ERROR: solo ficheros .xps o .txt');
   var b64 = String((e.postData && e.postData.contents) || '').replace(/\s/g, '');
   if (!b64) return txt('ERROR: fichero vacío');
   var bytes = Utilities.base64Decode(b64);
-  var carpeta = carpetaPda_(), viejos = carpeta.getFilesByName(nombre);
+  var carpeta = esTxt ? carpetaDatos_() : carpetaPda_(), viejos = carpeta.getFilesByName(nombre);
   while (viejos.hasNext()) viejos.next().setTrashed(true);
-  carpeta.createFile(Utilities.newBlob(bytes, 'application/vnd.ms-xpsdocument', nombre));
+  carpeta.createFile(Utilities.newBlob(bytes, esTxt ? 'text/plain' : 'application/vnd.ms-xpsdocument', nombre));
   return txt('OK');
 }
+/* ------------- Datos de la PDA para la revisión de albaranes -------------
+   El puente sube cab01/lin01/cob01 (Miguel Ángel) y cab02/lin02/cob02 (Mere) con el nombre
+   «R02_20261120_1741_cab.txt» (ruta, fecha y hora del fichero), y CLIENTE.TXT / ARTICULO.TXT tal cual.
+   Son ficheros de ancho fijo; la app los interpreta. Aquí solo se devuelven las últimas descargas de una ruta
+   y, de CLIENTE y ARTICULO, solo lo que hace falta. */
+function carpetaDatos_() {
+  var props = PropertiesService.getScriptProperties(), id = props.getProperty('CARPETA_PDA_DATOS');
+  if (id) { try { return DriveApp.getFolderById(id); } catch (e) {} }
+  var f = DriveApp.createFolder('AUTOVENT DATOS');
+  props.setProperty('CARPETA_PDA_DATOS', f.getId());
+  return f;
+}
+// Los ficheros de la PDA vienen en la codificación de MS-DOS (850): se pasan a letras normales (Ñ, ó…)
+var RV850_ = "\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u00c1\u00c2\u00c0\u00a9\u2563\u2551\u2557\u255d\u00a2\u00a5\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u00e3\u00c3\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u00a4\u00f0\u00d0\u00ca\u00cb\u00c8\u0131\u00cd\u00ce\u00cf\u2518\u250c\u2588\u2584\u00a6\u00cc\u2580\u00d3\u00df\u00d4\u00d2\u00f5\u00d5\u00b5\u00fe\u00de\u00da\u00db\u00d9\u00fd\u00dd\u00af\u00b4\u00ad\u00b1\u2017\u00be\u00b6\u00a7\u00f7\u00b8\u00b0\u00a8\u00b7\u00b9\u00b3\u00b2\u25a0\u00a0";
+function rv850_(s) { return String(s || '').replace(/[\x80-\xff]/g, function (ch) { return RV850_.charAt(ch.charCodeAt(0) - 128); }); }
+ACCIONES.avRevision = function (req, u) {
+  permitir_(u, ['ADMIN']);
+  var ruta = String(req.ruta || ''), n = Math.min(Math.max(+req.n || 30, 1), 80);
+  if (!/^\d\d$/.test(ruta)) throw new Error('Ruta no válida');
+  var it = carpetaDatos_().getFiles(), grupos = {}, maestros = {};
+  while (it.hasNext()) {
+    var f = it.next(); if (f.isTrashed()) continue;
+    var nom = f.getName(), m = /^R(\d\d)_(\d{8}_\d{4})_(cab|lin|cob)\.txt$/i.exec(nom);
+    if (m && m[1] === ruta) { (grupos[m[2]] = grupos[m[2]] || {})[m[3].toLowerCase()] = f; continue; }
+    if (/^(CLIENTE|ARTICULO)\.TXT$/i.test(nom)) maestros[nom.toUpperCase()] = f;
+  }
+  var ids = Object.keys(grupos).sort().reverse().slice(0, n), cods = {}, arts = {};
+  var leer = function (f) { return f ? f.getBlob().getDataAsString('ISO-8859-1') : ''; };
+  var out = ids.map(function (id) {
+    var g = grupos[id], o = {id: id, cab: leer(g.cab), lin: leer(g.lin), cob: leer(g.cob)};
+    o.cab.split(/\r?\n/).forEach(function (l) { if (l.length > 12) cods[l.substr(7, 6)] = 1; });
+    o.cob.split(/\r?\n/).forEach(function (l) { if (l.length > 12) cods[l.substr(7, 6)] = 1; });
+    o.lin.split(/\r?\n/).forEach(function (l) { if (l.length > 15) arts[l.substr(7, 8).trim()] = 1; });
+    return o;
+  });
+  var clientes = {}, articulos = {};
+  leer(maestros['CLIENTE.TXT']).split(/\r?\n/).forEach(function (l) {
+    var c = l.substr(0, 6); if (!cods[c]) return;
+    var m = /([SN])(\d\d\.\d\d)\s*$/.exec(l);
+    var pc = /^(\d{5})?\s*(.*)$/.exec(l.substr(93, 25).trim());   // código postal y pueblo (el pueblo viene recortado cuando lleva CP)
+    clientes[c] = {n: rv850_(l.substr(8, 40).trim()), cp: pc[1] || '', pob: rv850_(pc[2].trim()), re: m ? m[1] : '', dto: m ? +m[2] : 0};
+  });
+  leer(maestros['ARTICULO.TXT']).split(/\r?\n/).forEach(function (l) {
+    var c = l.substr(0, 8).trim(); if (!arts[c]) return;
+    articulos[c] = {n: rv850_(l.substr(8, 36).trim()), p: parseFloat(l.substr(44, 6).replace(/^0+(?=-)/, '')) || 0, iva: parseInt(l.substr(50, 4), 10) || 4};
+  });
+  return {grupos: out, clientes: clientes, articulos: articulos};
+};
 ACCIONES.pdaLista = function (req, u) {
   permitir_(u, ['ADMIN']);
   var it = carpetaPda_().getFiles(), l = [];
