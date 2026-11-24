@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "189 · 24/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "190 · 24/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1281,7 +1281,7 @@ function marcoDesk(){
   $("#sideAct").onclick=async()=>{if(["historial","albaranes","exportar","difs","resumen"].includes(S.tab)&&!S.scr){cargarHist()}else{await cargar();toast("Datos actualizados")}};
   $("#sideSalir").onclick=async()=>{const c=await confirmar("Salir","¿Cerrar la sesión en este ordenador?");if(c.ok){S.pin="";S.user=null;LS.del("ped_pin");render()}};
   // título grande en la cabecera
-  const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Programa de gestión","Albaranes enviados a GESTEURO"],resumen:["Resumen de ventas","Albaranes y artículos entre fechas"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"],autoventa:({cuadres:["Cuadres de camiones","Viaje en curso de cada vendedor"],hist:["Histórico de cuadres","Viajes cerrados"],ctl:["Controles de carga","Ver e imprimir, uno o varios por fechas"],gest:["Gestión de vendedores y camiones","Altas, bajas y matrículas"],arts:["Gestión de artículos","Artículos de la hoja de cuadre y su orden"]})[S.av.sec||"cuadres"]};
+  const T={difs:["Diferencias","Pedido frente a lo enviado"],pedidos:["Pedidos","De la tienda, en curso"],historial:["Histórico","Pedidos entre fechas"],albaranes:["Albaranes","Emitidos entre fechas"],exportar:["Programa de gestión","Albaranes enviados a GESTEURO"],resumen:["Resumen de ventas","Albaranes y artículos entre fechas"],precios:["Artículos y precios","Lo que ve la tienda y sale en el albarán"],nuevo:["Nuevo pedido","Pedido metido desde oficina"],autoventa:({cuadres:["Cuadres de camiones","Viaje en curso de cada vendedor"],hist:["Histórico de cuadres","Viajes cerrados"],ctl:["Controles de carga","Ver e imprimir, uno o varios por fechas"],rev:["Revisión de albaranes","Lo que llama la atención de la PDA"],gest:["Gestión de vendedores y camiones","Altas, bajas y matrículas"],arts:["Gestión de artículos","Artículos de la hoja de cuadre y su orden"]})[S.av.sec||"cuadres"]};
   let t=T[S.tab]||["Pedidos",""];
   if(S.scr){const sc=S.scr;
     if(sc.t==="ver"){const pp=S.pedidos.find(x=>x.id===sc.id);t=pp?["Pedido del "+sinEtiq(fDiaPed(pp.creado)).replace(/^(Hoy|Ayer) · /,""),"Pedido "+sc.id]:["Pedido "+sc.id,"Detalle"]}else if(sc.t==="preparar")t=["Preparando pedido "+sc.ped.id,"Piezas servidas y pesos"];
@@ -1828,7 +1828,7 @@ function vAvRev(app){
       <p class="muted" style="font-size:13px">Marcas: S = entrega sin IVA · C/C/S contado sin descuento · C/C/C contado con descuento · C/CR a crédito · ✱ ha cobrado uno anterior. Toca una venta para ver sus líneas.</p>`;
   }
   app.innerHTML=`<div class="wrap">${desk?"":`<div class="acc" style="margin-bottom:8px"><button class="btn sm" id="rvVolver">← Autoventa</button></div>`}
-    <div class="sec" style="margin-top:0">Revisión de albaranes</div>
+    ${desk?"":`<div class="sec" style="margin-top:0">Revisión de albaranes</div>`}
     <div class="acc" style="margin-bottom:6px">${vs.map(v=>`<button class="btn sm${v===R.vend?" pri":""}" data-rvvend="${esc(v)}">${esc(v)}</button>`).join("")}<span style="flex:1"></span>${ruta&&X&&!X.cargando?`<button class="btn sm" id="rvAct">Actualizar</button>`:""}</div>
     ${cuerpo}</div>`;
   app.onclick=e=>{const b=e.target.closest("[data-rvvend],[data-rvdia],[data-rvd],#rvAct,#rvVolver");if(!b)return;
