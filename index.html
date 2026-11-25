@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "195 · 25/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "196 · 25/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1806,6 +1806,18 @@ function rvAvisos(dia,hist,D){
       if(prev.length>=2){const cont=prev.filter(p=>p.x.cob>0).length,repo=prev.filter(p=>!p.x.cob&&p.cobro).length,hoy=dia.cobros.some(k=>k.cli===d.cli);
         if(cont===prev.length&&!d.cob)A.push({d,c:"pago",txt:"Siempre paga al contado y esta vez lo deja a crédito"});
         else if(repo===prev.length&&!d.cob&&!hoy)A.push({d,c:"pago",txt:"Suele pagar el anterior y esta vez no ha cobrado nada"})}}
+    // promociones (líneas en negativo, p. ej. MTBZZP para la barra MTBZN): lo de hoy frente a lo que suele llevar este cliente en ese queso
+    const promo=(x,g)=>{const l=x.lin.find(y=>y.p<0&&y.a.slice(0,3)===g);return l?r2(-l.p):0};
+    [...new Set(d.lin.filter(l=>l.p>0).map(l=>l.a.slice(0,3)))].forEach(g=>{
+      const prevP=[];hist.forEach(h=>h.docs.forEach(x=>{if(x.cli===d.cli&&x.lin.some(y=>y.p>0&&y.a.slice(0,3)===g))prevP.push(promo(x,g))}));
+      if(prevP.length<2)return;
+      const cnt={};prevP.forEach(v=>cnt[v]=(cnt[v]||0)+1);const [mv,mn]=Object.entries(cnt).sort((x,y)=>y[1]-x[1])[0],v0=+mv;
+      if(mn/prevP.length<.75)return;   // sin costumbre clara
+      const hoyP=promo(d,g);if(Math.abs(hoyP-v0)<.005)return;
+      const art=esc(artN(d.lin.find(l=>l.p>0&&l.a.slice(0,3)===g).a)),sl=mn===prevP.length?"Siempre":"Casi siempre";
+      A.push({d,c:"promo:"+g,txt:!v0?`${art}: con promoción de ${eur(hoyP)} €/kg y no suele llevar (${prevP.length} ventas anteriores sin promoción)`
+        :!hoyP?`${art}: sin promoción y ${sl.toLowerCase()} lleva ${eur(v0)} €/kg`
+        :`${art}: promoción de ${eur(hoyP)} €/kg y ${sl.toLowerCase()} lleva ${eur(v0)} €/kg`})});
   });
   const por={};todas.slice().reverse().forEach(h=>h.docs.forEach(x=>{por[x.num]=x}));
   dia.cobros.forEach(k=>{const x=+k.num?por[k.num]:null;
