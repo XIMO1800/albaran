@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "198 · 25/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "199 · 25/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1767,7 +1767,7 @@ function rvTotal(d,arts){const base={};d.lin.forEach(l=>{const iva=((arts||{})[l
   let t=0;Object.entries(base).forEach(([iva,b])=>{const b2=r2(b*(1-d.dto/100));t+=b2;if(d.tipo!=="2"){t+=r2(b2*iva/100);if(d.re)t+=r2(b2*({4:.5,10:1.4,21:5.2}[iva]||0)/100)}});return r2(t)}
 // el fichero de clientes recorta el pueblo cuando lleva código postal: los de las rutas, por su CP
 const RV_CP={"02612":"Munera","02611":"Ossa de Montiel","13248":"Alhambra","13240":"La Solana","13200":"Manzanares","13230":"Membrilla","13249":"Ruidera",
-  "13326":"Montiel","13327":"Sta. Cruz de los Cáñamos","13328":"Almedina","13329":"Carrizosa","13330":"Villanueva de la Fuente","13332":"Villahermosa","13333":"Fuenllana","13340":"Albaladejo","13341":"Terrinches",
+  "13326":"Montiel","13327":"Sta. Cruz de los Cáñamos","13328":"Almedina","13329":"Carrizosa","13330":"Villanueva de la Fuente","13332":"Villahermosa","13333":"Fuenllana","13340":"Albaladejo","13341":"Terrinches","13391":"Alcubillas",
   "13320":"Villanueva de los Infantes","02311":"Povedilla","02316":"Reolid","23330":"Villanueva del Arzobispo","28003":"Madrid"};
 const rvPob=c=>!c?"":(RV_CP[c.cp]||(c.cp?"":c.pob));
 const rvTipo=d=>d.tipo==="2"?"Entrega":d.tipo==="3"?"N. valor":"Albarán";
