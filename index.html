@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "193 · 24/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "194 · 25/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1792,7 +1792,10 @@ function rvAvisos(dia,hist,D){
   const pmA=a=>{const v=(kp[a]||[]).slice().sort((x,y)=>x-y);return v.length>=6?v[Math.floor(v.length/2)]:pmDe(a)};
   dia.docs.forEach(d=>{
     d.lin.forEach(l=>{if(!(l.pz>0&&l.kg>0&&l.p>0))return;const pm=pmA(l.a);if(!pm)return;const r=l.kg/l.pz;
-      if(r<pm*.65||r>pm*1.45){const n=Math.max(1,Math.round(l.kg/pm));A.push({d,txt:`${esc(artN(l.a))}: ${l.pz} pz con ${kgf(l.kg)} kg, ${kgf(r)} kg/pz (lo normal ${kgf(pm)})${n!==l.pz?` → ¿serán ${n} pz?`:""}`})}});
+      // margen: ±20 % con una pieza, y más estrecho cuantas más piezas (la media de varias se aleja menos de lo normal); 4 pz → ±15 %
+      const tol=.10+.10/Math.sqrt(l.pz);
+      if(Math.abs(r/pm-1)>tol){const n=Math.max(1,Math.round(l.kg/pm)),kn=r2(l.pz*pm);
+        A.push({d,txt:`${esc(artN(l.a))}: ${l.pz} pz con ${kgf(l.kg)} kg → ${kgf(r2(r*1000)/1000)} kg/pz, y lo normal es ${kgf(r2(pm*1000)/1000)}. ¿${n!==l.pz?`Serán ${n} pz, o `:""}${n!==l.pz?"u":"U"}nos ${kgf(kn)} kg?`})}});
     d.lin.forEach(l=>{const t=(D.articulos[l.a]||{}).p;if(t>0&&l.p>0&&Math.abs(l.p-t)>.005)A.push({d,txt:`${esc(artN(l.a))}: a ${eur(l.p)} €/kg y la tarifa es ${eur(t)}`})});
     const tot=rvTotal(d,D.articulos),c=D.clientes[d.cli];
     if(d.cob>0&&Math.abs(d.cob-tot)>.05)A.push({d,txt:`Cobrado ${eur(d.cob)} € y el ${rvTipo(d).toLowerCase()} es de ${eur(tot)} €`});
