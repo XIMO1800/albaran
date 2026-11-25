@@ -124,12 +124,15 @@ End Function
 Dim f, env, dest
 clave = LeeClave()
 If clave = "" Or clave = "PEGAR_AQUI_LA_CLAVE" Then Apunta "ERROR AUTOVENT: no encuentro la clave en puente-albtiend.vbs": WScript.Quit 1
-If Not fso.FolderExists(ORIGEN) Then Apunta "ERROR no encuentro la carpeta " & ORIGEN: WScript.Quit 1
+Dim lista, i, nom, nsub: lista = Array()
 env = ORIGEN & "\ENVIADOS"
+' si el servidor no responde se apunta y se sigue con la carpeta de FACTURACION
+If Not fso.FolderExists(ORIGEN) Then
+  Apunta "ERROR no encuentro la carpeta " & ORIGEN
+Else
 On Error Resume Next
 If Not fso.FolderExists(env) Then fso.CreateFolder env
 On Error GoTo 0
-Dim lista, i, nom, nsub: lista = Array()
 For Each f In fso.GetFolder(ORIGEN).Files
   If NombreSubida(f) <> "" And DateDiff("s", f.DateLastModified, Now) > 20 Then
     ReDim Preserve lista(UBound(lista) + 1): lista(UBound(lista)) = f.Name
@@ -153,6 +156,7 @@ For i = 0 To UBound(lista)
         On Error GoTo 0
       End If
 Next
+End If
 
 ' ---------------- carpeta enlaces de FACTURACION (solo se lee) ----------------
 If fso.FolderExists(ENLACES) Then
