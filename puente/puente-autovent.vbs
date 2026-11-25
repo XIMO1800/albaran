@@ -2,10 +2,13 @@
 ' y los datos de la PDA (cab01/lin01/cob01, cab02/lin02/cob02, CLIENTE.TXT, ARTICULO.TXT) para la revision de albaranes.
 ' Los cab/lin/cob se suben con la ruta y la fecha y hora del fichero en el nombre (R02_20261120_1741_cab.txt) para que no se machaquen.
 ' Lo lanza una tarea programada cada 2 minutos. Cada fichero subido se mueve a AUTOVENT\ENVIADOS.
+' Ademas mira la carpeta compartida de FACTURACION (enlaces), donde deja los ficheros la descarga de la PDA, y sube una copia
+' de los que sean nuevos (alli no se toca ni se mueve nada). Asi no hace falta copiarlos a mano.
 ' La clave la coge de puente-albtiend.vbs (tiene que estar en la misma carpeta). Apunta lo que hace en envios.log.
 Option Explicit
 Const URL = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec"
 Const ORIGEN = "\\Servidor-i7\servidor\SERVIDORW10\AUTOVENT"
+Const ENLACES = "\\FACTURACION\enlaces"
 
 Dim fso, carpeta, logPath, clave
 Set fso = CreateObject("Scripting.FileSystemObject")
@@ -56,9 +59,51 @@ Function NombreSubida(f)
   Set re = New RegExp: re.IgnoreCase = True: re.Pattern = "^(cab|lin|cob)(\d\d)\.txt$"
   Set m = re.Execute(f.Name)
   If m.Count = 0 Then Exit Function
-  d = f.DateLastModified
+  d = FechaRuta(f, m(0).SubMatches(1))
   NombreSubida = "R" & m(0).SubMatches(1) & "_" & Year(d) & Dos(Month(d)) & Dos(Day(d)) & "_" & Dos(Hour(d)) & Dos(Minute(d)) & "_" & LCase(m(0).SubMatches(0)) & ".txt"
 End Function
+
+' Fecha con la que se nombran los tres ficheros de una descarga: la del cab de esa ruta (asi van juntos aunque se
+' escriban en minutos distintos). Si el fichero es de mucho antes que el cab, es de otra descarga: se deja la suya.
+Function FechaRuta(f, rr)
+  Dim pc
+  FechaRuta = f.DateLastModified
+  pc = f.ParentFolder.Path & "\cab" & rr & ".txt"
+  If fso.FileExists(pc) Then
+    If Abs(DateDiff("n", fso.GetFile(pc).DateLastModified, f.DateLastModified)) <= 10 Then FechaRuta = fso.GetFile(pc).DateLastModified
+  End If
+End Function
+
+' Los cab/lin/cob que estan en enlaces y son de una descarga anterior al cab (no se han vuelto a escribir) no se suben
+Function EsDeOtraDescarga(f)
+  Dim re, m, pc
+  EsDeOtraDescarga = False
+  Set re = New RegExp: re.IgnoreCase = True: re.Pattern = "^(lin|cob)(\d\d)\.txt$"
+  Set m = re.Execute(f.Name)
+  If m.Count = 0 Then Exit Function
+  pc = f.ParentFolder.Path & "\cab" & m(0).SubMatches(1) & ".txt"
+  If Not fso.FileExists(pc) Then Exit Function
+  If Abs(DateDiff("n", fso.GetFile(pc).DateLastModified, f.DateLastModified)) > 10 Then EsDeOtraDescarga = True
+End Function
+
+' Registro de lo ya subido desde enlaces: nombre|fecha|tamano
+Function Firma(f)
+  Firma = UCase(f.Name) & "|" & CStr(CDbl(f.DateLastModified)) & "|" & f.Size
+End Function
+Function YaSubido(firm)
+  Dim t
+  YaSubido = False
+  On Error Resume Next
+  If Not fso.FileExists(carpeta & "\pda-enlaces.txt") Then Exit Function
+  t = fso.OpenTextFile(carpeta & "\pda-enlaces.txt", 1).ReadAll
+  If InStr(1, vbCrLf & t, vbCrLf & firm & vbCrLf, 1) > 0 Then YaSubido = True
+End Function
+Sub ApuntaSubido(firm)
+  On Error Resume Next
+  Dim f: Set f = fso.OpenTextFile(carpeta & "\pda-enlaces.txt", 8, True)
+  f.WriteLine firm
+  f.Close
+End Sub
 
 Function Sube(ruta, nombre)
   Dim h
@@ -108,3 +153,37 @@ For i = 0 To UBound(lista)
         On Error GoTo 0
       End If
 Next
+
+' ---------------- carpeta enlaces de FACTURACION (solo se lee) ----------------
+If fso.FolderExists(ENLACES) Then
+  Dim firm, tmp
+  For Each f In fso.GetFolder(ENLACES).Files
+    nsub = NombreSubida(f)
+    If nsub <> "" And LCase(fso.GetExtensionName(f.Name)) = "txt" Then
+      firm = Firma(f)
+      If DateDiff("s", f.DateLastModified, Now) > 60 And Not YaSubido(firm) And Not EsDeOtraDescarga(f) Then
+        If UCase(Left(nsub, 1)) = "R" And fso.FileExists(env & "\" & nsub) Then
+          ApuntaSubido firm   ' ya se subio copiandolo a mano
+        Else
+          tmp = carpeta & "\_" & nsub
+          On Error Resume Next
+          fso.CopyFile f.Path, tmp, True
+          If Err.Number <> 0 Then
+            Apunta "ERROR no se pudo copiar " & f.Path & ": " & Err.Description: Err.Clear
+          Else
+            On Error GoTo 0
+            If Sube(tmp, nsub) Then
+              ApuntaSubido firm
+              Apunta "PDA SUBIDO  " & f.Path & " como " & nsub
+              On Error Resume Next
+              If UCase(Left(nsub, 1)) = "R" Then fso.CopyFile tmp, env & "\" & nsub, True
+            End If
+            On Error Resume Next
+            fso.DeleteFile tmp, True
+          End If
+          On Error GoTo 0
+        End If
+      End If
+    End If
+  Next
+End If
