@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "196 · 25/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "197 · 25/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1796,7 +1796,13 @@ function rvAvisos(dia,hist,D){
       const tol=.10+.10/Math.sqrt(l.pz);
       if(Math.abs(r/pm-1)>tol){const n=Math.max(1,Math.round(l.kg/pm)),kn=r2(l.pz*pm);
         A.push({d,c:"kg:"+l.a,txt:`${esc(artN(l.a))}: ${l.pz} pz con ${kgf(l.kg)} kg → ${kgf(r2(r*1000)/1000)} kg/pz, y lo normal es ${kgf(r2(pm*1000)/1000)}. ¿${n!==l.pz?`Serán ${n} pz, o `:""}${n!==l.pz?"u":"U"}nos ${kgf(kn)} kg?`})}});
-    d.lin.forEach(l=>{const t=(D.articulos[l.a]||{}).p;if(t>0&&l.p>0&&Math.abs(l.p-t)>.005)A.push({d,c:"pre:"+l.a,txt:`${esc(artN(l.a))}: a ${eur(l.p)} €/kg y la tarifa es ${eur(t)}`})});
+    // precio €/kg: frente a lo que suele pagar este cliente por ese queso y frente a la tarifa.
+    // Si siempre paga un precio especial y hoy es el mismo, no avisa; si hoy es el de tarifa (ha cambiado la tarifa), tampoco.
+    [...new Set(d.lin.filter(l=>l.p>0).map(l=>l.a))].forEach(a=>{const l=d.lin.find(y=>y.a===a&&y.p>0),t=(D.articulos[a]||{}).p||0,eq=(x,y)=>Math.abs(x-y)<.005;
+      const prev=[];hist.forEach(h=>h.docs.forEach(x=>{if(x.cli===d.cli){const y=x.lin.find(z=>z.a===a&&z.p>0);if(y)prev.push(r2(y.p))}}));
+      let v0=null,mn=0;if(prev.length>=2){const cnt={};prev.forEach(v=>cnt[v]=(cnt[v]||0)+1);const e=Object.entries(cnt).sort((x,y)=>y[1]-x[1])[0];if(e[1]/prev.length>=.75){v0=+e[0];mn=e[1]}}
+      if(v0!==null){if(!eq(l.p,v0)&&!(t>0&&eq(l.p,t)))A.push({d,c:"pre:"+a,txt:`${esc(artN(a))}: a ${eur(l.p)} €/kg y ${mn===prev.length?"siempre":"casi siempre"} paga ${eur(v0)}${t>0&&!eq(t,v0)?` (tarifa ${eur(t)})`:""}`})}
+      else if(t>0&&!eq(l.p,t))A.push({d,c:"pre:"+a,txt:`${esc(artN(a))}: a ${eur(l.p)} €/kg y la tarifa es ${eur(t)}`})});
     const tot=rvTotal(d,D.articulos),c=D.clientes[d.cli];
     if(d.cob>0&&Math.abs(d.cob-tot)>.05)A.push({d,c:"cob",txt:`Cobrado ${eur(d.cob)} € y el ${rvTipo(d).toLowerCase()} es de ${eur(tot)} €`});
     if(!c)A.push({d,c:"cli",txt:`El cliente ${d.cli} no está en el fichero de clientes`});
