@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "200 · 26/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "201 · 26/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1770,7 +1770,10 @@ const RV_CP={"02612":"Munera","02611":"Ossa de Montiel","13248":"Alhambra","1324
   "13326":"Montiel","13327":"Sta. Cruz de los Cáñamos","13328":"Almedina","13329":"Carrizosa","13330":"Villanueva de la Fuente","13332":"Villahermosa","13333":"Fuenllana","13340":"Albaladejo","13341":"Terrinches","13391":"Alcubillas","13300":"Valdepeñas","13670":"Villarrubia de los Ojos","28029":"Madrid",
   "13320":"Villanueva de los Infantes","02311":"Povedilla","02316":"Reolid","23330":"Villanueva del Arzobispo","28003":"Madrid"};
 // si el código postal no está en la lista, se enseña lo que queda del nombre («…rrubia de los Ojos»)
-const rvPob=c=>!c?"":(RV_CP[c.cp]||(c.cp&&c.pob?"…"+c.pob.toLowerCase().replace(/(^|\s)(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()).replace(/ (De|La|Los|Las|Del) /g,m=>m.toLowerCase()):c.pob));
+// clientes que se facturan a una central de fuera pero se sirven en la ruta: el pueblo de la tienda
+const RV_CLI_POB={"023034":"Tomelloso"};
+const rvTit=t=>t.toLowerCase().replace(/(^|\s)(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()).replace(/ (De|La|Los|Las|Del) /g,m=>m.toLowerCase());
+const rvPob=(c,cod)=>RV_CLI_POB[cod]||(!c?"":(RV_CP[c.cp]||(c.cp&&c.pob?"…"+rvTit(c.pob):rvTit(c.pob||""))));
 const rvTipo=d=>d.tipo==="2"?"Entrega":d.tipo==="3"?"N. valor":"Albarán";
 const rvMarca=(d,dia)=>d.tipo==="2"?"S":(d.cob>0?"C/C/"+(d.dto>0?"C":"S"):"C/CR")+(dia.cobros.some(k=>k.cli===d.cli)?" ✱":"");
 // lunes de la semana de una fecha (aaaa-mm-dd)
@@ -1874,7 +1877,7 @@ function vAvRev(app){
     const celda=(m,hb,cls)=>`<span class="${cls}${hb&&base(m)&&base(m)!==hb?" dif":""}">${m}</span>`;
     const histD=c=>NS?`<span class="rvhs">${H.sem.map(l=>{const ms=(H.por[c]||{})[l];return ms?`<span class="rvhc">${ms.map(m=>celda(m,habit(c),"")).join("")}</span>`:`<span class="rvhc vac">·</span>`}).join("")}</span>`:"";
     const cabH=NS?`<div class="rvd rvcab"><span></span><span class="rvp">Pueblo</span><span></span><span></span><span class="rvm">Hoy</span><span class="rvhs">${H.sem.map(l=>`<span class="rvhc">${H.eti[l]}</span>`).join("")}</span></div>`:"";
-    const filaD=d=>`<div class="rvd${conA.has(d.doc)?" mal":""}${ab===d.doc?" on":""}" data-rvd="${d.doc}"><span class="rvh">${d.hora}</span>${NS?`<span class="rvp">${esc(rvPob(cli(d.cli)))}</span>`:""}<span class="rvc"><b>${esc(cli(d.cli).n||d.cli)}</b><small>${esc(rvTipo(d))} ${d.num}${!NS&&rvPob(cli(d.cli))?" · "+esc(rvPob(cli(d.cli))):""}</small></span><span class="rvi">${eur(tot(d))} €<small>${d.tipo==="2"?"":d.cob>0?"contado":"crédito"}</small></span>${celda(rvMarca(d,dia),habit(d.cli),"rvm")}${histD(d.cli)}</div>
+    const filaD=d=>`<div class="rvd${conA.has(d.doc)?" mal":""}${ab===d.doc?" on":""}" data-rvd="${d.doc}"><span class="rvh">${d.hora}</span>${NS?`<span class="rvp">${esc(rvPob(cli(d.cli),d.cli))}</span>`:""}<span class="rvc"><b>${esc(cli(d.cli).n||d.cli)}</b><small>${esc(rvTipo(d))} ${d.num}${!NS&&rvPob(cli(d.cli),d.cli)?" · "+esc(rvPob(cli(d.cli),d.cli)):""}</small></span><span class="rvi">${eur(tot(d))} €<small>${d.tipo==="2"?"":d.cob>0?"contado":"crédito"}</small></span>${celda(rvMarca(d,dia),habit(d.cli),"rvm")}${histD(d.cli)}</div>
       ${ab===d.doc?`<div class="rvl">${d.lin.map(l=>`<div><span>${esc((D.articulos[l.a]||{}).n||nomDe(l.a))}</span><span>${l.pz} pz</span><span>${kgf(l.kg)} kg</span><span>${l.pz&&l.p>0?kgf(r2(l.kg/l.pz*1000)/1000)+" kg/pz":""}</span><span>${eur(l.p)} €</span></div>`).join("")}${d.dto?`<div><span>Descuento ${d.dto} %</span></div>`:""}</div>`:""}`;
     cuerpo=`${desk?`<div class="rvsel"><span class="rvselt">Día</span>${dias.map(x=>`<a data-rvdia="${x.id}" class="${x.id===R.dia?"on":""}">${fechas(x)}</a>`).join("")}</div>`:`<div class="meses">${dias.map(x=>`<button data-rvdia="${x.id}" class="${x.id===R.dia?"on":""}">${fechas(x)}</button>`).join("")}</div>`}
       <div class="rvres">${dia.docs.length} documentos · venta <b>${eur(venta)} €</b> · cobrado en ventas ${eur(cont)} € · cobros de anteriores ${eur(cobr)} €</div>
@@ -1882,7 +1885,7 @@ function vAvRev(app){
       ${AP.length?`<div class="card rvav">${AP.map(a=>`<div class="rva"><div><b>⚠ ${quien(a)}</b><span>${a.txt}</span></div><button class="btn sm" data-rvok="${esc(a.key)}">Revisado</button></div>`).join("")}</div>`:`<div class="card rvok">✓ ${AV.length?"Todo revisado":"Nada que llame la atención"}</div>`}
       ${AV.length?`<div class="card rvav rvvis">${AV.map(a=>`<div class="rva"><div><b>✓ ${quien(a)}</b><span>${a.txt}</span><small>Revisado por ${esc(a.v.por||"")} ${fElA(a.v.f)}</small><input class="rvnota" data-rvnota="${esc(a.key)}" value="${esc(a.v.nota||"")}" placeholder="Nota: qué era (p. ej. eran 8,35 kg)"></div><button class="btn sm" data-rvdes="${esc(a.key)}">Deshacer</button></div>`).join("")}</div>`:""}
       <div class="sec">Ventas</div><div class="card rvlista${NS?" conh":""}">${cabH}${dia.docs.map(filaD).join("")}</div>
-      ${dia.cobros.length?`<div class="sec">Cobros de albaranes anteriores</div><div class="card rvlista${NS?" conh":""}">${dia.cobros.map(k=>`<div class="rvd"><span class="rvh"></span>${NS?`<span class="rvp">${esc(rvPob(cli(k.cli)))}</span>`:""}<span class="rvc"><b>${esc(cli(k.cli).n||k.cli)}</b><small>${+k.num?"Albarán "+k.num:"Sin albarán"}</small></span><span class="rvi">${eur(k.imp)} €</span><span class="rvm"></span>${histD(k.cli)}</div>`).join("")}</div>`:""}
+      ${dia.cobros.length?`<div class="sec">Cobros de albaranes anteriores</div><div class="card rvlista${NS?" conh":""}">${dia.cobros.map(k=>`<div class="rvd"><span class="rvh"></span>${NS?`<span class="rvp">${esc(rvPob(cli(k.cli),k.cli))}</span>`:""}<span class="rvc"><b>${esc(cli(k.cli).n||k.cli)}</b><small>${+k.num?"Albarán "+k.num:"Sin albarán"}</small></span><span class="rvi">${eur(k.imp)} €</span><span class="rvm"></span>${histD(k.cli)}</div>`).join("")}</div>`:""}
       <p class="muted" style="font-size:13px">Marcas: S = entrega sin IVA · C/C/S contado sin descuento · C/C/C contado con descuento · C/CR a crédito · ✱ ha cobrado uno anterior.${NS?" A la derecha, lo de las semanas anteriores; resaltado lo que no es lo habitual.":""} Toca una venta para ver sus líneas.</p>`;
   }
   app.innerHTML=`<div class="wrap${desk?" rvdesk":""}">${desk?"":`<div class="acc" style="margin-bottom:8px"><button class="btn sm" id="rvVolver">← Autoventa</button></div>`}
