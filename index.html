@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "199 · 25/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "200 · 26/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1767,9 +1767,10 @@ function rvTotal(d,arts){const base={};d.lin.forEach(l=>{const iva=((arts||{})[l
   let t=0;Object.entries(base).forEach(([iva,b])=>{const b2=r2(b*(1-d.dto/100));t+=b2;if(d.tipo!=="2"){t+=r2(b2*iva/100);if(d.re)t+=r2(b2*({4:.5,10:1.4,21:5.2}[iva]||0)/100)}});return r2(t)}
 // el fichero de clientes recorta el pueblo cuando lleva código postal: los de las rutas, por su CP
 const RV_CP={"02612":"Munera","02611":"Ossa de Montiel","13248":"Alhambra","13240":"La Solana","13200":"Manzanares","13230":"Membrilla","13249":"Ruidera",
-  "13326":"Montiel","13327":"Sta. Cruz de los Cáñamos","13328":"Almedina","13329":"Carrizosa","13330":"Villanueva de la Fuente","13332":"Villahermosa","13333":"Fuenllana","13340":"Albaladejo","13341":"Terrinches","13391":"Alcubillas",
+  "13326":"Montiel","13327":"Sta. Cruz de los Cáñamos","13328":"Almedina","13329":"Carrizosa","13330":"Villanueva de la Fuente","13332":"Villahermosa","13333":"Fuenllana","13340":"Albaladejo","13341":"Terrinches","13391":"Alcubillas","13300":"Valdepeñas","13670":"Villarrubia de los Ojos","28029":"Madrid",
   "13320":"Villanueva de los Infantes","02311":"Povedilla","02316":"Reolid","23330":"Villanueva del Arzobispo","28003":"Madrid"};
-const rvPob=c=>!c?"":(RV_CP[c.cp]||(c.cp?"":c.pob));
+// si el código postal no está en la lista, se enseña lo que queda del nombre («…rrubia de los Ojos»)
+const rvPob=c=>!c?"":(RV_CP[c.cp]||(c.cp&&c.pob?"…"+c.pob.toLowerCase().replace(/(^|\s)(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()).replace(/ (De|La|Los|Las|Del) /g,m=>m.toLowerCase()):c.pob));
 const rvTipo=d=>d.tipo==="2"?"Entrega":d.tipo==="3"?"N. valor":"Albarán";
 const rvMarca=(d,dia)=>d.tipo==="2"?"S":(d.cob>0?"C/C/"+(d.dto>0?"C":"S"):"C/CR")+(dia.cobros.some(k=>k.cli===d.cli)?" ✱":"");
 // lunes de la semana de una fecha (aaaa-mm-dd)
@@ -1806,7 +1807,7 @@ function rvAvisos(dia,hist,D){
       if(v0!==null){if(!eq(l.p,v0)&&!(t>0&&eq(l.p,t)))A.push({d,c:"pre:"+a,txt:`${esc(artN(a))}: a ${eur(l.p)} €/kg y ${mn===prev.length?"siempre":"casi siempre"} paga ${eur(v0)}${t>0&&!eq(t,v0)?` (tarifa ${eur(t)})`:""}`})}
       else if(t>0&&!eq(l.p,t))A.push({d,c:"pre:"+a,txt:`${esc(artN(a))}: a ${eur(l.p)} €/kg y la tarifa es ${eur(t)}`})});
     const tot=rvTotal(d,D.articulos),c=D.clientes[d.cli];
-    if(d.cob>0&&Math.abs(d.cob-tot)>.05)A.push({d,c:"cob",txt:`Cobrado ${eur(d.cob)} € y el ${rvTipo(d).toLowerCase()} es de ${eur(tot)} €`});
+    if(d.cob>0&&Math.abs(d.cob-tot)>.05)A.push({d,c:"cob",txt:`Cobrado ${eur(d.cob)} € y ${d.tipo==="2"?"la entrega":d.tipo==="3"?"la nota de valor":"el albarán"} es de ${eur(tot)} €`});
     if(!c)A.push({d,c:"cli",txt:`El cliente ${d.cli} no está en el fichero de clientes`});
     else if(d.tipo!=="2"){if(c.dto>0&&!d.dto)A.push({d,c:"dto",txt:`Sin el ${c.dto} % de descuento que tiene en su ficha`});
       if(!c.dto&&d.dto>0)A.push({d,c:"dto",txt:`Con ${d.dto} % de descuento y en su ficha no tiene`})}
@@ -1843,6 +1844,10 @@ function vAvRev(app){
   if(!R.vend||!vs.includes(R.vend))R.vend=vs.includes(S.av.vend)?S.av.vend:vs[0];
   const ruta=avRuta(R.vend),X=ruta?R.datos[ruta]:null;
   if(ruta&&!X){rvCargar(ruta);return}
+  // las demás rutas también se leen: hay clientes (los de Manzanares…) a los que se vende unas semanas en una ruta y otras en la otra,
+  // y su historial (forma de pago, cobros, promociones…) tiene que juntar las dos
+  const rutas=[...new Set(vs.map(avRuta).filter(Boolean))];
+  if(X&&!X.cargando)rutas.forEach(r=>{if(!R.datos[r])rvCargar(r)});
   let cuerpo="";
   if(!ruta)cuerpo=`<div class="vacio">No sé qué ruta de la PDA es la de ${esc(R.vend)}.</div>`;
   else if(X.cargando)cuerpo=`<div class="vacio">Leyendo los datos de la PDA…</div>`;
@@ -1850,7 +1855,10 @@ function vAvRev(app){
   else if(!X.dias.length)cuerpo=`<div class="vacio">Todavía no ha llegado ningún fichero de la PDA de esta ruta.</div>`;
   else{
     const dias=X.dias;if(!dias.some(x=>x.id===R.dia))R.dia=dias[0].id;
-    const i=dias.findIndex(x=>x.id===R.dia),dia=dias[i],D=X.D,hist=dias.slice(i+1),A=rvAvisos(dia,hist,D);
+    const i=dias.findIndex(x=>x.id===R.dia),dia=dias[i];
+    const otras=rutas.filter(r=>r!==ruta).map(r=>R.datos[r]).filter(o=>o&&o.dias);
+    const D={clientes:Object.assign({},...otras.map(o=>o.D.clientes),X.D.clientes),articulos:Object.assign({},...otras.map(o=>o.D.articulos),X.D.articulos)};
+    const hist=dias.slice(i+1).concat(...otras.map(o=>o.dias.filter(x=>x.id<dia.id))).sort((a,b)=>b.id.localeCompare(a.id)),A=rvAvisos(dia,hist,D);
     const fechas=x=>{const f=[...new Set(x.docs.map(d=>d.fecha).concat(x.cobros.map(k=>k.fecha)))].sort();return f.length?f.length>1?avDL(f[0])+" – "+avDL(f[f.length-1]):avDL(f[0]):x.id};
     const tot=d=>rvTotal(d,D.articulos),venta=dia.docs.reduce((s,d)=>s+tot(d),0),cont=dia.docs.reduce((s,d)=>s+d.cob,0),cobr=dia.cobros.reduce((s,k)=>s+k.imp,0);
     // avisos ya revisados: se guardan en la configuración de autoventa (hoja) con quién, cuándo y una nota
@@ -1891,7 +1899,7 @@ function vAvRev(app){
       const n=app.querySelector(`[data-rvnota="${CSS.escape(b.dataset.rvok)}"]`);if(n)n.focus({preventScroll:true});return}
     if(b.dataset.rvdes){delete cfgV()[b.dataset.rvdes];avGuardarCfg();const y=scrollY;render();scrollTo(0,y);return}
     if(b.id==="rvVolver"){S.av.sec=null;render();scrollTo(0,0);return}
-    if(b.id==="rvAct"){rvCargar(ruta);return}
+    if(b.id==="rvAct"){rutas.forEach(r=>rvCargar(r));return}
     if(b.dataset.rvvend){R.vend=b.dataset.rvvend;R.dia=null;R.abierto=null;render();return}
     if(b.dataset.rvdia){R.dia=b.dataset.rvdia;R.abierto=null;render();return}
     if(b.dataset.rvd){R.abierto=R.abierto===b.dataset.rvd?null:b.dataset.rvd;const y=scrollY;render();scrollTo(0,y)}};
