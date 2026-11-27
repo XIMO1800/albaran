@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "203 · 27/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "204 · 27/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -1763,7 +1763,10 @@ function rvLeer(g){
   return {id:g.id,docs,cobros};
 }
 // importe del documento: kilos × precio, menos el descuento; albaranes con IVA (y recargo si lo tiene), entregas sin IVA
-function rvTotal(d,arts){const base={};d.lin.forEach(l=>{const iva=((arts||{})[l.a]||{}).iva||4;base[iva]=(base[iva]||0)+r2(l.kg*l.p)});
+// artículos que se cobran por unidad y no por kilo (tarrinas, tarros, lonchas de 200 g, promociones «Euros unidad»):
+// en el fichero de artículos no viene marcado, se reconoce por el nombre
+const rvPorUd=(a,arts)=>/tarr|unidad|\b\d{2,3} ?g(r|rs|rms)?\.?\b/i.test(((arts||{})[a]||{}).n||"");
+function rvTotal(d,arts){const base={};d.lin.forEach(l=>{const iva=((arts||{})[l.a]||{}).iva||4;base[iva]=(base[iva]||0)+r2((rvPorUd(l.a,arts)?l.pz:l.kg)*l.p)});
   let t=0;Object.entries(base).forEach(([iva,b])=>{const b2=r2(b*(1-d.dto/100));t+=b2;if(d.tipo!=="2"){t+=r2(b2*iva/100);if(d.re)t+=r2(b2*({4:.5,10:1.4,21:5.2}[iva]||0)/100)}});return r2(t)}
 // el fichero de clientes recorta el pueblo cuando lleva código postal: los de las rutas, por su CP
 const RV_CP={"02612":"Munera","02611":"Ossa de Montiel","13248":"Alhambra","13240":"La Solana","13200":"Manzanares","13230":"Membrilla","13249":"Ruidera",
@@ -1878,7 +1881,7 @@ function vAvRev(app){
     const histD=c=>NS?`<span class="rvhs">${H.sem.map(l=>{const ms=(H.por[c]||{})[l];return ms?`<span class="rvhc">${ms.map(m=>celda(m,habit(c),"")).join("")}</span>`:`<span class="rvhc vac">·</span>`}).join("")}</span>`:"";
     const cabH=NS?`<div class="rvd rvcab"><span></span><span class="rvp">Pueblo</span><span></span><span></span><span class="rvm">Hoy</span><span class="rvhs">${H.sem.map(l=>`<span class="rvhc">${H.eti[l]}</span>`).join("")}</span></div>`:"";
     const filaD=d=>`<div class="rvd${conA.has(d.doc)?" mal":""}${ab===d.doc?" on":""}" data-rvd="${d.doc}"><span class="rvh">${d.hora}</span>${NS?`<span class="rvp">${esc(rvPob(cli(d.cli),d.cli))}</span>`:""}<span class="rvc"><b>${esc(cli(d.cli).n||d.cli)}</b><small>${esc(rvTipo(d))} ${d.num}${!NS&&rvPob(cli(d.cli),d.cli)?" · "+esc(rvPob(cli(d.cli),d.cli)):""}</small></span><span class="rvi">${eur(tot(d))} €<small>${d.tipo==="2"?"":d.cob>0?"contado":"crédito"}</small></span>${celda(rvMarca(d,dia),habit(d.cli),"rvm")}${histD(d.cli)}</div>
-      ${ab===d.doc?`<div class="rvl">${d.lin.map(l=>`<div><span>${esc((D.articulos[l.a]||{}).n||nomDe(l.a))}</span><span>${l.pz} pz</span><span>${kgf(l.kg)} kg</span><span>${l.pz&&l.p>0?kgf(r2(l.kg/l.pz*1000)/1000)+" kg/pz":""}</span><span>${eur(l.p)} €</span></div>`).join("")}${d.dto?`<div><span>Descuento ${d.dto} %</span></div>`:""}</div>`:""}`;
+      ${ab===d.doc?`<div class="rvl">${d.lin.map(l=>`<div><span>${esc((D.articulos[l.a]||{}).n||nomDe(l.a))}</span><span>${l.pz} pz</span><span>${kgf(l.kg)} kg</span><span>${l.pz&&l.p>0?kgf(r2(l.kg/l.pz*1000)/1000)+" kg/pz":""}</span><span>${eur(l.p)} €${rvPorUd(l.a,D.articulos)?"/ud":""}</span></div>`).join("")}${d.dto?`<div><span>Descuento ${d.dto} %</span></div>`:""}</div>`:""}`;
     cuerpo=`${desk?`<div class="rvsel"><span class="rvselt">Día</span>${dias.map(x=>`<a data-rvdia="${x.id}" class="${x.id===R.dia?"on":""}">${fechas(x)}</a>`).join("")}</div>`:`<div class="meses">${dias.map(x=>`<button data-rvdia="${x.id}" class="${x.id===R.dia?"on":""}">${fechas(x)}</button>`).join("")}</div>`}
       <div class="rvres">${dia.docs.length} documentos · venta <b>${eur(venta)} €</b> · cobrado en ventas ${eur(cont)} € · cobros de anteriores ${eur(cobr)} €</div>
       <div class="sec">Avisos</div>
