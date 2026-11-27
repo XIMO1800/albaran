@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "202 · 26/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "203 · 27/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -2129,15 +2129,34 @@ function avPdaListaHtml(){const L=S.av.pdaLista;if(!L)return"";
   const otros=S.av.pdaTodos?"":`<button class="lnk" id="avPdaTodos">Ver también los anteriores</button>`;
   if(!L.length)return `<div class="muted" style="width:100%">No hay ningún resumen nuevo para este viaje. Si Bernardo acaba de guardarlo, espera 2 minutos y vuelve a pulsar. ${otros}</div>`;
   return `<div class="av-pdal">${L.map(f=>`<button class="btn sm" data-pdaid="${esc(f.id)}"><b>${esc(f.nombre)}</b><small>subido ${fCorta(f.fecha)}</small></button>`).join("")}${otros}</div>`}
-const avPdaBotones=pri=>`<div class="acc"><button class="btn sm ${pri?"pri":""}" id="avPdaNube">${pri?"Coger de AUTOVENT":"Otro"}</button>${pri?"":`<button class="btn sm del" id="avPdaQuita">Quitar</button>`}</div>`;
+const avPdaBotones=pri=>`<div class="acc"><button class="btn sm ${pri?"pri":""}" id="avPdaSuma">${pri?"Sumar de la PDA":"Volver a sumar"}</button><button class="btn sm" id="avPdaNube">${pri?"Resumen de Bernardo":"Otro resumen"}</button>${pri?"":`<button class="btn sm del" id="avPdaQuita">Quitar</button>`}</div>`;
+// Lo vendido en el viaje sacado directamente de las descargas de la PDA (las mismas de la revisión de albaranes):
+// se suman las líneas de todos los albaranes, entregas y notas de valor con fecha dentro del viaje. Sin promociones (líneas en negativo).
+async function avPdaSuma(){const c=avCuadre();if(!c)return;const ini=avIniC(c),fin=c.cierre||hoy();
+  S.av.pdaLista="cargando";avRepintar();
+  try{const rutas=[...new Set([avRuta(c.vendedor),...Object.values(AV_RUTA_DEF)].filter(Boolean))],por={};
+    for(const r of rutas){const j=await api("avRevision",{ruta:r,n:40});const docs={},dias=new Set();
+      (j.grupos||[]).map(rvLeer).forEach(g=>g.docs.forEach(d=>{if(d.fecha>=ini&&d.fecha<=fin){docs[d.doc]=d;dias.add(d.fecha)}}));
+      por[r]={docs:Object.values(docs),dias:[...dias].sort(),arts:j.articulos||{}}}
+    // la ruta del vendedor; si esa no tiene nada en estas fechas y otra sí, la otra (avisará de que es de otra PDA)
+    let r=avRuta(c.vendedor);if(!por[r]||!por[r].docs.length){const o=rutas.find(x=>por[x]&&por[x].docs.length);if(o)r=o}
+    const P=por[r];if(!P||!P.docs.length){S.av.pdaLista=null;avRepintar();toast(`No hay descargas de la PDA del ${avFc(ini)} al ${avFc(fin)}`,true);return}
+    const lin={};P.docs.forEach(d=>d.lin.forEach(l=>{if(l.p<=0)return;const o=lin[l.a]||(lin[l.a]={pz:0,kg:0,n:(P.arts[l.a]||{}).n||nomDe(l.a)});o.pz+=l.pz;o.kg=r2(o.kg+l.kg)}));
+    const suma={pz:Object.values(lin).reduce((s,x)=>s+x.pz,0),kg:r2(Object.values(lin).reduce((s,x)=>s+x.kg,0))};
+    avAplicarPDA(c,{terminal:r,desde:ini,hasta:fin,lin,total:null,suma},`Descargas de la PDA ${r}`);c.pda.dias=P.dias;c.pda.docs=P.docs.length;
+    S.av.pdaLista=null;avTocar();render();toast(`PDA: ${suma.pz} pz · ${avKg(suma.kg)} kg`)}
+  catch(e){S.av.pdaLista=null;avRepintar();toast(/desconocida/i.test(e.message)?"Falta pegar el último Código.gs en el servidor":e.message,true)}}
 function avPdaCard(c){const P=c.pda;
   if(!P)return `<div class="card av-pda"><b>Albaranes PDA</b>${avPdaBotones(true)}${avPdaListaHtml()}</div>`;
   const av=[],quien=AV_TERM[P.terminal],ini=avIniC(c),fin=c.cierre||hoy();
   if(quien&&avNorm(quien)!==avNorm(avPersona(c.vendedor)))av.push(`Este resumen es de ${quien}, no de ${esc(c.vendedor)}`);
   if(P.desde&&(P.desde<=c.fecha||P.desde>ini||P.hasta!==fin))av.push(`Este viaje va del ${avFc(ini)} al ${avFc(fin)}`);
+  // sumado de las descargas: días laborables del viaje sin ninguna venta en la PDA (¿no se descargó ese día?)
+  if(P.dias){const sin=[];for(let d=P.desde;d<=P.hasta;d=avSumaDia(d,1)){if(![0,6].includes(new Date(d+"T12:00:00").getDay())&&!P.dias.includes(d))sin.push(avFc(d))}
+    if(sin.length)av.push(`Sin ventas en la PDA el ${sin.join(", ")}: si ese día vendió, falta esa descarga`)}
   if(P.total&&(P.total.pz!==P.suma.pz||Math.abs(P.total.kg-P.suma.kg)>0.05)) /* el programa redondea cada línea: unos gramos de diferencia no cuentan */av.push(`La suma de líneas no da el total del papel`);
   const fuera=Object.keys(P.lin).filter(k=>!avCfg().arts.includes(k));if(fuera.length)av.push(`No están en autoventa: ${fuera.map(esc).join(", ")}`);
-  return `<div class="card av-pda ok"><div><b>Albaranes PDA · ${esc(quien||"terminal "+(P.terminal||"?"))} · del ${avFc(P.desde)} al ${avFc(P.hasta)}</b> <small class="muted">${esc(P.archivo||"")}</small>${av.map(t=>`<div class="pav mal">⚠ ${t}</div>`).join("")}</div>
+  return `<div class="card av-pda ok"><div><b>Albaranes PDA · ${esc(quien||"terminal "+(P.terminal||"?"))} · del ${avFc(P.desde)} al ${avFc(P.hasta)}</b> <small class="muted">${P.dias?`${P.docs} documentos · días ${P.dias.map(avFc).join(", ")}`:esc(P.archivo||"")}</small>${av.map(t=>`<div class="pav mal">⚠ ${t}</div>`).join("")}</div>
     ${avPdaBotones(false)}${avPdaListaHtml()}</div>`;
 }
 async function avCargarPDA(file){if(!file)return;try{await avPdaBuf(await file.arrayBuffer(),file.name)}catch(e){toast("No he podido leer el fichero: "+e.message,true)}}
@@ -2245,6 +2264,7 @@ function vAvCuadre(app){
     if(b.dataset.exdel){const[k,i]=b.dataset.exdel.split("|"),l=c.lineas[k];if(l&&l.ex){l.ex.splice(+i,1);if(!l.ex.length)delete l.ex}avTocar();avRepintar();return}
     if(b.id==="avPdaBtn"){const f=$("#avPdaF");if(f){f.value="";f.click()}return}
     if(b.id==="avPdaNube"){avPdaNube();return}
+    if(b.id==="avPdaSuma"){avPdaSuma();return}
     if(b.id==="avPdaTodos"){avPdaNube(true);return}
     if(b.dataset.pdaid){avPdaDe(b.dataset.pdaid);return}
     if(b.id==="avPdaQuita"){avQuitarPDA(c);avTocar();render();return}
