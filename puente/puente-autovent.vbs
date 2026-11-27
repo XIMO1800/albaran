@@ -63,27 +63,51 @@ Function NombreSubida(f)
   NombreSubida = "R" & m(0).SubMatches(1) & "_" & Year(d) & Dos(Month(d)) & Dos(Day(d)) & "_" & Dos(Hour(d)) & Dos(Minute(d)) & "_" & LCase(m(0).SubMatches(0)) & ".txt"
 End Function
 
-' Fecha con la que se nombran los tres ficheros de una descarga: la del cab de esa ruta (asi van juntos aunque se
-' escriban en minutos distintos). Si el fichero es de mucho antes que el cab, es de otra descarga: se deja la suya.
+' Fecha con la que se nombran los ficheros de una descarga (R01_AAAAMMDD_HHMM_...): la del cab de esa descarga.
+' Cuando la PDA se descarga, cab, lin y cob se escriben a la vez; esa fecha se guarda en pda-idRR.txt.
+' Si despues alguien corrige a mano uno de ellos (Bernardo arregla unos kilos), conserva la fecha de su descarga:
+' se sube con el mismo nombre y sustituye al que estaba mal.
 Function FechaRuta(f, rr)
-  Dim pc
+  Dim pc, pl, t, tid, st
   FechaRuta = f.DateLastModified
   pc = f.ParentFolder.Path & "\cab" & rr & ".txt"
-  If fso.FileExists(pc) Then
-    If Abs(DateDiff("n", fso.GetFile(pc).DateLastModified, f.DateLastModified)) <= 10 Then FechaRuta = fso.GetFile(pc).DateLastModified
+  If Not fso.FileExists(pc) Then Exit Function
+  t = fso.GetFile(pc).DateLastModified
+  pl = f.ParentFolder.Path & "\lin" & rr & ".txt"
+  st = carpeta & "\pda-id" & rr & ".txt"
+  tid = Empty
+  On Error Resume Next
+  If fso.FileExists(st) Then tid = CDate(CDbl(Trim(fso.OpenTextFile(st, 1).ReadAll)))
+  On Error GoTo 0
+  If fso.FileExists(pl) Then
+    If Abs(DateDiff("n", t, fso.GetFile(pl).DateLastModified)) <= 10 Then
+      tid = t   ' descarga nueva (cab y lin escritos juntos)
+      On Error Resume Next
+      Dim w: Set w = fso.OpenTextFile(st, 2, True): w.Write CStr(CDbl(t)): w.Close
+      On Error GoTo 0
+    End If
   End If
+  If IsEmpty(tid) Then tid = t
+  FechaRuta = tid
 End Function
 
-' Los cab/lin/cob que estan en enlaces y son de una descarga anterior al cab (no se han vuelto a escribir) no se suben
+' lin/cob que son de una descarga anterior (no se han vuelto a escribir en la ultima, p. ej. cob sin cobros) no se suben
 Function EsDeOtraDescarga(f)
-  Dim re, m, pc
+  Dim re, m
   EsDeOtraDescarga = False
   Set re = New RegExp: re.IgnoreCase = True: re.Pattern = "^(lin|cob)(\d\d)\.txt$"
   Set m = re.Execute(f.Name)
   If m.Count = 0 Then Exit Function
-  pc = f.ParentFolder.Path & "\cab" & m(0).SubMatches(1) & ".txt"
-  If Not fso.FileExists(pc) Then Exit Function
-  If Abs(DateDiff("n", fso.GetFile(pc).DateLastModified, f.DateLastModified)) > 10 Then EsDeOtraDescarga = True
+  If DateDiff("n", FechaRuta(f, m(0).SubMatches(1)), f.DateLastModified) < -10 Then EsDeOtraDescarga = True
+End Function
+
+' El mismo fichero ya esta en ENVIADOS (misma fecha y tamano): se copio a mano y ya se subio
+Function MismoFichero(ruta, f)
+  Dim g
+  MismoFichero = False
+  If Not fso.FileExists(ruta) Then Exit Function
+  Set g = fso.GetFile(ruta)
+  If g.Size = f.Size And Abs(DateDiff("s", g.DateLastModified, f.DateLastModified)) <= 2 Then MismoFichero = True
 End Function
 
 ' Registro de lo ya subido desde enlaces: nombre|fecha|tamano
@@ -135,13 +159,13 @@ If Not fso.FolderExists(env) Then fso.CreateFolder env
 On Error GoTo 0
 For Each f In fso.GetFolder(ORIGEN).Files
   If NombreSubida(f) <> "" And DateDiff("s", f.DateLastModified, Now) > 20 Then
-    ReDim Preserve lista(UBound(lista) + 1): lista(UBound(lista)) = f.Name
+    ' el nombre de subida se calcula ahora, antes de mover nada (el de lin/cob depende del cab que esta al lado)
+    ReDim Preserve lista(UBound(lista) + 1): lista(UBound(lista)) = f.Name & "|" & NombreSubida(f)
   End If
 Next
 For i = 0 To UBound(lista)
-  nom = lista(i)
+  nom = Split(lista(i), "|")(0): nsub = Split(lista(i), "|")(1)
   Set f = fso.GetFile(ORIGEN & "\" & nom)
-      nsub = NombreSubida(f)
       If Sube(f.Path, nsub) Then
         dest = env & "\" & nsub
         On Error Resume Next
@@ -166,7 +190,7 @@ If fso.FolderExists(ENLACES) Then
     If nsub <> "" And LCase(fso.GetExtensionName(f.Name)) = "txt" Then
       firm = Firma(f)
       If DateDiff("s", f.DateLastModified, Now) > 60 And Not YaSubido(firm) And Not EsDeOtraDescarga(f) Then
-        If UCase(Left(nsub, 1)) = "R" And fso.FileExists(env & "\" & nsub) Then
+        If UCase(Left(nsub, 1)) = "R" And MismoFichero(env & "\" & nsub, f) Then
           ApuntaSubido firm   ' ya se subio copiandolo a mano
         Else
           tmp = carpeta & "\_" & nsub
