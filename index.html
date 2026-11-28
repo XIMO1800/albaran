@@ -520,7 +520,7 @@ body.desk .av-wrap{max-width:1200px}
 <script>
 /* =================== CONFIGURACIÓN =================== */
 // URL del Apps Script de la hoja PEDIDOS TIENDA (Implementar → Aplicación web). Se puede poner aquí o la primera vez en la app.
-const VERSION = "205 · 27/11/2026"; // subir junto con CACHE de sw.js en cada cambio
+const VERSION = "206 · 28/11/2026"; // subir junto con CACHE de sw.js en cada cambio
 const API_DEF = "https://script.google.com/macros/s/AKfycbysLH9zV2Tss0fjnkv9USLkm6HZx7y_sBxEPf9_XG_EzxTCydsWcHPoEPY6uGp51qk8LA/exec";
 const EMPRESA = {n:"LÁCTEOS CUQUERELLA, S.L.", s:"Quesos El Hidalgo · Manzanares"};
 const GRUPOS = {X:["Sin sal / requesón","--otros"],M:["Mezcla","--mezcla"],O:["Oveja","--oveja"],D:["Manchego D.O.","--do"],C:["Cabra","--cabra"],V:["Avería","--averia"]};
@@ -649,7 +649,17 @@ function barra(html){const b=$("#barra");b.hidden=!html;$("#barraIn").innerHTML=
 function altoCab(){const h=$("#hdr"),b=document.querySelector(".barra");if(h&&h.offsetHeight)document.documentElement.style.setProperty("--hdrAlto",h.offsetHeight+"px");if(b)document.documentElement.style.setProperty("--barAlto",(b.hidden?0:b.offsetHeight)+"px");
   const f=document.querySelector(".av-fases.cq");if(f&&f.offsetHeight)document.documentElement.style.setProperty("--fasAlto",f.offsetHeight+"px")}
 addEventListener("resize",()=>altoCab());
+/* (206) ENTRADA DESDE TRACEQUESO OFICINA (Joaquín, 28/11): abierta desde la oficina
+   (?desde=oficina) se prueba el PIN con el que se entró en TraceQueso (tq_sesion, en este
+   mismo navegador: misma dirección ximo1800.github.io). Lo comprueba el servidor de pedidos
+   como si se tecleara; si no vale, sale la pantalla de PIN de siempre. ?tab=autoventa abre
+   directamente Autoventa (si el usuario la tiene). */
+const _QS=new URLSearchParams(location.search);
+window._desdeOfi=_QS.get("desde")==="oficina"; window._tabIni=_QS.get("tab")||null;
+if(window._desdeOfi||window._tabIni){ try{ const q=new URLSearchParams(location.search); q.delete("desde"); q.delete("tab"); history.replaceState(null,"",location.pathname+(q.toString()?"?"+q:"")); }catch(e){} }
+function _pinTQ(){ try{ const s=JSON.parse(localStorage.getItem("tq_sesion")||"null"); if(!s||!s.u||!s.u.pin||!s.ts||Date.now()-s.ts>14*3600*1000) return ""; return String(s.u.pin).replace(/\D/g,""); }catch(e){ return ""; } }
 function render(){
+  if(window._tabIni && S.user){ S.tab=window._tabIni; window._tabIni=null; }
   document.body.classList.toggle("desk",!!S.user&&esDesk());document.documentElement.classList.toggle("desk",document.body.classList.contains("desk"));
   document.body.classList.toggle("en-cuadre",!!S.user&&S.tab==="autoventa"&&!!S.av.cur&&!S.av.arts);
   renderHeader(); marcoDesk(); setTimeout(altoCab,0);
@@ -688,11 +698,12 @@ function vLogin(app){
     try{const j=await api("datos");LS.set("ped_pin",pin);
       S.user=j.usuario;S.rol=j.rol;S.productos=j.productos;S.pedidos=j.pedidos;S.albaranes=j.albaranes||[];S.ult=new Date();LS.set("ped_cache_prod",S.productos);
       S.tab=null;S.scr=null;render()}
-    catch(err){toast(err.message,true);S.pin="";S.user=null;i.value="";puntos();enviando=false;b.disabled=false;b.textContent="Entrar";i.focus()}};
+    catch(err){toast(window._pinTQauto?"Tu PIN de TraceQueso no vale en pedidos. Escribe el de pedidos.":err.message,true);window._pinTQauto=false;S.pin="";S.user=null;i.value="";puntos();enviando=false;b.disabled=false;b.textContent="Entrar";i.focus()}};
   i.oninput=()=>{i.value=i.value.replace(/\D/g,"");puntos();if(i.value.length===4)entrar()};
   const bs=$("#bSrv"); if(bs) bs.onclick=()=>{S.api=API_DEF;LS.del("ped_api");toast("Servidor de la fábrica puesto. Vuelve a escribir el PIN");render()};
   $("#fLog").onsubmit=e=>{e.preventDefault();entrar()};
   setTimeout(()=>i.focus(),50);
+  if(!S.pin && window._desdeOfi){ window._desdeOfi=false; const tp=_pinTQ(); if(tp){ i.value=tp; puntos(); window._pinTQauto=true; entrar(); return; } }
   if(S.pin){ b.disabled=true;b.textContent="Entrando…"; cargar().then(()=>{if(!S.user&&document.body.contains(b)){b.disabled=false;b.textContent="Entrar"}}); }
 }
 
